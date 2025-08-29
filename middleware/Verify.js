@@ -11,10 +11,10 @@ export async function Verify(req, res, next) {
 
     // 1️⃣ Token lekérése cookie-ból vagy Authorization headerből
     const token = req.cookies.token || req.headers["authorization"]?.split(" ")[1];
-
+    console.log("user", req.user);
     if (!token) {
-      req.session.failMessage = "Unauthorized access. Please login.";
-      return res.redirect("/login");
+        // Ha a referer nincs definiálva, vagy nem a főoldal
+        return res.redirect("/login");
     }
 
     // 2️⃣ Blacklist ellenőrzés
