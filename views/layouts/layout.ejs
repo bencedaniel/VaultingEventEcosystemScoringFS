@@ -9,16 +9,22 @@
     all: unset;            /* minden stílust töröl */
     background-color: yellow; /* megtartod a színt */
 }
-.nav-link {
-
+.nav-link-user {
   display: block;
   padding: var(--bs-nav-link-padding-y) var(--bs-nav-link-padding-x);
   font-size: var(--bs-nav-link-font-size);
   font-weight: var(--bs-nav-link-font-weight);
+  color: var(--bs-nav-link-color);
   text-decoration: none;
-  
+  color: var(--bs-nav-link-hover-color);
+
   border: 0;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
 }
+.nav-link-user:hover, .nav-link-user:focus {
+  color: var(--bs-nav-link-hover-color);
+}
+
 
 
 </style>
@@ -31,7 +37,9 @@
     
     <link rel="icon" type="image/x-icon" href="/static/VaultXLogo.png">
 </head>
-       <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container">
     <!-- Logo -->
     <a class="navbar-brand" href="#">
@@ -44,8 +52,8 @@
       <span class="navbar-toggler-icon"></span>
     </button>
 
-<div class="collapse navbar-collapse" id="navbarNav">
-  <ul class="navbar-nav ms-auto">
+<div class="collapse navbar-collapse  " id="navbarNav">
+  <ul class="navbar-nav ms-auto bg-secondary rounded bg-opacity-25  mt-2">
 
 
         <% 
@@ -54,18 +62,30 @@
         %>
 
         <% if (Array.isArray(permissons) && permissons.includes("admin_dashboard")) { %>
-          <li class="nav-item">
-            <a href="/admin/dashboard" class="nav-link btn btn-primary m-2 px-3">Admin Dashboard</a>
+           <li class="nav-item">
+            <a href="/admin/dashboard" class="nav-link btn btn-primary m-1 px-3 d-flex align-items-center">
+                <i class="bi bi-menu-button-wide fs-5 pe-2"></i>Admin Dashboard</a>
           </li>
         <% } %>
 
-        <li class="nav-item">
-          <a href="/dashboard" class="nav-link btn btn-secondary m-2 px-3" id="newuserbutton">Dashboard</a>
-        </li>
+           <li class="nav-item">
+            <a href="/dashboard" class="nav-link btn btn-primary m-1 px-3 d-flex align-items-center">
+                <i class="bi bi-menu-button-wide fs-5 pe-2"></i>Dashboard</a>
+          </li>
 
         <% if (Array.isArray(permissons) && permissons.length !== 0) { %>
           <li class="nav-item">
-            <a href="/logout" class="nav-link btn btn-danger m-2 px-3">Logout</a>
+            <a href="/logout" class="nav-link btn btn-danger m-1 px-3 d-flex align-items-center">
+                <i class="bi bi-box-arrow-right fs-5 pe-2"></i>Logout</a>
+          </li>
+
+          <li class="nav-item">
+          <a href="/profile/<%= typeof user !== 'undefined' ? user._id : '' %>" 
+            class="nav-link btn btn-secondary m-1 px-3 d-flex align-items-center">
+            <i class="bi bi-person fs-5 pe-2"></i>
+            <%= typeof user !== 'undefined' ? user.username : '' %>
+          </a>
+
           </li>
         <% } %>
 
@@ -73,9 +93,9 @@
     </div>
   </div>
 </nav>
+  
 
-
-<main class="container mb-5 my-5" style="padding-bottom: 80px;">
+<main class="container mb-5 my-5"  style="padding-bottom: 80px;">
 
 <% if (successMessage) { %>
   <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 9999;">

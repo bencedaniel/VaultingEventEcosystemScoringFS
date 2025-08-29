@@ -214,7 +214,8 @@ HorseRouter.get('/new',Verify, VerifyRole(), (req, res) => {
         countries:countries,
         formData: req.session.formData, 
         rolePermissons: req.user?.role?.permissions
-        , failMessage: req.session.failMessage, successMessage: req.session.successMessage });
+        , failMessage: req.session.failMessage, successMessage: req.session.successMessage,
+        user: req.user });
     req.session.failMessage = null; // Clear the fail message after rendering
     req.session.successMessage = null; // Clear the success message after rendering 
 });
@@ -237,7 +238,8 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
       formData: req.body,
       successMessage: null,
       failMessage: errorMessage,
-      card: { ...req.body, _id: req.params.id }
+      card: { ...req.body, _id: req.params.id },
+        user: req.user
     });
     
   }
@@ -248,7 +250,8 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
             horses,
             rolePermissons: req.user?.role?.permissions,
             failMessage: req.session.failMessage,
-            successMessage: req.session.successMessage
+            successMessage: req.session.successMessage,
+        user: req.user
         });
         req.session.failMessage = null; // Clear the fail message after rendering
         req.session.successMessage = null; // Clear the success message after rendering 
@@ -267,7 +270,8 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
                 formData: horse,
                 rolePermissons: req.user?.role?.permissions,
                 failMessage: req.session.failMessage,
-                successMessage: req.session.successMessage
+                successMessage: req.session.successMessage,
+        user: req.user
             });
             req.session.failMessage = null; // Clear the fail message after rendering
             req.session.successMessage = null; // Clear the success message after rendering 
@@ -289,7 +293,8 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
             formData: horse,
             rolePermissons: req.user?.role?.permissions,
             failMessage: req.session.failMessage,
-            successMessage: req.session.successMessage
+            successMessage: req.session.successMessage,
+        user: req.user
           });
           req.session.failMessage = null; // Clear the fail message after rendering
           req.session.successMessage = null; // Clear the success message after rendering
@@ -321,6 +326,7 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
             formData: { ...req.body, _id: req.params.id },
             successMessage: null,
             failMessage: errorMessage,
+            user: req.user
           });
         }
       });

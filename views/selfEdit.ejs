@@ -1,0 +1,44 @@
+<div class="container my-4 border border-black border-1 border-opacity-10 rounded p-3  shadow bg-primary bg-opacity-10 " style="max-width: 80vh;">
+
+
+<h1 class="text-center mb-3">Edit profile</h1>
+
+
+<form action="/profile/<%= formData ? formData._id : '' %>" method="POST">
+    <div class="row justify-content-center g-3 m-auto">
+        <div class="col-lg-10">
+
+        </div>
+        <div class="col-md-12">
+            <div class="form-floating">
+                <input type="text" class="form-control shadow-none" id="username" name="username" placeholder="Username"
+                    autocomplete="off" value="<%= formData ? formData.username : "" %>">
+                <label for="username" class="form-label">Username</label>
+            </div>
+        </div>
+       
+
+
+         <div class="col-md-12">
+            <div class="form-floating">
+                <input type="password" class="form-control shadow-none" id="password" name="password" placeholder="Password"
+                    autocomplete="off" value="">
+                <label for="password" class="form-label">Password (Leave blank if not changing)</label>
+            </div>
+        </div>
+                 <div class="col-md-12">
+            <div class="form-floating">
+                <input type="text" class="form-control shadow-none" id="feiid" name="feiid" placeholder="feiid"
+                    autocomplete="off" value="<%= formData ? formData.feiid : "" %>">
+                <label for="feiid" class="form-label">FEI ID</label>
+            </div>
+            
+                            <button type="submit" class="btn btn-primary mt-3 w-100">Update</button>
+
+        </div>
+
+        </div>
+
+
+
+</form>

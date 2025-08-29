@@ -45,7 +45,7 @@ app.use(session({
   cookie: { 
     maxAge: 24 * 60 * 60 * 1000, // opcionális, pl. 1 nap
     httpOnly: true,
-    secure: true,             // élesben: true
+    secure: false,             // élesben: true
     sameSite: 'lax'
   }
 }));

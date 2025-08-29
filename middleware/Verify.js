@@ -111,6 +111,24 @@ export function VerifyRole() {
         }
     };
 }
+export async function UserIDValidator(req,res,next) {
+    try {
+        const userId = req.params.id;
+        if (!userId) {
+            req.session.failMessage = "User ID is required.";
+            return res.redirect("/login");
+        }
+        if (userId !== req.user._id.toString()) {
+            req.session.failMessage = "You do not have permission to access this resource.";
+            return res.redirect(req.get('Referer') || '/login');
+        }
+        next();
+    } catch (err) {
+        console.error("UserIDValidator catch error:", err);
+        req.session.failMessage = "Internal server error.";
+        return res.redirect("/login");
+    }
+}
 
 export async function  CheckLoggedIn(req, res, next) {
       try {

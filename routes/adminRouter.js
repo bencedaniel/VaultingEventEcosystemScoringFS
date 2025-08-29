@@ -27,7 +27,8 @@ adminRouter.get("/newUser",Verify,VerifyRole(), async (req, res) => {
         failMessage: req.session.failMessage,
         formData: req.session.formData,
         roleList: roles,
-        successMessage: req.session.successMessage
+        successMessage: req.session.successMessage,
+        user: req.user
     });
     req.session.successMessage = null;
     req.session.formData = null;
@@ -51,7 +52,8 @@ adminRouter.get("/dashboard/users", Verify, VerifyRole(), async (req, res) => {
         rolePermissons: rolePermissons,
         users: users,
         failMessage: req.session.failMessage,
-        successMessage: req.session.successMessage
+        successMessage: req.session.successMessage,
+        user: req.user
     });
     req.session.failMessage = null; // Clear the fail message after rendering
     req.session.successMessage = null; // Clear the success message after rendering
@@ -64,7 +66,8 @@ adminRouter.get('/editUser/:id',Verify,VerifyRole(), async (req, res) => {
             formData: user,userrole: req.user.role,
             roleList: await Role.find(),
             rolePermissons: req.user.role.permissions,
-            successMessage: req.session.successMessage});
+            successMessage: req.session.successMessage,
+        user: req.user});
         req.session.failMessage = null; // Clear the fail message after rendering
         req.session.successMessage = null; // Clear the success message after rendering
 
@@ -97,8 +100,7 @@ adminRouter.post('/editUser/:id',Verify,VerifyRole() , async (req, res) => {
                 formData: req.body,
                 successMessage: null,
                 failMessage: errorMessage,
-                
-                user: { ...req.body, _id: req.params.id }
+                user: req.user
             });
             
         }
@@ -117,7 +119,8 @@ adminRouter.get("/dashboard", Verify,VerifyRole(), async (req, res) => {
         roleCount: await Role.countDocuments(),
         rolePermissons: rolePermissons,
         failMessage: req.session.failMessage,
-        successMessage: req.session.successMessage
+        successMessage: req.session.successMessage,
+        user: req.user
     });
     req.session.failMessage = null; // Clear the fail message after rendering
     req.session.successMessage = null; // Clear the success message after rendering
@@ -152,7 +155,8 @@ adminRouter.get("/dashboard/roles", Verify, VerifyRole(), async (req, res) => {
             rolePermissons: req.user.role.permissions,
             roles: roles,
             failMessage: req.session.failMessage,
-            successMessage: req.session.successMessage
+            successMessage: req.session.successMessage,
+        user: req.user
         });
         req.session.failMessage = null; // Clear the fail message after rendering
         req.session.successMessage = null; // Clear the success message after rendering
@@ -168,8 +172,9 @@ adminRouter.get("/newRole", Verify, VerifyRole(), async (req, res) => {
         permissions: permissions,
         rolePermissons: req.user.role.permissions,
         failMessage: req.session.failMessage,
-        formData: req.session.formData
-        ,successMessage: req.session.successMessage
+        formData: req.session.formData,
+        successMessage: req.session.successMessage,
+        user: req.user
     });
     req.session.formData = null; // Clear the form data after rendering
     req.session.failMessage = null; // Clear the fail message after rendering
@@ -209,7 +214,8 @@ adminRouter.get('/editRole/:id', Verify, VerifyRole(), async (req, res) => {
             rolePermissons: req.user.role.permissions,
             failMessage: req.session.failMessage,
             successMessage: req.session.successMessage,
-            formData: role
+            formData: role,
+            user: req.user
         });
         req.session.successMessage = null; // Clear the success message after rendering
         req.session.failMessage = null; // Clear the fail message after rendering
@@ -289,7 +295,8 @@ adminRouter.get("/dashboard/permissions", Verify, VerifyRole(), async (req, res)
             rolePermissons: req.user.role.permissions,
             permissions: permissions,
             failMessage: req.session.failMessage,
-            successMessage: req.session.successMessage
+            successMessage: req.session.successMessage,
+            user: req.user
         });
         req.session.failMessage = null; // Clear the fail message after rendering
         req.session.successMessage = null; // Clear the success message after rendering
@@ -306,7 +313,8 @@ adminRouter.get("/newPermission", Verify, VerifyRole(), (req, res) => {
         rolePermissons: req.user.role.permissions,
         failMessage: req.session.failMessage,
         formData: req.session.formData,
-        successMessage: req.session.successMessage
+        successMessage: req.session.successMessage,
+        user: req.user
     });
     req.session.successMessage = null;
     req.session.formData = null; // Clear the form data after rendering
@@ -343,8 +351,9 @@ adminRouter.get('/editPermission/:id', Verify, VerifyRole(), async (req, res) =>
         res.render('admin/editPerm', {
             rolePermissons: req.user.role.permissions,
             failMessage: req.session.failMessage,
-            formData: permission
-            ,successMessage: req.session.successMessage
+            formData: permission,
+            successMessage: req.session.successMessage,
+            user: req.user
         });
         req.session.failMessage = null;
         req.session.successMessage = null; // Clear the success message after rendering
@@ -385,7 +394,8 @@ adminRouter.get("/newUser",Verify,VerifyRole(), async (req, res) => {
         failMessage: req.session.failMessage,
         formData: req.session.formData,
         roleList: roles,
-        successMessage: req.session.successMessage
+        successMessage: req.session.successMessage,
+        user: req.user
     });
     req.session.successMessage = null;
     req.session.formData = null;
@@ -410,7 +420,8 @@ adminRouter.get("/newCard",Verify,VerifyRole(), async (req, res) => {
         rolePermissons: userrole,
         failMessage: req.session.failMessage,
         formData: req.session.formData,
-        successMessage: req.session.successMessage
+        successMessage: req.session.successMessage,
+        user: req.user
     });
     req.session.successMessage = null;
     req.session.formData = null;
@@ -426,7 +437,8 @@ adminRouter.get("/dashboard/cards", Verify, VerifyRole(), async (req, res) => {
         rolePermissons: rolePermissons,
         cards: cards,
         failMessage: req.session.failMessage,
-        successMessage: req.session.successMessage
+        successMessage: req.session.successMessage,
+        user: req.user
     });
     req.session.failMessage = null; // Clear the fail message after rendering
     req.session.successMessage = null; // Clear the success message after rendering
@@ -441,7 +453,9 @@ adminRouter.get('/editCard/:id',Verify,VerifyRole(), async (req, res) => {
             formData: card,
             failMessage: req.session.failMessage,
             rolePermissons: req.user.role.permissions,
-            successMessage: req.session.successMessage});
+            successMessage: req.session.successMessage,
+            user: req.user
+        });
         req.session.failMessage = null; // Clear the fail message after rendering
         req.session.successMessage = null; // Clear the success message after rendering
 
@@ -471,7 +485,8 @@ adminRouter.post('/newCard', Verify, VerifyRole(), async (req, res) => {
       formData: req.body,
       successMessage: null,
       failMessage: errorMessage,
-      card: { ...req.body, _id: req.params.id }
+      card: { ...req.body, _id: req.params.id },
+        user: req.user
     });
     
   }
@@ -496,7 +511,8 @@ adminRouter.post('/editCard/:id', Verify, VerifyRole(), async (req, res) => {
       formData: req.body,
       successMessage: null,
       failMessage: errorMessage,
-      card: { ...req.body, _id: req.params.id }
+      card: { ...req.body, _id: req.params.id },
+        user: req.user
     });
   }
 });
