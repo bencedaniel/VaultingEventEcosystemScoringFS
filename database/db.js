@@ -3,15 +3,11 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import logger from '../logger.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.join(__dirname, '../.env') });
-
+import { MONGODB_URI } from '../app.js';
 async function connectDB() {
     try {
         // Adatbázis kapcsolódás
-        await mongoose.connect(process.env.MONGODB_URI);
+        await mongoose.connect(MONGODB_URI);
         logger.info('Successfully connected to MongoDB');
         // Kapcsolat lezárása kilépéskor
         process.on('SIGINT', async () => {

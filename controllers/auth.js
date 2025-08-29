@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import bcrypt from "bcrypt";
 import Blacklist  from "../models/Blacklist.js";
+import { SECURE_MODE } from "../app.js";
 /**
  * @route POST v1/auth/register
  * @desc Registers a user
@@ -80,7 +81,7 @@ export async function Login(req, res) {
         let options = {
             maxAge: 20 * 60 * 1000, // would expire in 20minutes
             httpOnly: true, // The cookie is only accessible by the web server
-            secure: true,
+            secure: SECURE_MODE === 'true',
             sameSite: "None",
         };
         const token = user.generateAccessJWT(); // generate session token for user

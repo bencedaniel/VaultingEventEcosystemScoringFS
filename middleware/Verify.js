@@ -1,10 +1,11 @@
 import Blacklist from "../models/Blacklist.js"; // import the Blacklist model
 import jwt from "jsonwebtoken"; // import jsonwebtoken to verify the access token
 import User from "../models/User.js"; // import the User model
-import { SECRET_ACCESS_TOKEN } from "../app.js"; // import the secret access token from the app.js file
+import { SECRET_ACCESS_TOKEN, SECURE_MODE } from "../app.js"; // import the secret access token from the app.js file
 import logger from "../logger.js"; // import the logger to log errors
 import RoleModel from "../models/Role.js"; // import the Role model if needed
 import PermissionModel from "../models/Permissions.js"; // import the Permission model if needed
+
 export async function Verify(req, res, next) {
   try {
 
@@ -47,7 +48,7 @@ export async function Verify(req, res, next) {
     // 6️⃣ Cookie-ba írás
     res.cookie("token", newToken, {
       httpOnly: true,
-      secure: true,
+      secure: SECURE_MODE === 'true', // élesben: true
       sameSite: "lax",
       maxAge: 20 * 60 * 1000
     });

@@ -1,3 +1,4 @@
+import dotenv from 'dotenv';
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -5,7 +6,6 @@ import router from './routes/routes.js';
 import adminRouter from './routes/adminRouter.js';
 import connectDB from './database/db.js';
 import expressLayouts from 'express-ejs-layouts';
-import dotenv from 'dotenv';
 import session from 'express-session';
 import logger from './logger.js';
 import cors from 'cors';
@@ -16,10 +16,13 @@ import horseRouter from './routes/horseRouter.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const app = express(); // Express.js keretrendszer inicializálása
+// Load environment variables first!
+dotenv.config({ path: path.join(__dirname, '.env') });
 
+const app = express();
+const { MONGODB_URI, PORT, SECRET_ACCESS_TOKEN, SECURE_MODE,SECRET_API_KEY } = process.env;
+export { MONGODB_URI, PORT, SECRET_ACCESS_TOKEN, SECURE_MODE,SECRET_API_KEY };
 connectDB(); // Adatbázis-kapcsolódás
-const { URI, PORT, SECRET_ACCESS_TOKEN } = process.env;
 
 // Middleware-ek beállítása
 app.set('views', path.join(__dirname, 'views')); // A 'views' könyvtár beállítása
@@ -32,16 +35,15 @@ app.use(cors());
 app.disable("x-powered-by"); //Reduce fingerprinting
 app.use(cookieParser());
 app.use('/static', express.static(path.join(__dirname, '/static'))); // static könyvtár elérése
-dotenv.config({ path: path.join(__dirname, '.env') }); // A dotenv beállítása
 
 app.use(session({
-  secret: 'APIkey',            // titkos kulcs a session-hoz
+  secret: SECRET_API_KEY,            // titkos kulcs a session-hoz
   resave: false,                // csak ha változott a session, mentsük
   saveUninitialized: false,     // üres session-t ne mentsünk
   cookie: { 
     maxAge: 24 * 60 * 60 * 1000, // opcionális, pl. 1 nap
     httpOnly: true,
-    secure: false,             // élesben: true
+    secure: SECURE_MODE === 'true',             // élesben: true
     sameSite: 'lax'
   }
 }));
@@ -77,5 +79,4 @@ app.use((err, req, res, next) => {
 
 
 
-export { URI, PORT, SECRET_ACCESS_TOKEN };
 app.listen(process.env.PORT, logger.info(`A szerver fut a http://localhost:${process.env.PORT} címen...`));
