@@ -1,5 +1,5 @@
 import { validationResult } from "express-validator";
-import logger from "../logger.js";
+import {logger} from "../logger.js";
 
 const Validate = (req, res, next) => {
     const errors = validationResult(req);

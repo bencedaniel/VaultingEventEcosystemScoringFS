@@ -1,6 +1,6 @@
 import express from 'express';
 
-import logger from '../logger.js';
+import {dblogger, logger} from "../logger.js";
 import { Login } from "../controllers/auth.js";
 import { Logout } from "../controllers/auth.js";
 import Validate from "../middleware/Validate.js";
@@ -224,6 +224,7 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
     try {
         const newHorse = new Horse(req.body);
         await newHorse.save()
+        dblogger.db(`Horse ${newHorse.name} created by user ${req.user.username}.`);
         req.session.successMessage = 'Horse created successfully!';
         res.redirect('/horse/new');
     } catch (err) {
@@ -307,6 +308,7 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
       HorseRouter.post('/edit/:id',Verify, VerifyRole(), Validate, async (req, res) => {
         try {
           const horse = await Horse.findByIdAndUpdate(req.params.id, req.body, { runValidators: true });
+          dblogger.db(`Horse ${horse.name} updated by user ${req.user.username}.`);
           if (!horse) {
             req.session.failMessage = 'Horse not found';
             return res.redirect('/horse/dashboard');
@@ -333,7 +335,9 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
 
       HorseRouter.delete('/delete/:id',Verify, VerifyRole(), async (req, res) => {
         try {
+
           const horse = await Horse.findByIdAndDelete(req.params.id);
+          dblogger.db(`Horse ${horse.name} deleted by user ${req.user.username}.`);
           if (!horse) {
             req.session.failMessage = 'Horse not found';
             return res.status(404).json({ message: 'Horse not found' });
@@ -348,6 +352,7 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
       HorseRouter.delete('/deleteNote/:id', Verify, VerifyRole(), async (req, res) => {
         try {
           const horse = await Horse.findById(req.params.id);
+          dblogger.db(`Horse ${horse.name} note deleted by user ${req.user.username}.`);
           if (!horse) {
             req.session.failMessage = 'Horse not found';
             return res.status(404).json({ message: 'Horse not found' });
@@ -365,6 +370,7 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
       try{
         console.log('start')
         const horse = await Horse.findById(req.params.id);
+        dblogger.db(`Horse ${horse.name} note created by user ${req.user.username}.`);
         const newNote = {
           note: req.body.note,
           timestamp: Date.now()

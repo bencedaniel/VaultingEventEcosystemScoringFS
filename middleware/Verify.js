@@ -2,7 +2,7 @@ import Blacklist from "../models/Blacklist.js"; // import the Blacklist model
 import jwt from "jsonwebtoken"; // import jsonwebtoken to verify the access token
 import User from "../models/User.js"; // import the User model
 import { SECRET_ACCESS_TOKEN, SECURE_MODE } from "../app.js"; // import the secret access token from the app.js file
-import logger from "../logger.js"; // import the logger to log errors
+import {logger} from "../logger.js";
 import RoleModel from "../models/Role.js"; // import the Role model if needed
 import PermissionModel from "../models/Permissions.js"; // import the Permission model if needed
 
@@ -11,7 +11,6 @@ export async function Verify(req, res, next) {
 
     // 1️⃣ Token lekérése cookie-ból vagy Authorization headerből
     const token = req.cookies.token || req.headers["authorization"]?.split(" ")[1];
-    console.log("user", req.user);
     if (!token) {
         // Ha a referer nincs definiálva, vagy nem a főoldal
         return res.redirect("/login");

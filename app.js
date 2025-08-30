@@ -7,7 +7,7 @@ import adminRouter from './routes/adminRouter.js';
 import connectDB from './database/db.js';
 import expressLayouts from 'express-ejs-layouts';
 import session from 'express-session';
-import logger from './logger.js';
+import {dblogger, logger} from './logger.js';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import horseRouter from './routes/horseRouter.js';
@@ -20,15 +20,20 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, '.env') });
 
 const app = express();
-const { MONGODB_URI, PORT, SECRET_ACCESS_TOKEN, SECURE_MODE,SECRET_API_KEY } = process.env;
-export { MONGODB_URI, PORT, SECRET_ACCESS_TOKEN, SECURE_MODE,SECRET_API_KEY };
+const { MONGODB_URI, PORT, SECRET_ACCESS_TOKEN, SECURE_MODE,SECRET_API_KEY,TESTDB } = process.env;
+export { MONGODB_URI, PORT, SECRET_ACCESS_TOKEN, SECURE_MODE,SECRET_API_KEY,TESTDB };
 connectDB(); // Adatbázis-kapcsolódás
 
 // Middleware-ek beállítása
 app.set('views', path.join(__dirname, 'views')); // A 'views' könyvtár beállítása
 app.set('view engine', 'ejs'); // EJS sablonmotor beállítása
 app.use(expressLayouts); // Layout
-app.set('layout', 'layouts/layout'); // Layout könyvtár beállítása
+if(TESTDB==='true'){ 
+    app.set('layout', 'layouts/testlayout'); // Layout könyvtár beállítása
+    dblogger.db('Using test db');
+}else{
+    app.set('layout', 'layouts/layout'); // Layout könyvtár beállítása
+}
 app.use(express.json()); // JSON formátumú adatok feldolgozása és elérhetősége a 'req.body' objektumon keresztül
 app.use(express.urlencoded({ extended: true })); // URL-en keresztül érkező, formázott adatok feldolgozása és elérhetősége a 'req.body' objektumon keresztül
 app.use(cors());

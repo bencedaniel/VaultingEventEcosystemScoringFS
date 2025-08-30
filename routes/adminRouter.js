@@ -1,6 +1,6 @@
 import express from 'express';
 
-import logger from '../logger.js';
+import {dblogger, logger} from "../logger.js";
 import { Login } from "../controllers/auth.js";
 import { Logout } from "../controllers/auth.js";
 import Validate from "../middleware/Validate.js";
@@ -79,6 +79,7 @@ adminRouter.get('/editUser/:id',Verify,VerifyRole(), async (req, res) => {
 
 adminRouter.post('/editUser/:id',Verify,VerifyRole() , async (req, res) => {
     try {
+        
         const updateData = { ...req.body };
         if (req.body.password=== '') {
             const user = await User.findById(req.params.id);
@@ -87,6 +88,7 @@ adminRouter.post('/editUser/:id',Verify,VerifyRole() , async (req, res) => {
             updateData.password = await bcrypt.hash(req.body.password, 10);
         }
         await User.findByIdAndUpdate(req.params.id, updateData, { runValidators: true });
+        dblogger.db(`User ${req.body.username} updated by user ${req.user.username}.`);
         req.session.successMessage = 'User modified successfully!';
         res.redirect('/admin/dashboard/users');
     } catch (err) {
@@ -131,6 +133,7 @@ adminRouter.delete('/deleteUser/:userId', Verify,VerifyRole(), async (req, res) 
     try {
         const UserId = req.params.userId;
         await User.findByIdAndDelete(UserId);
+        dblogger.db(`User ${UserId} deleted by user ${req.user.username}.`);
         req.session.successMessage = 'User successfully deleted.';
         res.status(200).send('User deleted.');
     } catch (err) {
@@ -190,6 +193,7 @@ adminRouter.post("/newRole", Verify, VerifyRole(), async (req, res) => {
             permissions
         });
         await newRole.save();
+        dblogger.db(`Role ${newRole.roleName} created by user ${req.user.username}.`);
         req.session.successMessage = 'Role created successfully.';
         res.redirect('/admin/dashboard/roles');
     } catch (err) {
@@ -209,6 +213,7 @@ adminRouter.get('/editRole/:id', Verify, VerifyRole(), async (req, res) => {
             req.session.failMessage = 'Role not found.';
             return res.redirect('/admin/dashboard/roles');
         }
+
         res.render('admin/editRole', {
             permissions: permissions,
             rolePermissons: req.user.role.permissions,
@@ -234,7 +239,7 @@ adminRouter.post('/editRole/:id', Verify, VerifyRole(), async (req, res) => {
             description,
             permissions
         }, { runValidators: true });
-
+        dblogger.db(`Role ${roleName} updated by user ${req.user.username}.`);
         if (!updatedRole) {
             req.session.failMessage = 'Role not found.';
             return res.redirect('/admin/dashboard/roles');
@@ -266,6 +271,7 @@ adminRouter.delete('/deleteRole/:roleId', Verify, VerifyRole(), async (req, res)
         }
 
         await Role.findByIdAndDelete(roleId);
+        dblogger.db(`Role ${role.roleName} deleted by user ${req.user.username}.`);
         req.session.successMessage = 'Role successfully deleted.';
         res.status(200).send('Role deleted.');
     } catch (err) {
@@ -331,6 +337,7 @@ adminRouter.post("/newPermission", Verify, VerifyRole(), async (req, res) => {
             requestType
         });
         await newPermission.save();
+        dblogger.db(`Permission ${newPermission.name} created by user ${req.user.username}.`);
         req.session.successMessage = 'Permission created successfully.';
         res.redirect('/admin/dashboard/permissions');
     } catch (err) {
@@ -377,6 +384,7 @@ adminRouter.post('/editPermission/:id', Verify, VerifyRole(), async (req, res) =
             req.session.failMessage = 'Permission not found.';
             return res.redirect('/admin/dashboard/permissions');
         }
+        dblogger.db(`Permission ${updatedPermission.name} updated by user ${req.user.username}.`);
 
         req.session.successMessage = 'Permission updated successfully.';
         res.redirect('/admin/dashboard/permissions');
@@ -406,7 +414,9 @@ adminRouter.post(
     Verify,
     VerifyRole(),
     Validate,
-    Register
+    Register,  (req, res) => {
+        dblogger.db(`User ${req.body.username} created by user ${req.user.username}.`);
+    }
 );
 
 
@@ -448,6 +458,7 @@ adminRouter.get('/editCard/:id',Verify,VerifyRole(), async (req, res) => {
     try {
         const permissionList = await Permissions.find();
         const card = await DashCards.findById(req.params.id);
+
         res.render('admin/editCard', {failMessage: req.session.failMessage, 
             permissionList: permissionList,
             formData: card,
@@ -469,6 +480,7 @@ adminRouter.post('/newCard', Verify, VerifyRole(), async (req, res) => {
     const newCard = new DashCards(req.body);
 
     await newCard.save();
+    dblogger.db(`Card ${newCard.title} created by user ${req.user.username}.`);
     req.session.successMessage = 'Card added successfully!';
     res.redirect('/admin/dashboard/cards');
 
@@ -495,7 +507,7 @@ adminRouter.post('/newCard', Verify, VerifyRole(), async (req, res) => {
 adminRouter.post('/editCard/:id', Verify, VerifyRole(), async (req, res) => {
   try {
     await DashCards.findByIdAndUpdate(req.params.id, req.body, { runValidators: true });
-
+    dblogger.db(`Card ${req.body.title} updated by user ${req.user.username}.`);
     req.session.successMessage = 'Card modified successfully!';
     res.redirect('/admin/dashboard/cards');
 
@@ -525,6 +537,7 @@ adminRouter.delete('/deleteCard/:cardId', Verify,VerifyRole(), async (req, res) 
     try {
         const CardId = req.params.cardId;
         await DashCards.findByIdAndDelete(CardId);
+        dblogger.db(`Card ${CardId} deleted by user ${req.user.username}.`);
         req.session.successMessage = 'Card successfully deleted.';
         res.status(200).send('Card deleted.');
     } catch (err) {

@@ -1,6 +1,6 @@
 import express from 'express';
 
-import logger from '../logger.js';
+import {logger, dblogger} from "../logger.js";
 import { Login } from "../controllers/auth.js";
 import { Logout } from "../controllers/auth.js";
 import Validate from "../middleware/Validate.js";
@@ -74,6 +74,7 @@ router.post("/profile/:id", Verify, UserIDValidator, async (req, res) => {
             updateData.password = await bcrypt.hash(req.body.password, 10);
         }
         await User.findByIdAndUpdate(req.params.id, updateData, { runValidators: true });
+        dblogger.db(`User ${req.user.username} updated their profile.`);
         req.session.successMessage = 'Profile updated successfully!';
         res.redirect(`/profile/${req.params.id}`);
     } catch (err) {
