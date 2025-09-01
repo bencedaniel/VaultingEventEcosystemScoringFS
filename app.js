@@ -64,7 +64,7 @@ app.use((req, res, next) => {
   next();
 });
 app.use((req, res, next) => {
-  res.locals.version = process.env.VERSION || '1.0.0'; // vagy amit szeretnél
+  res.locals.version = '0.0.8'; // vagy amit szeretnél
   next();
 });
 
