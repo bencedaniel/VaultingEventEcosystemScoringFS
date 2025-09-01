@@ -227,7 +227,7 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
         await newVaulter.save()
         dblogger.db(`Vaulter ${newVaulter.name} created by user ${req.user.username}.`);
         req.session.successMessage = 'Vaulter created successfully!';
-        res.redirect('/vaulter/new');
+        res.redirect('/vaulter/dashboard');
     } catch (err) {
     console.error(err);
 

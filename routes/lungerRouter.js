@@ -227,7 +227,7 @@ lungerRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
         await newLunger.save()
         dblogger.db(`Lunger ${newLunger.name} created by user ${req.user.username}.`);
         req.session.successMessage = 'Lunger created successfully!';
-        res.redirect('/lunger/new');
+        res.redirect('/lunger/dashboard');
     } catch (err) {
     console.error(err);
 
