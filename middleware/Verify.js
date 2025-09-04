@@ -12,7 +12,7 @@ export async function Verify(req, res, next) {
     // 1️⃣ Token lekérése cookie-ból vagy Authorization headerből
     const token = req.cookies.token || req.headers["authorization"]?.split(" ")[1];
     if (!token) {
-        // Ha a referer nincs definiálva, vagy nem a főoldal
+      req.session.failMessage = "Your session has expired or you are not authorized. Please log in to continue.";
         return res.redirect("/login");
     }
 
@@ -55,6 +55,23 @@ export async function Verify(req, res, next) {
     // 7️⃣ User adatok a requesthez
     const { password, ...data } = user._doc;
     req.user = data;
+
+    next();
+
+  } catch (err) {
+    console.error("Verify middleware catch error:", err);
+    if (req.session) req.session.failMessage = "This session has expired or is invalid.";
+    return res.redirect("/login");
+  }
+}
+export async function VerifyNoerror(req, res, next) {
+  try {
+
+    // 1️⃣ Token lekérése cookie-ból vagy Authorization headerből
+    const token = req.cookies.token || req.headers["authorization"]?.split(" ")[1];
+    if (!token) {
+        return res.redirect("/login");
+    }
 
     next();
 

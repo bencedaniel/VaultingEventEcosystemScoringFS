@@ -74,7 +74,7 @@ app.use((req, res, next) => {
   });
   next();
 });
-const version = '0.0.9';
+const version = '0.0.10';
 app.use((req, res, next) => {
   res.locals.version = version; // vagy amit szeretnél
   next();

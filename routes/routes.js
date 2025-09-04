@@ -5,7 +5,7 @@ import { Login } from "../controllers/auth.js";
 import { Logout } from "../controllers/auth.js";
 import Validate from "../middleware/Validate.js";
 import { check } from "express-validator";
-import { CheckLoggedIn, UserIDValidator, Verify, VerifyRole, StoreUserWithoutValidation } from "../middleware/Verify.js";
+import { CheckLoggedIn, UserIDValidator, Verify, VerifyRole, StoreUserWithoutValidation ,VerifyNoerror} from "../middleware/Verify.js";
 import DashCards from '../models/DashCards.js';
 import User from '../models/User.js';
 import Role from '../models/Role.js';
@@ -18,7 +18,7 @@ router.get("/", async (req, res) => {
     res.redirect("/dashboard");
 
 });
-router.dashboard = router.get("/dashboard", Verify, async (req, res) => {
+router.dashboard = router.get("/dashboard", VerifyNoerror, Verify, async (req, res) => {
     req.session.successMessage = null; // Üzenet törlése a session-ből  
     req.session.failMessage = null; // Üzenet törlése a session-ből
     res.render("dashboard", {userrole: req.user.role, 
