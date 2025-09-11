@@ -116,7 +116,7 @@ export function VerifyRole() {
             
             const hasPermission = allAttachedURLs.some(pattern => urlsMatch(pattern, req.originalUrl));
             if (!roleFromDB || !hasPermission)  {
-                logger.warn(`User ${user.username} with role ${roleFromDB ? roleFromDB.name : 'unknown'} tried to access ${req.originalUrl} without permission.`);
+                logger.warn(`User ${user.username} with role ${roleFromDB ? roleFromDB.roleName : 'unknown'} tried to access ${req.originalUrl} without permission.`);
                 req.session.failMessage = "You do not have permission to access this resource.";
                 return res.redirect(req.get('Referer') || '/login'); // vissza az előző oldalra, vagy login ha nincs
             }

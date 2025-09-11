@@ -280,6 +280,7 @@ adminRouter.delete('/deleteRole/:roleId', Verify, VerifyRole(), async (req, res)
     }
 });
 
+
 // PERMISSION MANAGEMENT ROUTES
 adminRouter.get("/dashboard/permissions", Verify, VerifyRole(), async (req, res) => {
     try {
@@ -394,6 +395,39 @@ adminRouter.post('/editPermission/:id', Verify, VerifyRole(), async (req, res) =
         res.redirect(`/admin/editPermission/${req.params.id}`);
     }
 });
+adminRouter.delete('/deletePermission/:permId', Verify, VerifyRole(), async (req, res) => {
+    try {
+        const permId = req.params.permId;
+        const permission = await Permissions.findById(permId);
+        if (!permission) {
+            req.session.failMessage = 'Permission not found.';
+            return res.status(404).send('Permission not found.');
+        }
+
+        // Check if the permission is assigned to any role
+        const roleCount = await Role.countDocuments({ permissions: permission.name });
+        if (roleCount > 0) {
+            req.session.failMessage = 'Cannot delete permission. It is assigned to one or more roles.';
+            return res.status(400).send('Cannot delete permission. It is assigned to one or more roles.');
+        }
+
+       // await Permissions.findByIdAndDelete(permId);
+        dblogger.db(`Permission ${permission.name} deleted by user ${req.user.username}.`);
+        req.session.successMessage = 'Permission successfully deleted.';
+        res.status(200).send('Permission deleted.');
+    } catch (err) {
+        logger.error("Err:" + err.toString());
+        res.status(500).send('Server Error');
+    }
+});
+
+
+
+
+
+
+
+
 adminRouter.get("/newUser",Verify,VerifyRole(), async (req, res) => {
     const roles = await Role.find();
     const userrole = req.user?.role.permissions; // Safe check for req.user

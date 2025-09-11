@@ -1,0 +1,230 @@
+<div class="container my-4 border border-black border-1 border-opacity-10 rounded p-3 shadow bg-primary bg-opacity-10" style="max-width: 80vh;">
+  <h1 class="text-center mb-3">Edit Event</h1>
+
+  <form action="/event/edit/<%= formData ? formData._id : '' %>" method="POST">
+    <div class="row justify-content-center g-3 m-auto">
+
+      <!-- Event Name -->
+      <div class="col-md-12">
+        <div class="form-floating">
+          <input type="text" class="form-control shadow-none" id="EventName" name="EventName" placeholder="Event Name"
+                 value="<%= formData ? formData.EventName : '' %>" autocomplete="off" required disabled>
+          <label for="EventName">Event Name</label>
+        </div>
+      </div>
+
+      <!-- Event Location -->
+      <div class="col-md-12">
+        <div class="form-floating">
+          <input type="text" class="form-control shadow-none" id="EventLocation" name="EventLocation" placeholder="Event Location"
+                 value="<%= formData ? formData.EventLocation : '' %>" autocomplete="off" required disabled>
+          <label for="EventLocation">Event Location</label>
+        </div>
+      </div>
+
+      <!-- Event Director Name -->
+      <div class="col-md-12">
+        <div class="form-floating">
+          <input type="text" class="form-control shadow-none" id="EventDirectorName" name="EventDirectorName" placeholder="Director Name"
+                 value="<%= formData ? formData.EventDirectorName : '' %>" autocomplete="off" required disabled>
+          <label for="EventDirectorName">Event Director Name</label>
+        </div>
+      </div>
+
+      <!-- Event Director Contact -->
+      <div class="col-md-12">
+        <div class="form-floating">
+          <input type="text" class="form-control shadow-none" id="EventDirectorContact" name="EventDirectorContact" placeholder="Director Contact"
+                 value="<%= formData ? formData.EventDirectorContact : '' %>" autocomplete="off" required disabled>
+          <label for="EventDirectorContact">Event Director Contact</label>
+        </div>
+      </div>
+
+            <!-- ResponsiblePersons -->
+      <div class="col-md-12 bg-secondary bg-opacity-10 rounded p-3" style="max-width: 97%;">
+        <label class="form-label mb-2">Responsible persons</label>
+        <div id="ResponsiblePersonList"></div>
+        <a type="button" class="btn btn-sm btn-danger mt-2" id="addResponsiblePerson">+ Add Responsible person</a>
+      </div>
+      <!-- Submit Button -->
+      <div class="col-md-12 mt-3">
+        <button type="submit" class="btn btn-primary w-100" disabled>Save Changes</button>
+      </div>
+
+    </div>
+  </form>
+</div>
+
+
+<!-- ResponsiblePerson Modal -->
+<div class="modal fade" id="ResponsiblePersonModal" tabindex="-1" role="dialog" aria-labelledby="ResponsiblePersonModalLabel"
+    aria-hidden="true" style="backdrop-filter: blur(5px);">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ResponsiblePersonModalLabel">Add new Responsible Person</h5>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form action="/admin/event/addResponsiblePerson/<%= formData ? formData._id : '' %>" id="ResponsiblePersonModalForm" method="POST">
+                <div class="col-md-12 mb-2">
+                  <div class="form-floating">
+                    <input type="text" class="form-control shadow-none" id="name" name="name" placeholder="Name" required>
+                    <label for="name">Name</label>
+                  </div>
+                </div>
+                <div class="col-md-12 mb-2">
+                  <div class="form-floating">
+                    <input type="text" class="form-control shadow-none" id="role" name="role" placeholder="Role" required>
+                    <label for="role">Role</label>
+                  </div>
+                </div>
+                <div class="col-md-12 mb-2">
+                  <div class="form-floating">
+                    <input type="text" class="form-control shadow-none" id="contact" name="contact" placeholder="Contact" required>
+                    <label for="contact">Contact</label>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmResponsiblePersonModalButton">Add</button>
+            </div>
+        </div>
+    </div>
+</div> 
+
+<!-- View ResponsiblePerson Modal -->
+<div class="modal fade" id="ResponsiblePersonViewModal" tabindex="-1" aria-labelledby="ResponsiblePersonViewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ResponsiblePersonViewModalLabel">Responsible person details</h5>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Name:</strong> <span id="Name"></span></p>
+        <p><strong>Role:</strong> <span id="Role"></span></p>
+        <p><strong>Contact:</strong><span id="Contact" class="p-2"></span>
+</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmResponsiblePersonModalButton = document.getElementById('confirmResponsiblePersonModalButton');
+    const addResponsiblePersonButton = document.getElementById('addResponsiblePerson');
+    const bsResponsiblePersonModal = new bootstrap.Modal(document.getElementById('ResponsiblePersonModal'));
+    const ResponsiblePersonForm = document.getElementById('ResponsiblePersonModalForm');
+
+    addResponsiblePersonButton?.addEventListener('click', event => {
+        event.preventDefault();
+        bsResponsiblePersonModal.show();
+    });
+
+    confirmResponsiblePersonModalButton?.addEventListener('click', () => {
+        fetch(ResponsiblePersonForm?.getAttribute('action'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                name: document.getElementById('name').value,
+                role: document.getElementById('role').value,
+                contact: document.getElementById('contact').value
+            })
+        }).then(() => window.location.reload());
+    });
+});
+
+function addResponsiblePersonInput(name = '', role = '', contact = '') {
+    const incidentList = document.getElementById('ResponsiblePersonList');
+
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('input-group', 'mb-2', 'd-flex', 'gap-2');
+
+    const inputName = document.createElement('input');
+    inputName.type = 'text';
+    inputName.classList.add('form-control');
+    inputName.value = name;
+    inputName.disabled = true;
+
+    const inputRole = document.createElement('input');
+    inputRole.type = 'text';
+    inputRole.classList.add('form-control');
+    inputRole.value = role;
+    inputRole.disabled = true;
+
+    const inputCont = document.createElement('input');
+    inputCont.type = 'text';
+    inputCont.classList.add('form-control');
+    inputCont.value = contact;
+    inputCont.disabled = true;
+    
+
+
+    const viewBtn = document.createElement('button');
+    viewBtn.type = 'button';
+    viewBtn.classList.add('btn', 'btn-info');
+    const zoomicon = document.createElement('i');
+    zoomicon.classList.add('bi', 'bi-search');
+    viewBtn.appendChild(zoomicon);
+    viewBtn.onclick = () => showResponsiblePersonPopup(name, role, contact);
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.classList.add('btn', 'btn-danger');
+    const trashicon = document.createElement('i');
+    trashicon.classList.add('bi', 'bi-trash');
+    btn.appendChild(trashicon);
+    btn.onclick = () => removeResponsiblePerson(wrapper);
+
+    wrapper.appendChild(inputName);
+    wrapper.appendChild(inputRole);
+    wrapper.appendChild(inputCont);
+
+    wrapper.appendChild(viewBtn);
+    wrapper.appendChild(btn);
+
+    incidentList.appendChild(wrapper);
+}
+
+function removeResponsiblePerson(parentElement) {
+    fetch('/admin/event/deleteResponsiblePerson/<%= formData ? formData._id : '' %>', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            name: parentElement.querySelector('input:nth-child(1)').value,
+            role: parentElement.querySelector('input:nth-child(2)').value,
+            contact: parentElement.querySelector('input:nth-child(3)').value
+        })
+    }).then(() => window.location.reload());
+}
+
+function showResponsiblePersonPopup(name = '', role = '', contact = '') {
+    document.getElementById('Name').textContent = name;
+    document.getElementById('Role').textContent = role;
+    document.getElementById('Contact').textContent = contact;
+    const modal = new bootstrap.Modal(document.getElementById('ResponsiblePersonViewModal'));
+    modal.show();
+}
+
+<% if (formData && formData.AssignedOfficials) { %>
+  <% formData.AssignedOfficials.forEach(function(offical) { %>
+    
+    addResponsiblePersonInput(
+      "<%= offical.name %>",
+      "<%= offical.role %>",
+      "<%= offical.contact %>"
+
+    );
+  <% }) %>
+<% } %>
+</script>

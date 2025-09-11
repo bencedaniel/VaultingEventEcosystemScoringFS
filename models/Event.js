@@ -32,10 +32,28 @@ const EventSchema = new mongoose.Schema({
         default: [],
     },
     AssignedOfficials: {
-        type: [mongoose.Schema.Types.ObjectId],
-        ref: 'users',
-        default: [],
+        type: [{
+            name : { type: String, required: true },
+            role : { type: String, required: true },
+            contact : { type: String, required: true },
+
+        }]
+    },
+    selected: {
+        type: Boolean,
+        default: false
     }
-},{ timestamps: true });
-export default mongoose.model('events', EventSchema);
     
+},{ timestamps: true });
+
+EventSchema.statics.setSelected = async function(eventId) {
+    // Set selected: false for all events except the one with eventId
+    await this.updateMany(
+        { _id: { $ne: eventId } },
+        { $set: { selected: false } }
+    );
+    // Set selected: true for the specified event
+    await this.findByIdAndUpdate(eventId, { selected: true });
+};
+
+export default mongoose.model('events', EventSchema);

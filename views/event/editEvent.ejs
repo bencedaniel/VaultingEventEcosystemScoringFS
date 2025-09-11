@@ -1,0 +1,50 @@
+<div class="container my-4 border border-black border-1 border-opacity-10 rounded p-3 shadow bg-primary bg-opacity-10" style="max-width: 80vh;">
+  <h1 class="text-center mb-3">Edit Event</h1>
+
+  <form action="/admin/event/edit/<%= formData ? formData._id : '' %>" method="POST">
+    <div class="row justify-content-center g-3 m-auto">
+
+      <!-- Event Name -->
+      <div class="col-md-12">
+        <div class="form-floating">
+          <input type="text" class="form-control shadow-none" id="EventName" name="EventName" placeholder="Event Name"
+                 value="<%= formData ? formData.EventName : '' %>" autocomplete="off" required>
+          <label for="EventName">Event Name</label>
+        </div>
+      </div>
+
+      <!-- Event Location -->
+      <div class="col-md-12">
+        <div class="form-floating">
+          <input type="text" class="form-control shadow-none" id="EventLocation" name="EventLocation" placeholder="Event Location"
+                 value="<%= formData ? formData.EventLocation : '' %>" autocomplete="off" required>
+          <label for="EventLocation">Event Location</label>
+        </div>
+      </div>
+
+      <!-- Event Director Name -->
+      <div class="col-md-12">
+        <div class="form-floating">
+          <input type="text" class="form-control shadow-none" id="EventDirectorName" name="EventDirectorName" placeholder="Director Name"
+                 value="<%= formData ? formData.EventDirectorName : '' %>" autocomplete="off" required>
+          <label for="EventDirectorName">Event Director Name</label>
+        </div>
+      </div>
+
+      <!-- Event Director Contact -->
+      <div class="col-md-12">
+        <div class="form-floating">
+          <input type="text" class="form-control shadow-none" id="EventDirectorContact" name="EventDirectorContact" placeholder="Director Contact"
+                 value="<%= formData ? formData.EventDirectorContact : '' %>" autocomplete="off" required>
+          <label for="EventDirectorContact">Event Director Contact</label>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="col-md-12 mt-3">
+        <button type="submit" class="btn btn-primary w-100">Edit Event</button>
+      </div>
+
+    </div>
+  </form>
+</div>

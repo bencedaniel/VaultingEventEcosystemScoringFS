@@ -13,8 +13,10 @@ import cookieParser from 'cookie-parser';
 import horseRouter from './routes/horseRouter.js';
 import vaulterRouter from './routes/vaulterRouter.js';
 import lungerRouter from './routes/lungerRouter.js';
+import eventRouter from './routes/eventRouter.js';
 import { StoreUserWithoutValidation } from './middleware/Verify.js';
 import morgan from 'morgan';
+import Event from './models/Event.js';
 
 // Az aktuális fájl és könyvtár meghatározása
 const __filename = fileURLToPath(import.meta.url);
@@ -75,7 +77,9 @@ app.use((req, res, next) => {
   next();
 });
 const version = '0.0.10';
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
+
+  res.locals.selectedEvent = await Event.findOne({ selected: true });
   res.locals.version = version; // vagy amit szeretnél
   next();
 });
@@ -86,18 +90,21 @@ app.use('/admin', adminRouter); // Admin útvonalak kezelése
 app.use('/horse', horseRouter); // Horse útvonalak kezelése
 app.use('/vaulter', vaulterRouter); // Vaulter útvonalak kezelése
 app.use('/lunger', lungerRouter); // Lunger útvonalak kezelése
+app.use('/admin/event', eventRouter); // Event útvonalak kezelése
 
 
 
 app.use(StoreUserWithoutValidation);
 app.use((req, res, next) => {
     res.status(404).render("errorpage", {rolePermissons: req.user?.role?.permissions,errorCode: 404, failMessage: req.session.failMessage, user:req.user,
+
             successMessage: req.session.successMessage
     });
 });
 app.use((err, req, res, next) => {
   
     logger.error(err);
+    req.session.failMessage = "Internal server error.";
     res.status(500).render("errorpage", {rolePermissons: req.user?.role.permissions,errorCode: 500, failMessage: req.session.failMessage,user:req.user,
             successMessage: req.session.successMessage
     });
@@ -114,6 +121,7 @@ app.listen(process.env.PORT, () => {
     logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
     logger.info(`Version: ${version || 'unknown'}`);
     logger.info(`Port: ${process.env.PORT}`);
+    logger.info(`Node.js version: ${process.version}`);
     logger.info(`MongoDB URI: ${process.env.MONGODB_URI ? 'set' : 'NOT SET'}`);
     logger.info(`Session secret: ${process.env.SECRET_API_KEY ? 'set' : 'NOT SET'}`);
     logger.info(`Secure mode: ${process.env.SECURE_MODE}`);
