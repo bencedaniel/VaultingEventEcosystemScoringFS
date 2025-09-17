@@ -17,6 +17,7 @@ import eventRouter from './routes/eventRouter.js';
 import { StoreUserWithoutValidation } from './middleware/Verify.js';
 import morgan from 'morgan';
 import Event from './models/Event.js';
+import categoryRouter from './routes/categoryRouter.js';
 
 // Az aktuális fájl és könyvtár meghatározása
 const __filename = fileURLToPath(import.meta.url);
@@ -76,7 +77,7 @@ app.use((req, res, next) => {
   });
   next();
 });
-const version = '0.0.10';
+const version = '0.0.11';
 app.use(async (req, res, next) => {
 
   res.locals.selectedEvent = await Event.findOne({ selected: true });
@@ -90,6 +91,7 @@ app.use('/admin', adminRouter); // Admin útvonalak kezelése
 app.use('/horse', horseRouter); // Horse útvonalak kezelése
 app.use('/vaulter', vaulterRouter); // Vaulter útvonalak kezelése
 app.use('/lunger', lungerRouter); // Lunger útvonalak kezelése
+app.use('/category', categoryRouter); // Category útvonalak kezelése
 app.use('/admin/event', eventRouter); // Event útvonalak kezelése
 
 

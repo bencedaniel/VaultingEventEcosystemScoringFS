@@ -1,0 +1,178 @@
+<div class="container my-4 border border-black border-1 border-opacity-10 rounded p-3 shadow bg-primary bg-opacity-10" style="max-width: 80vh;">
+  <h1 class="text-center mb-3">Add Edit Category</h1>
+
+  <form action="/category/edit/<%= formData ? formData._id : '' %>" method="POST">
+    <div class="row justify-content-center g-3 m-auto">
+
+      <!-- Category Display Name -->
+      <div class="col-md-12">
+        <div class="form-floating">
+          <input type="text" class="form-control shadow-none" id="CategoryDispName" name="CategoryDispName" placeholder="Category Name"
+                 value="<%= formData ? formData.CategoryDispName : '' %>" autocomplete="off" required>
+          <label for="CategoryDispName">Category Name</label>
+        </div>
+      </div>
+
+      <!-- Type -->
+      <div class="col-md-12">
+        <div class="form-floating">
+          <select class="form-select shadow-none" id="Type" name="Type" required>
+            <option value="">Select Type</option>
+            <option value="Individual" <%= formData && formData.Type === 'Individual' ? 'selected' : '' %>>Individual</option>
+            <option value="Squad" <%= formData && formData.Type === 'Squad' ? 'selected' : '' %>>Squad</option>
+            <option value="PDD" <%= formData && formData.Type === 'PDD' ? 'selected' : '' %>>PDD</option>
+          </select>
+          <label for="Type">Category Type</label>
+        </div>
+      </div>
+
+
+
+      <!-- Sex -->
+      <div class="col-md-12">
+        <div class="form-floating">
+          <select class="form-select shadow-none" id="Sex" name="Sex">
+            <option value="">Select Sex</option>
+            <option value="Male" <%= formData && formData.Sex === 'Male' ? 'selected' : '' %>>Male</option>
+            <option value="Female" <%= formData && formData.Sex === 'Female' ? 'selected' : '' %>>Female</option>
+          </select>
+          <label for="Sex">Sex</label>
+        </div>
+      </div>
+
+      <!-- Required Tests -->
+      <div class="col-md-12 bg-secondary bg-opacity-10 rounded p-3" style="max-width: 97%;">
+        <label class="form-label mb-1">Required Tests</label>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="ReqComp" name="ReqComp" value="true"
+            <%= formData && formData.ReqComp ? 'checked' : '' %>>
+          <label class="form-check-label" for="ReqComp">Compulsory Test Required</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="ReqFreeTest" name="ReqFreeTest" value="true"
+            <%= formData && formData.ReqFreeTest ? 'checked' : '' %>>
+          <label class="form-check-label" for="ReqFreeTest">Free Test Required</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="ReqTechnicalTest" name="ReqTechnicalTest" value="true"
+            <%= formData && formData.ReqTechnicalTest ? 'checked' : '' %>>
+          <label class="form-check-label" for="ReqTechnicalTest">Technical Test Required</label>
+        </div>
+      </div>
+
+      <!-- Agegroup -->
+      <div class="col-md-12">
+        <div class="form-floating">
+          <select class="form-select shadow-none" id="Agegroup" name="Agegroup" required>
+            <option value="">Select Age Group</option>
+            <option value="Children" <%= formData && formData.Agegroup === 'Children' ? 'selected' : '' %>>Children</option>
+            <option value="Junior" <%= formData && formData.Agegroup === 'Junior' ? 'selected' : '' %>>Junior</option>
+            <option value="Senior" <%= formData && formData.Agegroup === 'Senior' ? 'selected' : '' %>>Senior</option>
+            <option value="Young Vaulter" <%= formData && formData.Agegroup === 'Young Vaulter' ? 'selected' : '' %>>Young Vaulter</option>
+          </select>
+          <label for="Agegroup">Age Group</label>
+        </div>
+      </div>
+
+      <!-- Star -->
+      <div class="col-md-12">
+        <div class="form-floating">
+          <input type="number" class="form-control shadow-none" id="Star" name="Star" placeholder="Star Level"
+                 value="<%= formData ? formData.Star : 1 %>" min="1" max="4" required>
+          <label for="Star">Star Level</label>
+        </div>
+      </div>
+
+      <!-- Score Types (multiple blocks, one for each type) -->
+      <div class="col-md-12 bg-secondary bg-opacity-10 rounded p-3" style="max-width: 97%;" id="mainBlock">
+        <label class="form-label mb-1">Score Types</label>
+
+        <% 
+          const scoreTypeDefs = [
+            { display: 'Compulsory test', type: 'Compulsory', fields: ['Horse', 'Exercise'] },
+            { display: 'Free test', type: 'Free', fields: ['Horse', 'Artistic', 'Technical'] },
+            { display: 'Technical test', type: 'Technical', fields: ['Horse', 'Artistic', 'Technical'] }
+          ];
+        %>
+        <% scoreTypeDefs.forEach(function(def) { %>
+          <div class="border rounded p-2 mb-2" id="<%= def.type %>Block">
+            <div class="form-label mb-1"><strong><%= def.display %></strong></div>
+            <% def.fields.forEach(function(field) { %>
+              <div class="form-floating mb-2">
+                <input type="number" step="0.01" class="form-control shadow-none" id="<%= def.type %>_<%= field %>" name="<%= def.type %>[<%= field %>]" placeholder="<%= field %> Score"
+                       value="<%= formData && formData[def.type] && formData[def.type] ? formData[def.type][field] : 0.0 %>" disabled>
+                <label for="<%= def.type %>_<%= field %>"><%= field %> Score</label>
+              </div>
+            <% }); %>
+
+
+          </div>
+        <% }); %>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="col-md-12 mt-3">
+        <button type="submit" class="btn btn-primary w-100">Add Category</button>
+      </div>
+
+    </div>
+  </form>
+</div>
+<script>
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const reqCompCheckbox = document.getElementById('ReqComp');
+    const reqFreeTestCheckbox = document.getElementById('ReqFreeTest');
+    const reqTechnicalTestCheckbox = document.getElementById('ReqTechnicalTest');
+    let showed = 0;
+    const compulsoryBlock = document.getElementById('CompulsoryBlock');
+    const freeTestBlock = document.getElementById('FreeBlock');
+    const technicalTestBlock = document.getElementById('TechnicalBlock');
+    const main = document.getElementById('mainBlock');
+
+    function toggleBlock(checkbox, block,first) {
+      if (checkbox.checked) {
+
+        showed++;
+        console.log("showed incremented to:", showed);
+          displayParentBlock();
+        block.style.display = 'block';
+        block.querySelectorAll('input').forEach(input => input.disabled = false);
+      } else {
+        if(first){
+        if (showed > 0) {
+          showed--;
+        }}
+        displayParentBlock();
+        block.style.display = 'none';
+        block.querySelectorAll('input').forEach(input => input.disabled = true);
+      }
+    }
+    function displayParentBlock() {
+      if (showed !== 0) {
+        main.style.display = 'block';
+      } else {
+        main.style.display = 'none';
+      }
+    }
+    reqCompCheckbox.addEventListener('change', function() {
+      toggleBlock(reqCompCheckbox, compulsoryBlock,true);
+    });
+
+    reqFreeTestCheckbox.addEventListener('change', function() {
+      toggleBlock(reqFreeTestCheckbox, freeTestBlock,true);
+    });
+
+    reqTechnicalTestCheckbox.addEventListener('change', function() {
+      toggleBlock(reqTechnicalTestCheckbox, technicalTestBlock,true);
+    });
+
+    // Initial toggle based on current checkbox states
+    toggleBlock(reqCompCheckbox, compulsoryBlock,false);
+    toggleBlock(reqFreeTestCheckbox, freeTestBlock,false);
+    toggleBlock(reqTechnicalTestCheckbox, technicalTestBlock,false);
+        displayParentBlock();
+
+  });
+
+</script>

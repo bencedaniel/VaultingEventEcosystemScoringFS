@@ -1,57 +1,59 @@
 import mongoose from 'mongoose';
 
-
 const CategorySchema = new mongoose.Schema({
-        CategoryDispName:{
-            type: String,
-            required: [true, 'Category name required!'],
-            unique: true,
+    CategoryDispName: {
+        type: String,
+        required: [true, 'Category name required!'],
+        unique: true,
+    },
+    Type: {
+        type: String,
+        enum: ['Individual', 'Squad','PDD'],
+        required: [true, 'Category type required!'],
+    },
+    Sex: {
+        type: String,
+        enum: ['Male', 'Female', 'Mixed'],
+    },
+    ReqComp: { type: Boolean, required: true, default: false },
+    ReqFreeTest: { type: Boolean, required: true, default: false },
+    ReqTechnicalTest: { type: Boolean, required: true, default: false },
+    Agegroup: {
+        type: String,
+        enum: ['Children', 'Junior', 'Senior', 'Young Vaulter'],
+        required: [true, 'Age group required!'],
+    },
+    Star: {
+        type: Number,
+        required: [true, 'Star level required!'],
+        default: 0,
+        max: 4,
+        min: 1,
+    },
+    Compulsory: { 
+        type: { 
+            Horse : { type: Number, min: 0.0, max: 1.0, required: true },
+            Exercise : { type: Number, min: 0.0, max: 1.0, required: true },
         },
-        Type:{
-            type: String,
-            enum: ['Individual', 'Squad','PDD'],
-            required: [true, 'Category type required!'],
+        _id: false
+    },
+    Free: { 
+        type: { 
+            Horse : { type: Number, min: 0.0, max: 1.0, required: true },
+            Artistic : { type: Number, min: 0.0, max: 1.0, required: true },
+            Technical : { type: Number, min: 0.0, max: 1.0, required: true },
         },
-        Stars:{
-            type: Number,
-            required: [true, 'Stars required!'],
-            default: 0, // Default stars for the category
+        _id: false
+    },
+    Technical: { 
+        type: { 
+            Horse : { type: Number, min: 0.0, max: 1.0, required: true },
+            Artistic : { type: Number, min: 0.0, max: 1.0, required: true },
+            Technical : { type: Number, min: 0.0, max: 1.0, required: true },
         },
-        Sex:{
-            type: String,
-            enum: ['Male', 'Female'],
-        },
-        TestTypes: {
-            type: {
-                Comp: { type: Boolean, required: true, default: false }, // Competition test
-                FreeTest: { type: Boolean, required: true, default: false }, // Free test
-                TechnicalTest: { type: Boolean, required: true, default: false }, // Technical test
-            },
-            required: [true, 'Required test types must be specified!'],
-        },
-        Agegroup: {
-            type: String,
-            enum: ['Children', 'Junior', 'Senior', 'Young Vaulter'],
-            required: [true, 'Age group required!'],
-        },
-        Star: {
-            type: Number,
-            required: [true, 'Star level required!'],
-            default: 0, // Default star level for the category
-            max: 4, // Assuming a maximum of 4 stars
-            min: 1, // Assuming a minimum of 1 star
+        _id: false
+    },
 
-        },
-        ScoreType: {
-            type: {
-                Type: { type: String, required: true,unique: true, enum: ['Compulsory','FreeTest','TechTest'] },
-                Horse: { type: Number, required: true, default: 0.0 }, // Horse score
-                Artistic: { type: Number, required: true, default: 0.0 }, // Acrobatics score
-                Technical: { type: Number, required: true, default: 0.0 }, // Technical score
-            },
-        },
-        
-        
-},{ timestamps: true });
+}, { timestamps: true });
 
 export default mongoose.model('categorys', CategorySchema);
