@@ -201,4 +201,25 @@ entryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
 
     });
 
+    entryRouter.get('/vetCheck' ,Verify, VerifyRole(), async (req, res) => {
+      const horsesontheEvent = await Entries.find({ event: res.locals.selectedEvent._id }).populate('horse').select('horse');
+
+
+      const uniqueHorses = Array.from(new Set(horsesontheEvent.map(entry => entry.horse._id.toString())));
+      const horses = await Horse.find({ _id: { $in: uniqueHorses } }).sort({ name: 1 });
+      res.render('entry/vetcheckdash', {
+          horses,
+          rolePermissons: req.user?.role?.permissions,
+          failMessage: req.session.failMessage,
+          successMessage: req.session.successMessage,
+      user: req.user
+      });
+      req.session.failMessage = null; // Clear the fail message after rendering
+      req.session.successMessage = null; // Clear the success message after rendering 
+  });
+
+
+
+
+
 export default entryRouter;

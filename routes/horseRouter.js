@@ -224,18 +224,33 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
     try {
         const newHorse = new Horse(req.body);
         await newHorse.save()
-        dblogger.db(`Horse ${newHorse.name} created by user ${req.user.username}.`);
+        dblogger.db(`Horse ${newHorse.Horsename} created by user ${req.user.username}.`);
         req.session.successMessage = 'Horse created successfully!';
-        res.redirect('/horse/new');
+        res.redirect('/horse/dashboard');
     } catch (err) {
     console.error(err);
 
+    if (err?.code === 11000) {
+        // Duplicate key error
+        const duplicateField = Object.keys(err.keyValue)[0];
+        const errorMessage = `A horse with this ${duplicateField} already exists. Please use a different ${duplicateField}.`;
+        return res.render('horse/newHorse', {
+            permissionList: await Permissions.find(),
+            countries:countries,
+          formData: req.body,
+          successMessage: null,
+          failMessage: errorMessage,
+          card: { ...req.body, _id: req.params.id },
+            user: req.user
+        });
+    }
     const errorMessage = err.errors
       ? Object.values(err.errors).map(e => e.message).join(' ')
       : 'Server error';
 
     return res.render('horse/newHorse', {
         permissionList: await Permissions.find(),
+        countries:countries,
       formData: req.body,
       successMessage: null,
       failMessage: errorMessage,
