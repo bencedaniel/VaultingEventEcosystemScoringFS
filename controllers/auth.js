@@ -2,6 +2,7 @@ import User from "../models/User.js";
 import bcrypt from "bcrypt";
 import Blacklist  from "../models/Blacklist.js";
 import { SECURE_MODE } from "../app.js";
+import {logger} from "../logger.js"
 /**
  * @route POST v1/auth/register
  * @desc Registers a user
@@ -10,7 +11,7 @@ import { SECURE_MODE } from "../app.js";
 export async function Register(req, res) {
     // get required variables from request body
     // using es6 object destructing
-    console.info("Registering user: ", req.body);
+    logger.userManagement("Registering user: "+ req.body );
     const { username , password,feiid, role } = req.body;
     try {
         // create an instance of a user
@@ -23,7 +24,7 @@ export async function Register(req, res) {
         });
         // Check if user already exists
         const existingUser = await User.findOne({ username });
-        console.info("Existing user: ", existingUser);
+        logger.userManagement("Existing user: "+ existingUser);
         if (existingUser){
             req.session.formData = req.body; // Save form data to session
             req.session.failMessage =
@@ -63,7 +64,7 @@ export async function Login(req, res) {
             req.session.failMessage = "User not found";
             return res.redirect("/login");
         }
-        console.info("User: ", user.username);
+        logger.userManagement("User: "+ user.username);
 
         // if user exists
         // validate password
@@ -84,6 +85,7 @@ export async function Login(req, res) {
             secure: SECURE_MODE === 'true',
             sameSite: "None",
         };
+
         const token = user.generateAccessJWT(); // generate session token for user
         res.cookie("token", token, options); // set the token to response header, so that the client sends it back on each subsequent request
         return res.redirect("/dashboard"); // redirect to dashboard

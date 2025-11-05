@@ -35,6 +35,19 @@
         </div>
                 <div class="col-md-12 ">
             <div class="form-floating">
+                <select type="text" class="form-select shadow-none" id="active" name="active" placeholder="active"
+                    autocomplete="off" >
+                    <option value="true" <%= formData && formData.active === true ? "selected" : "" %>>Active</option>
+                    <option value="false" <%= formData && formData.active === false ? "selected" : "" %>>Inactive</option>
+                </select>
+                <label for="active" class="form-label">Role</label>
+            </div>
+                        </div>
+
+
+        
+            <div class="col-md-12 ">
+            <div class="form-floating">
                 <select type="text" class="form-select shadow-none" id="role" name="role" placeholder="role"
                     autocomplete="off" >
                     <% roleList.forEach(Role => { %>

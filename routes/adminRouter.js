@@ -1,6 +1,6 @@
 import express from 'express';
 
-import {dblogger, logger} from "../logger.js";
+import {logger} from '../logger.js';
 import { Login } from "../controllers/auth.js";
 import { Logout } from "../controllers/auth.js";
 import Validate from "../middleware/Validate.js";
@@ -72,14 +72,15 @@ adminRouter.get('/editUser/:id',Verify,VerifyRole(), async (req, res) => {
         req.session.successMessage = null; // Clear the success message after rendering
 
     } catch (err) {
-        logger.error(err);
+        logger.error(err + " User: "+ req.user.username);
         res.status(500).send('Server Error');
     }
 });
 
 adminRouter.post('/editUser/:id',Verify,VerifyRole() , async (req, res) => {
     try {
-        
+        logger.debug(req.body)
+
         const updateData = { ...req.body };
         if (req.body.password=== '') {
             const user = await User.findById(req.params.id);
@@ -88,11 +89,11 @@ adminRouter.post('/editUser/:id',Verify,VerifyRole() , async (req, res) => {
             updateData.password = await bcrypt.hash(req.body.password, 10);
         }
         await User.findByIdAndUpdate(req.params.id, updateData, { runValidators: true });
-        dblogger.db(`User ${req.body.username} updated by user ${req.user.username}.`);
+        logger.db(`User ${req.body.username} updated by user ${req.user.username}.`);
         req.session.successMessage = 'User modified successfully!';
         res.redirect('/admin/dashboard/users');
     } catch (err) {
-        console.error(err);
+        logger.error(err + " User: "+ req.user.username);
         if (err.errors || err.code === 11000) {
 
             const errorMessage = err.errors
@@ -106,7 +107,7 @@ adminRouter.post('/editUser/:id',Verify,VerifyRole() , async (req, res) => {
             });
             
         }
-        logger.error(err);
+        logger.error(err + " User: "+ req.user.username);
         res.status(500).send('Server Error');
     }
 });
@@ -132,9 +133,14 @@ adminRouter.get("/dashboard", Verify,VerifyRole(), async (req, res) => {
 adminRouter.delete('/deleteUser/:userId', Verify,VerifyRole(), async (req, res) => {
     try {
         const UserId = req.params.userId;
-        await User.findByIdAndDelete(UserId);
-        dblogger.db(`User ${UserId} deleted by user ${req.user.username}.`);
-        req.session.successMessage = 'User successfully deleted.';
+        var user = await User.findById(req.params.userId)
+        logger.debug(JSON.stringify(user))
+
+        user.active = false;
+        logger.debug(JSON.stringify(user))
+        await User.findByIdAndUpdate(req.params.userId, user,{runValidators: true})
+        logger.db(`User ${UserId} inactived by user ${req.user.username}.`);
+        req.session.successMessage = 'User successfully inactivated.';
         res.status(200).send('User deleted.');
     } catch (err) {
         logger.error("Err:" +err.toString());
@@ -164,7 +170,7 @@ adminRouter.get("/dashboard/roles", Verify, VerifyRole(), async (req, res) => {
         req.session.failMessage = null; // Clear the fail message after rendering
         req.session.successMessage = null; // Clear the success message after rendering
     } catch (err) {
-        logger.error(err);
+        logger.error(err + " User: "+ req.user.username);
         res.status(500).send('Server Error');
     }
 });
@@ -193,16 +199,29 @@ adminRouter.post("/newRole", Verify, VerifyRole(), async (req, res) => {
             permissions
         });
         await newRole.save();
-        dblogger.db(`Role ${newRole.roleName} created by user ${req.user.username}.`);
+        logger.db(`Role ${newRole.roleName} created by user ${req.user.username}.`);
         req.session.successMessage = 'Role created successfully.';
         res.redirect('/admin/dashboard/roles');
     } catch (err) {
-        logger.error(err);
-        req.session.failMessage = 'Error creating role. Please try again.';
-        req.session.formData = req.body; // Save form data to session
-        res.redirect('/admin/newRole');
+            
+        logger.error(err + " User: "+ req.user.username);
+
+        const errorMessage = err.errors
+        ? Object.values(err.errors).map(e => e.message).join(' ')
+        : 'Server error';
+        req.session.failMessage = errorMessage;
+        return res.render('admin/newRole', {
+            permissions: await Permissions.find(),
+            rolePermissons: req.user.role.permissions,
+            failMessage: req.session.failMessage,
+            formData: req.session.formData,
+            successMessage: req.session.successMessage,
+            user: req.user
+       
+        });
+}
     }
-});
+);
 
 adminRouter.get('/editRole/:id', Verify, VerifyRole(), async (req, res) => {
     try {
@@ -225,13 +244,14 @@ adminRouter.get('/editRole/:id', Verify, VerifyRole(), async (req, res) => {
         req.session.successMessage = null; // Clear the success message after rendering
         req.session.failMessage = null; // Clear the fail message after rendering
     } catch (err) {
-        logger.error(err);
+        logger.error(err + " User: "+ req.user.username);
         res.status(500).send('Server Error');
     }
 });
 
 adminRouter.post('/editRole/:id', Verify, VerifyRole(), async (req, res) => {
     try {
+        
         const { roleName, description, permissions } = req.body;
         
         const updatedRole = await Role.findByIdAndUpdate(req.params.id, {
@@ -239,7 +259,7 @@ adminRouter.post('/editRole/:id', Verify, VerifyRole(), async (req, res) => {
             description,
             permissions
         }, { runValidators: true });
-        dblogger.db(`Role ${roleName} updated by user ${req.user.username}.`);
+        logger.db(`Role ${roleName} updated by user ${req.user.username}.`);
         if (!updatedRole) {
             req.session.failMessage = 'Role not found.';
             return res.redirect('/admin/dashboard/roles');
@@ -248,9 +268,21 @@ adminRouter.post('/editRole/:id', Verify, VerifyRole(), async (req, res) => {
         req.session.successMessage = 'Role updated successfully.';
         res.redirect('/admin/dashboard/roles');
     } catch (err) {
-        logger.error(err);
-        req.session.failMessage = 'Error updating role. Please try again.';
-        res.redirect(`/admin/editRole/${req.params.id}`);
+        logger.error(err + " User: "+ req.user.username);
+
+        const errorMessage = err.errors
+        ? Object.values(err.errors).map(e => e.message).join(' ')
+        : 'Server error';
+        req.session.failMessage = errorMessage;
+        return res.render('admin/editRole', {
+            permissions: await Permissions.find(),
+            rolePermissons: req.user.role.permissions,
+            failMessage: req.session.failMessage,
+            formData: req.session.formData,
+            successMessage: req.session.successMessage,
+            user: req.user
+       
+        });
     }
 }); 
 
@@ -271,7 +303,7 @@ adminRouter.delete('/deleteRole/:roleId', Verify, VerifyRole(), async (req, res)
         }
 
         await Role.findByIdAndDelete(roleId);
-        dblogger.db(`Role ${role.roleName} deleted by user ${req.user.username}.`);
+        logger.db(`Role ${role.roleName} deleted by user ${req.user.username}.`);
         req.session.successMessage = 'Role successfully deleted.';
         res.status(200).send('Role deleted.');
     } catch (err) {
@@ -309,7 +341,7 @@ adminRouter.get("/dashboard/permissions", Verify, VerifyRole(), async (req, res)
         req.session.successMessage = null; // Clear the success message after rendering
 
     } catch (err) {
-        logger.error(err);
+        logger.error(err + " User: "+ req.user.username);
         res.status(500).send('Server Error');
     }
 
@@ -338,14 +370,24 @@ adminRouter.post("/newPermission", Verify, VerifyRole(), async (req, res) => {
             requestType
         });
         await newPermission.save();
-        dblogger.db(`Permission ${newPermission.name} created by user ${req.user.username}.`);
+        logger.db(`Permission ${newPermission.name} created by user ${req.user.username}.`);
         req.session.successMessage = 'Permission created successfully.';
         res.redirect('/admin/dashboard/permissions');
     } catch (err) {
-        logger.error(err);
-        req.session.failMessage = 'Error creating permission. Please try again.';
-        req.session.formData = req.body; // Save form data to session
-        res.redirect('/admin/newPermission');
+            
+        logger.error(err + " User: "+ req.user.username);
+
+        const errorMessage = err.errors
+        ? Object.values(err.errors).map(e => e.message).join(' ')
+        : 'Server error';
+        req.session.failMessage = errorMessage;
+        return     res.render("admin/newPerm", {
+        rolePermissons: req.user.role.permissions,
+        failMessage: req.session.failMessage,
+        formData: req.session.formData,
+        successMessage: req.session.successMessage,
+        user: req.user
+        });
     }
 });
 
@@ -366,7 +408,7 @@ adminRouter.get('/editPermission/:id', Verify, VerifyRole(), async (req, res) =>
         req.session.failMessage = null;
         req.session.successMessage = null; // Clear the success message after rendering
     } catch (err) {
-        logger.error(err);
+        logger.error(err + " User: "+ req.user.username);
         res.status(500).send('Server Error');
     }
 });
@@ -385,15 +427,26 @@ adminRouter.post('/editPermission/:id', Verify, VerifyRole(), async (req, res) =
             req.session.failMessage = 'Permission not found.';
             return res.redirect('/admin/dashboard/permissions');
         }
-        dblogger.db(`Permission ${updatedPermission.name} updated by user ${req.user.username}.`);
+        logger.db(`Permission ${updatedPermission.name} updated by user ${req.user.username}.`);
 
         req.session.successMessage = 'Permission updated successfully.';
         res.redirect('/admin/dashboard/permissions');
     } catch (err) {
-        logger.error(err);
-        req.session.failMessage = 'Error updating permission. Please try again.';
-        res.redirect(`/admin/editPermission/${req.params.id}`);
-    }
+            
+        logger.error(err + " User: "+ req.user.username);
+
+        const errorMessage = err.errors
+        ? Object.values(err.errors).map(e => e.message).join(' ')
+        : 'Server error';
+        req.session.failMessage = errorMessage;
+        return res.render('admin/editPerm', {
+            rolePermissons: req.user.role.permissions,
+            failMessage: req.session.failMessage,
+            formData: permission,
+            successMessage: req.session.successMessage,
+            user: req.user
+        });
+}
 });
 adminRouter.delete('/deletePermission/:permId', Verify, VerifyRole(), async (req, res) => {
     try {
@@ -404,7 +457,6 @@ adminRouter.delete('/deletePermission/:permId', Verify, VerifyRole(), async (req
             return res.status(404).send('Permission not found.');
         }
 
-        // Check if the permission is assigned to any role
         const roleCount = await Role.countDocuments({ permissions: permission.name });
         if (roleCount > 0) {
             req.session.failMessage = 'Cannot delete permission. It is assigned to one or more roles.';
@@ -412,7 +464,7 @@ adminRouter.delete('/deletePermission/:permId', Verify, VerifyRole(), async (req
         }
 
        // await Permissions.findByIdAndDelete(permId);
-        dblogger.db(`Permission ${permission.name} deleted by user ${req.user.username}.`);
+        logger.db(`Permission ${permission.name} deleted by user ${req.user.username}.`);
         req.session.successMessage = 'Permission successfully deleted.';
         res.status(200).send('Permission deleted.');
     } catch (err) {
@@ -449,7 +501,7 @@ adminRouter.post(
     VerifyRole(),
     Validate,
     Register,  (req, res) => {
-        dblogger.db(`User ${req.body.username} created by user ${req.user.username}.`);
+        logger.db(`User ${req.body.username} created by user ${req.user.username}.`);
     }
 );
 
@@ -505,7 +557,7 @@ adminRouter.get('/editCard/:id',Verify,VerifyRole(), async (req, res) => {
         req.session.successMessage = null; // Clear the success message after rendering
 
     } catch (err) {
-        logger.error(err);
+        logger.error(err + " User: "+ req.user.username);
         res.status(500).send('Server Error');
     }
 });
@@ -514,13 +566,13 @@ adminRouter.post('/newCard', Verify, VerifyRole(), async (req, res) => {
     const newCard = new DashCards(req.body);
 
     await newCard.save();
-    dblogger.db(`Card ${newCard.title} created by user ${req.user.username}.`);
+    logger.db(`Card ${newCard.title} created by user ${req.user.username}.`);
     req.session.successMessage = 'Card added successfully!';
     res.redirect('/admin/dashboard/cards');
 
     
   } catch (err) {
-    console.error(err);
+    logger.error(err + " User: "+ req.user.username);
 
     const errorMessage = err.errors
       ? Object.values(err.errors).map(e => e.message).join(' ')
@@ -541,12 +593,12 @@ adminRouter.post('/newCard', Verify, VerifyRole(), async (req, res) => {
 adminRouter.post('/editCard/:id', Verify, VerifyRole(), async (req, res) => {
   try {
     await DashCards.findByIdAndUpdate(req.params.id, req.body, { runValidators: true });
-    dblogger.db(`Card ${req.body.title} updated by user ${req.user.username}.`);
+    logger.db(`Card ${req.body.title} updated by user ${req.user.username}.`);
     req.session.successMessage = 'Card modified successfully!';
     res.redirect('/admin/dashboard/cards');
 
   } catch (err) {
-    console.error(err);
+    logger.error(err + " User: "+ req.user.username);
 
     const errorMessage = err.errors
       ? Object.values(err.errors).map(e => e.message).join(' ')
@@ -571,7 +623,7 @@ adminRouter.delete('/deleteCard/:cardId', Verify,VerifyRole(), async (req, res) 
     try {
         const CardId = req.params.cardId;
         await DashCards.findByIdAndDelete(CardId);
-        dblogger.db(`Card ${CardId} deleted by user ${req.user.username}.`);
+        logger.db(`Card ${CardId} deleted by user ${req.user.username}.`);
         req.session.successMessage = 'Card successfully deleted.';
         res.status(200).send('Card deleted.');
     } catch (err) {

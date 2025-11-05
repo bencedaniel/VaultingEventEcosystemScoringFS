@@ -20,6 +20,11 @@ const userSchema = new mongoose.Schema({
             default: '00000000',
         unique: true,
         },
+        active:{
+          type: Boolean,
+          default: true,
+          required: [true, 'Active status required']
+        },
        role:{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'roles',

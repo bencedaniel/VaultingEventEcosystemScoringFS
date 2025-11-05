@@ -25,9 +25,12 @@ const HorseSchema = new mongoose.Schema({
     required: [true, 'Nationality required!'],
   },
   VetCheckStatus: {
-    type: String,
-    enum: ['before', 'passed', 'failed', 'pending', 'holding', 'reinspection', 'withdrawn', 'ToBeFollowed'],
-    default: 'before',
+    type: [{
+      status: { type: String, required: true, enum: [ 'passed', 'failed', 'pending', 'holding', 'reinspection', 'withdrawn', 'ToBeFollowed'], },
+      eventID: { type: mongoose.Schema.Types.ObjectId, ref:'events' ,required: true }, // User who reported the incident
+      date: { type: Date, default: Date.now},
+      user: { type: mongoose.Schema.Types.ObjectId, ref:'users' ,required: true }, // User who reported the incident
+  }],
   },
   HorseStatus: {
     type: String,
@@ -47,6 +50,9 @@ const HorseSchema = new mongoose.Schema({
     type: [{
       note: { type: String, required: true },
       timestamp: { type: Date, default: Date.now },
+      user: { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true },
+      eventID: { type: mongoose.Schema.Types.ObjectId, ref:'events' ,required: true }, // Event where the note was made
+
     }],
     default: [],
   },

@@ -1,6 +1,6 @@
 import express from 'express';
 
-import {dblogger, logger} from "../logger.js";
+import {logger} from '../logger.js';
 import { Login } from "../controllers/auth.js";
 import { Logout } from "../controllers/auth.js";
 import Validate from "../middleware/Validate.js";
@@ -26,11 +26,11 @@ eventRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
     try {
         const newEvent = new Event(req.body);
         await newEvent.save()
-        dblogger.db(`Event ${newEvent.name} created by user ${req.user.username}.`);
+        logger.db(`Event ${newEvent.name} created by user ${req.user.username}.`);
         req.session.successMessage = 'Event created successfully!';
         res.redirect('/admin/event/dashboard');
     } catch (err) {
-    console.error(err);
+    logger.error(err + " User: "+ req.user.username);
 
     const errorMessage = err.errors
       ? Object.values(err.errors).map(e => e.message).join(' ')
@@ -78,7 +78,7 @@ eventRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
           req.session.failMessage = null; // Clear the fail message after rendering
           req.session.successMessage = null; // Clear the success message after rendering
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
           req.session.failMessage = 'Server error';
           return res.redirect('/admin/event/dashboard');
         }
@@ -86,7 +86,7 @@ eventRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
       eventRouter.post('/edit/:id',Verify, VerifyRole(), Validate, async (req, res) => {
         try {
           const event = await Event.findByIdAndUpdate(req.params.id, req.body, { runValidators: true });
-          dblogger.db(`Event ${event.name} updated by user ${req.user.username}.`);
+          logger.db(`Event ${event.name} updated by user ${req.user.username}.`);
           if (!event) {
             req.session.failMessage = 'Event not found';
             return res.redirect('/admin/event/dashboard');
@@ -94,7 +94,7 @@ eventRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
           req.session.successMessage = 'Event updated successfully!';
           res.redirect('/admin/event/dashboard');
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
       
           const errorMessage = err.errors
             ? Object.values(err.errors).map(e => e.message).join(' ')
@@ -114,14 +114,14 @@ eventRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
         try {
 
           const event = await Event.findByIdAndDelete(req.params.id);
-          dblogger.db(`Event ${event.name} deleted by user ${req.user.username}.`);
+          logger.db(`Event ${event.name} deleted by user ${req.user.username}.`);
           if (!event) {
             req.session.failMessage = 'Event not found';
             return res.status(404).json({ message: 'Event not found' });
           }
           res.status(200).json({ message: 'Event deleted successfully' });
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
           req.session.failMessage = 'Server error';
           res.status(500).json({ message: 'Server error' });
         }
@@ -146,7 +146,7 @@ eventRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
             req.session.failMessage = null; // Clear the fail message after rendering
             req.session.successMessage = null; // Clear the success message after rendering 
         } catch (err) {
-            console.error(err);
+            logger.error(err + " User: "+ req.user.username);
             req.session.failMessage = 'Server error';
             return res.redirect('/event/dashboard');
         }
@@ -154,7 +154,7 @@ eventRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
           eventRouter.delete('/deleteResponsiblePerson/:id', Verify, VerifyRole(), async (req, res) => {
             try {
               const event = await Event.findById(req.params.id);
-              dblogger.db(`Responsible person ${req.body.name} from event ${event.EventName} deleted by user ${req.user.username}.`);
+              logger.db(`Responsible person ${req.body.name} from event ${event.EventName} deleted by user ${req.user.username}.`);
               if (!event) {
                 req.session.failMessage = 'Event not found';
                 return res.status(404).json({ message: 'Event not found' });
@@ -172,7 +172,7 @@ eventRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
               await Event.findByIdAndUpdate(req.params.id, event, { runValidators: true });
               res.status(200).json({ message: `${req.body.name} responsible person deleted successfully by ${req.user.username}` });
             } catch (err) {
-              console.error(err);
+              logger.error(err + " User: "+ req.user.username);
               req.session.failMessage = 'Server error';
               res.status(500).json({ message: 'Server error' });
             }
@@ -180,7 +180,7 @@ eventRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
          eventRouter.post('/addResponsiblePerson/:id',Verify,VerifyRole(), async (req,res) =>{
           try{
             const event = await Event.findById(req.params.id);
-            dblogger.db(`Responsible person added to event ${event.EventName} by user ${req.user.username}.`);
+            logger.db(`Responsible person added to event ${event.EventName} by user ${req.user.username}.`);
             const newResponsiblePerson= {
               name : req.body.name,
               role : req.body.role,
@@ -192,7 +192,7 @@ eventRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
             await Event.findByIdAndUpdate(req.params.id, event, { runValidators: true })
             res.status(200).json({ message: 'Responsible person added successfully!' })
           } catch (err) {
-            console.error(err);
+            logger.error(err + " User: "+ req.user.username);
             const errorMessage = err.errors
                 ? Object.values(err.errors).map(e => e.message).join(' ')
                 : 'Server error';
@@ -209,14 +209,14 @@ eventRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
                   req.session.failMessage = 'Event not found';
                   return res.redirect('/admin/event/dashboard');
               }
-              dblogger.db(`Event ${event.EventName} selected by user ${req.user.username}.`);
+              logger.db(`Event ${event.EventName} selected by user ${req.user.username}.`);
               await Event.setSelected(event._id); // eventId is the _id of the event to select
               req.session.selectedEvent = event._id;
               req.session.successMessage = `Selected event: ${event.EventName}`;
               res.redirect('/admin/event/dashboard');
           }
           catch (err) {
-              console.error(err);
+              logger.error(err + " User: "+ req.user.username);
               req.session.failMessage = 'Server error';
               return res.redirect('/admin/event/dashboard');
           }

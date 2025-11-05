@@ -1,6 +1,6 @@
 import express from 'express';
 
-import {dblogger, logger} from "../logger.js";
+import {logger} from '../logger.js';
 import { Login } from "../controllers/auth.js";
 import { Logout } from "../controllers/auth.js";
 import Validate from "../middleware/Validate.js";

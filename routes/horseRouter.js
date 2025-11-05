@@ -1,6 +1,6 @@
 import express from 'express';
 
-import {dblogger, logger} from "../logger.js";
+import {logger} from '../logger.js';
 import { Login } from "../controllers/auth.js";
 import { Logout } from "../controllers/auth.js";
 import Validate from "../middleware/Validate.js";
@@ -224,11 +224,11 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
     try {
         const newHorse = new Horse(req.body);
         await newHorse.save()
-        dblogger.db(`Horse ${newHorse.Horsename} created by user ${req.user.username}.`);
+        logger.db(`Horse ${newHorse.Horsename} created by user ${req.user.username}.`);
         req.session.successMessage = 'Horse created successfully!';
         res.redirect('/horse/dashboard');
     } catch (err) {
-    console.error(err);
+    logger.error(err + " User: "+ req.user.username);
 
     if (err?.code === 11000) {
         // Duplicate key error
@@ -276,7 +276,7 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
 
     HorseRouter.get('/details/:id',Verify, VerifyRole(), async (req, res) => {
         try {
-            const horse = await Horse.findById(req.params.id);
+            const horse = await Horse.findById(req.params.id).populate('Notes.user', '-password -__v').populate('VetCheckStatus.eventID', 'EventName').populate('VetCheckStatus.user', '-password -__v');
             if (!horse) {
             req.session.failMessage = 'Horse not found';
             return res.redirect('/horse/dashboard');
@@ -291,7 +291,7 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
             req.session.failMessage = null; // Clear the fail message after rendering
             req.session.successMessage = null; // Clear the success message after rendering 
         } catch (err) {
-            console.error(err);
+            logger.error(err + " User: "+ req.user.username);
             req.session.failMessage = 'Server error';
             return res.redirect('/horse/dashboard');
         }
@@ -314,7 +314,7 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
           req.session.failMessage = null; // Clear the fail message after rendering
           req.session.successMessage = null; // Clear the success message after rendering
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
           req.session.failMessage = 'Server error';
           return res.redirect('/horse/dashboard');
         }
@@ -322,7 +322,7 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
       HorseRouter.post('/edit/:id',Verify, VerifyRole(), Validate, async (req, res) => {
         try {
           const horse = await Horse.findByIdAndUpdate(req.params.id, req.body, { runValidators: true });
-          dblogger.db(`Horse ${horse.name} updated by user ${req.user.username}.`);
+          logger.db(`Horse ${horse.Horsename} updated by user ${req.user.username}.`);
           if (!horse) {
             req.session.failMessage = 'Horse not found';
             return res.redirect('/horse/dashboard');
@@ -331,42 +331,43 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
           res.redirect('/horse/dashboard'
           );
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
       
           const errorMessage = err.errors
             ? Object.values(err.errors).map(e => e.message).join(' ')
             : 'Server error';
       
           return res.render('horse/editHorse', {
-            permissionList: await Permissions.find(),
+            countries:countries,
             formData: { ...req.body, _id: req.params.id },
-            successMessage: null,
+            rolePermissons: req.user?.role?.permissions,
             failMessage: errorMessage,
-            user: req.user
+            successMessage: req.session.successMessage,
+        user: req.user
           });
         }
       });
 
-      HorseRouter.delete('/delete/:id',Verify, VerifyRole(), async (req, res) => {
+      /* HorseRouter.delete('/delete/:id',Verify, VerifyRole(), async (req, res) => {
         try {
 
           const horse = await Horse.findByIdAndDelete(req.params.id);
-          dblogger.db(`Horse ${horse.name} deleted by user ${req.user.username}.`);
+          logger.db(`Horse ${horse.name} deleted by user ${req.user.username}.`);
           if (!horse) {
             req.session.failMessage = 'Horse not found';
             return res.status(404).json({ message: 'Horse not found' });
           }
           res.status(200).json({ message: 'Horse deleted successfully' });
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
           req.session.failMessage = 'Server error';
           res.status(500).json({ message: 'Server error' });
         }
-      });
+      });*/
       HorseRouter.delete('/deleteNote/:id', Verify, VerifyRole(), async (req, res) => {
         try {
           const horse = await Horse.findById(req.params.id);
-          dblogger.db(`Horse ${horse.name} note deleted by user ${req.user.username}.`);
+          logger.db(`Horse ${horse.name} note deleted by user ${req.user.username}.`);
           if (!horse) {
             req.session.failMessage = 'Horse not found';
             return res.status(404).json({ message: 'Horse not found' });
@@ -375,7 +376,7 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
           await Horse.findByIdAndUpdate(req.params.id, horse, { runValidators: true });
           res.status(200).json({ message: 'Note deleted successfully' });
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
           req.session.failMessage = 'Server error';
           res.status(500).json({ message: 'Server error' });
         }
@@ -383,16 +384,19 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
      HorseRouter.post('/newNote/:id',Verify,VerifyRole(), async (req,res) =>{
       try{
         const horse = await Horse.findById(req.params.id);
-        dblogger.db(`Horse ${horse.name} note created by user ${req.user.username}.`);
         const newNote = {
           note: req.body.note,
-          timestamp: Date.now()
-        }    
+          timestamp: Date.now(),
+          user: req.user._id,
+          eventID: res.locals.selectedEvent._id
+        }
         horse.Notes.push(newNote);
         await Horse.findByIdAndUpdate(req.params.id, horse, { runValidators: true})
+        logger.db(`Horse ${horse.HorseName} note created by user ${req.user.username}.`);
+
         res.status(200).json({ message: 'Note added successfully!'})
              } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
           req.session.failMessage = 'Server error';
           res.status(500).json({ message: 'Server error' });
         }

@@ -1,6 +1,6 @@
 import express from 'express';
 
-import {dblogger, logger} from "../logger.js";
+import {logger} from '../logger.js';
 import { Login } from "../controllers/auth.js";
 import { Logout } from "../controllers/auth.js";
 import Validate from "../middleware/Validate.js";
@@ -29,11 +29,11 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
     try {
         const newDailyTimeTable = new DailyTimeTable(req.body);
         await newDailyTimeTable.save()
-        dblogger.db(`DailyTimeTable ${newDailyTimeTable.DayName} created by user ${req.user.username}.`);
+        logger.db(`DailyTimeTable ${newDailyTimeTable.DayName} created by user ${req.user.username}.`);
         req.session.successMessage = 'DailyTimeTable created successfully!';
         res.redirect('/dailytimetable/dashboard');
     } catch (err) {
-    console.error(err);
+    logger.error(err + " User: "+ req.user.username);
 
     const errorMessage = err.errors
       ? Object.values(err.errors).map(e => e.message).join(' ')
@@ -85,7 +85,7 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
             req.session.failMessage = null; // Clear the fail message after rendering
             req.session.successMessage = null; // Clear the success message after rendering 
         } catch (err) {
-            console.error(err);
+            logger.error(err + " User: "+ req.user.username);
             req.session.failMessage = 'Server error';
             return res.redirect('/dailytimetable/dashboard');
         }
@@ -108,7 +108,7 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
           req.session.failMessage = null; // Clear the fail message after rendering
           req.session.successMessage = null; // Clear the success message after rendering
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
           req.session.failMessage = 'Server error';
           return res.redirect('/dailytimetable/dashboard');
         }
@@ -116,7 +116,7 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
       dailytimetableRouter.post('/edit/:id',Verify, VerifyRole(), Validate, async (req, res) => {
         try {
           const dailytimetable = await DailyTimeTable.findByIdAndUpdate(req.params.id, req.body, { runValidators: true });
-          dblogger.db(`DailyTimeTable ${dailytimetable.DayName} updated by user ${req.user.username}.`);
+          logger.db(`DailyTimeTable ${dailytimetable.DayName} updated by user ${req.user.username}.`);
           if (!dailytimetable) {
             req.session.failMessage = 'DailyTimeTable not found';
             return res.redirect('/dailytimetable/dashboard');
@@ -125,7 +125,7 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
           res.redirect('/dailytimetable/dashboard'
           );
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
       
           const errorMessage = err.errors
             ? Object.values(err.errors).map(e => e.message).join(' ')
@@ -145,14 +145,14 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
         try {
 
           const dailytimetable = await DailyTimeTable.findByIdAndDelete(req.params.id);
-          dblogger.db(`DailyTimeTable ${dailytimetable.DayName} deleted by user ${req.user.username}.`);
+          logger.db(`DailyTimeTable ${dailytimetable.DayName} deleted by user ${req.user.username}.`);
           if (!dailytimetable) {
             req.session.failMessage = 'DailyTimeTable not found';
             return res.status(404).json({ message: 'DailyTimeTable not found' });
           }
           res.status(200).json({ message: 'DailyTimeTable deleted successfully' });
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
           req.session.failMessage = 'Server error';
           res.status(500).json({ message: 'Server error' });
         }
@@ -179,7 +179,7 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
             req.session.failMessage = null; // Clear the fail message after rendering
             req.session.successMessage = null; // Clear the success message after rendering 
         } catch (err) {
-            console.error(err);
+            logger.error(err + " User: "+ req.user.username);
             req.session.failMessage = 'Server error';
             return res.redirect('/dailytimetable/dashboard');
         }
@@ -188,14 +188,14 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
         try {
 
           const timetablepart = await TimetablePart.findByIdAndDelete(req.params.id);
-          dblogger.db(`TimetablePart ${timetablepart.DayName} deleted by user ${req.user.username}.`);
+          logger.db(`TimetablePart ${timetablepart.DayName} deleted by user ${req.user.username}.`);
           if (!timetablepart) {
             req.session.failMessage = 'TimetablePart not found';
             return res.status(404).json({ message: 'TimetablePart not found' });
           }
           res.status(200).json({ message: 'Timetable element deleted successfully' });
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
           req.session.failMessage = 'Server error';
           res.status(500).json({ message: 'Server error' });
         }
@@ -242,7 +242,7 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
           req.session.failMessage = null;
           req.session.successMessage = null;
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
           req.session.failMessage = 'Server error';
           return res.redirect('/dailytimetable/dashboard');
         }
@@ -262,7 +262,7 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
             return res.redirect('/dailytimetable/dashboard');
           }
 
-          dblogger.db(`Timetable element ${timetablepart.Name} updated by user ${req.user.username}.`);
+          logger.db(`Timetable element ${timetablepart.Name} updated by user ${req.user.username}.`);
 
           // Biztonságos redirect: req.body-ból vagy frissített doksból
           const dayId = req.body.dailytimetable || timetablepart.dailytimetable?.toString();
@@ -274,7 +274,7 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
           req.session.successMessage = 'Timetable element updated successfully!';
           return res.redirect('/dailytimetable/dayparts/' + dayId);
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
 
           const errorMessage = err.errors
             ? Object.values(err.errors).map(e => e.message).join(' ')
@@ -305,11 +305,11 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
           timetablepart.StartTimeReal = new Date();
           await timetablepart.save();
 
-          dblogger.db(`Timetable element ${timetablepart.Name} start time saved by user ${req.user.username}.`);
+          logger.db(`Timetable element ${timetablepart.Name} start time saved by user ${req.user.username}.`);
 
           res.status(200).json({ message: 'Timetable element start time saved successfully' });
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
           req.session.failMessage = 'Server error';
           res.status(500).json({ message: 'Server error' });
         }
@@ -355,7 +355,7 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
           req.session.failMessage = null;
           req.session.successMessage = null;
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
           req.session.failMessage = 'Server error';
           return res.redirect('/dailytimetable/dashboard');
         }
@@ -397,7 +397,7 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
     req.session.failMessage = null;
     req.session.successMessage = null;
   } catch (err) {
-    console.error(err);
+    logger.error(err + " User: "+ req.user.username);
     req.session.failMessage = 'Server error';
     return res.redirect('/dailytimetable/dashboard');
   }

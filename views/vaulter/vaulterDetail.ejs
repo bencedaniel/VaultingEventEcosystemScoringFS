@@ -156,6 +156,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const bsIncidentModal = new bootstrap.Modal(document.getElementById('IncidentModal'));
     const IncidentForm = document.getElementById('IncidentModalForm');
 
+    IncidentForm.addEventListener('submit', function(event) {
+        console.log('Submitting incident form');
+        event.preventDefault();
+        fetch(IncidentForm?.getAttribute('action'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                incidentType: document.getElementById('incidentType').value,
+                description: document.getElementById('description').value
+            })
+        }).then(() => window.location.reload());
+    });
+
     addIncidentButton?.addEventListener('click', event => {
         event.preventDefault();
         bsIncidentModal.show();

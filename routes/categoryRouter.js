@@ -1,6 +1,6 @@
 import express from 'express';
 
-import {dblogger, logger} from "../logger.js";
+import {logger} from '../logger.js';
 import { Login } from "../controllers/auth.js";
 import { Logout } from "../controllers/auth.js";
 import Validate from "../middleware/Validate.js";
@@ -27,11 +27,11 @@ categoryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
         console.log(req.body);
         const newCategory = new Category(req.body);
         await newCategory.save()
-        dblogger.db(`Category ${newCategory.name} created by user ${req.user.username}.`);
+        logger.db(`Category ${newCategory.name} created by user ${req.user.username}.`);
         req.session.successMessage = 'Category created successfully!';
         res.redirect('/category/dashboard');
     } catch (err) {
-    console.error(err);
+    logger.error(err + " User: "+ req.user.username);
 
     const errorMessage = err.errors
       ? Object.values(err.errors).map(e => e.message).join(' ')
@@ -79,7 +79,7 @@ categoryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
           req.session.failMessage = null; // Clear the fail message after rendering
           req.session.successMessage = null; // Clear the success message after rendering
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
           req.session.failMessage = 'Server error';
           return res.redirect('/category/dashboard');
         }
@@ -97,11 +97,11 @@ categoryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
           const updated = new Category(updateData);
           
           await updated.save(); // await és try/catch-ben!
-          dblogger.db(`Category ${category.CategoryDispName} updated by user ${req.user.username}.`);
+          logger.db(`Category ${category.CategoryDispName} updated by user ${req.user.username}.`);
           req.session.successMessage = 'Category updated successfully!';
           res.redirect('/category/dashboard');
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
 
           const errorMessage = err.errors
             ? Object.values(err.errors).map(e => e.message).join(' ')
@@ -121,14 +121,14 @@ categoryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
         try {
 
           const category = await Category.findByIdAndDelete(req.params.id);
-          dblogger.db(`Category ${category.name} deleted by user ${req.user.username}.`);
+          logger.db(`Category ${category.name} deleted by user ${req.user.username}.`);
           if (!category) {
             req.session.failMessage = 'Category not found';
             return res.status(404).json({ message: 'Category not found' });
           }
           res.status(200).json({ message: 'Category deleted successfully' });
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
           req.session.failMessage = 'Server error';
           res.status(500).json({ message: 'Server error' });
         }
@@ -136,7 +136,7 @@ categoryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
       categoryRouter.delete('/deleteIncident/:id', Verify, VerifyRole(), async (req, res) => {
         try {
           const category = await Category.findById(req.params.id);
-          dblogger.db(`Category ${category.name} incident deleted by user ${req.user.username}.`);
+          logger.db(`Category ${category.name} incident deleted by user ${req.user.username}.`);
           if (!category) {
             req.session.failMessage = 'Category not found';
             return res.status(404).json({ message: 'Category not found' });
@@ -151,16 +151,19 @@ categoryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
           );
           await Category.findByIdAndUpdate(req.params.id, category, { runValidators: true });
           res.status(200).json({ message: 'Incident deleted successfully' });
-        } catch (err) {
-          console.error(err);
-          req.session.failMessage = 'Server error';
-          res.status(500).json({ message: 'Server error' });
+      } catch (err) {
+        const errorMessage = err.errors
+            ? Object.values(err.errors).map(e => e.message).join(' ')
+            : 'Server error';
+          req.session.failMessage = errorMessage;
+        res.status(500).json({ message: errorMessage });
         }
+        
       });
      categoryRouter.post('/newIncident/:id',Verify,VerifyRole(), async (req,res) =>{
       try{
         const category = await Category.findById(req.params.id);
-        dblogger.db(`Category ${category.Name} incident created by user ${req.user.username}.`);
+        logger.db(`Category ${category.Name} incident created by user ${req.user.username}.`);
         const newIncident = {
           description: req.body.description,
           incidentType: req.body.incidentType,

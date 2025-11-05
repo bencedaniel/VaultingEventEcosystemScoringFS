@@ -40,6 +40,7 @@ const VaulterSchema = new mongoose.Schema({
                 description: { type: String, required: true },
                 User: { type: mongoose.Schema.Types.ObjectId, ref:'users' ,required: true }, // User who reported the incident
                 date: { type: Date, default: Date.now },
+                eventID: { type: mongoose.Schema.Types.ObjectId, ref:'events' ,required: true }, // Event where the note was made
             }],
             
         },

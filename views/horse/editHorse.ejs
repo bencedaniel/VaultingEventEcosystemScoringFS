@@ -57,23 +57,7 @@
         </div>
         </div>
 
-      <!-- Vet Check Status -->
-      <div class="col-md-12">
-        <div class="form-floating">
-          <select class="form-select shadow-none" id="VetCheckStatus" name="VetCheckStatus">
-            <option value="">Select Vet Check Status</option>
-            <option value="before" <%= formData && formData.VetCheckStatus === 'before' ? 'selected' : '' %>>Before</option>
-            <option value="passed" <%= formData && formData.VetCheckStatus === 'passed' ? 'selected' : '' %>>Passed</option>
-            <option value="failed" <%= formData && formData.VetCheckStatus === 'failed' ? 'selected' : '' %>>Failed</option>
-            <option value="pending" <%= formData && formData.VetCheckStatus === 'pending' ? 'selected' : '' %>>Pending</option>
-            <option value="holding" <%= formData && formData.VetCheckStatus === 'holding' ? 'selected' : '' %>>Holding</option>
-            <option value="reinspection" <%= formData && formData.VetCheckStatus === 'reinspection' ? 'selected' : '' %>>Reinspection</option>
-            <option value="withdrawn" <%= formData && formData.VetCheckStatus === 'withdrawn' ? 'selected' : '' %>>Withdrawn</option>
-            <option value="ToBeFollowed" <%= formData && formData.VetCheckStatus === 'ToBeFollowed' ? 'selected' : '' %>>To Be Followed</option>
-          </select>
-          <label for="VetCheckStatus">Vet Check Status</label>
-        </div>
-      </div>
+
 
       <!-- Horse Status -->
       <div class="col-md-12">

@@ -7,7 +7,7 @@ import adminRouter from './routes/adminRouter.js';
 import connectDB from './database/db.js';
 import expressLayouts from 'express-ejs-layouts';
 import session from 'express-session';
-import {dblogger, logger} from './logger.js';
+import {logger} from './logger.js';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import horseRouter from './routes/horseRouter.js';
@@ -80,9 +80,9 @@ app.use((req, res, next) => {
   });
   next();
 });
-const version = '0.0.14';
+const version = '0.0.15';
 app.use(async (req, res, next) => {
-
+  res.locals.prevpage = req.get('Referrer') || '/dashboard';
   res.locals.selectedEvent = await Event.findOne({ selected: true });
   res.locals.version = version; // vagy amit szeretnél
   next();
@@ -112,9 +112,9 @@ app.use((req, res, next) => {
     });
 });
 app.use((err, req, res, next) => {
-  
-    logger.error(err);
-    req.session.failMessage = "Internal server error.";
+    console.error(err);
+    logger.error(err + " User: "+ req.user?.username);
+    req.session.failMessage = "Internal server error. (Main Thread)";
     res.status(500).render("errorpage", {rolePermissons: req.user?.role.permissions,errorCode: 500, failMessage: req.session.failMessage,user:req.user,
             successMessage: req.session.successMessage
     });
@@ -129,13 +129,13 @@ app.listen(process.env.PORT, () => {
     logger.info('VaultingEventEcosystemScoring server startup');
     logger.info(`Start time: ${new Date().toISOString()}`);
     logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
-    logger.info(`Version: ${version || 'unknown'}`);
+    logger.warn(`Version: ${version || 'unknown'}`);
     logger.info(`Port: ${process.env.PORT}`);
     logger.info(`Node.js version: ${process.version}`);
     logger.info(`MongoDB URI: ${process.env.MONGODB_URI ? 'set' : 'NOT SET'}`);
-    logger.info(`Session secret: ${process.env.SECRET_API_KEY ? 'set' : 'NOT SET'}`);
-    logger.info(`Secure mode: ${process.env.SECURE_MODE}`);
-    logger.info(`Test DB: ${process.env.TESTDB === 'true' ? 'ACTIVE' : 'inactive'}`);
+    logger.warn(`Session secret: ${process.env.SECRET_API_KEY ? 'set' : 'NOT SET'}`);
+    logger.warn(`Secure mode: ${process.env.SECURE_MODE}`);
+    logger.warn(`Test DB: ${process.env.TESTDB === 'true' ? 'ACTIVE' : 'inactive'}`);
     logger.info(`Layout: ${process.env.TESTDB === 'true' ? 'testlayout' : 'layout'}`);
     logger.info(`Static dir: ${path.join(__dirname, '/static')}`);
     logger.info('---------------------------------------------');

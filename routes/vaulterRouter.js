@@ -1,6 +1,6 @@
 import express from 'express';
 
-import {dblogger, logger} from "../logger.js";
+import {logger} from '../logger.js';
 import { Login } from "../controllers/auth.js";
 import { Logout } from "../controllers/auth.js";
 import Validate from "../middleware/Validate.js";
@@ -225,11 +225,11 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
     try {
         const newVaulter = new Vaulter(req.body);
         await newVaulter.save()
-        dblogger.db(`Vaulter ${newVaulter.name} created by user ${req.user.username}.`);
+        logger.db(`Vaulter ${newVaulter.name} created by user ${req.user.username}.`);
         req.session.successMessage = 'Vaulter created successfully!';
         res.redirect('/vaulter/dashboard');
     } catch (err) {
-    console.error(err);
+    logger.error(err + " User: "+ req.user.username);
 
     const errorMessage = err.errors
       ? Object.values(err.errors).map(e => e.message).join(' ')
@@ -278,7 +278,7 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
             req.session.failMessage = null; // Clear the fail message after rendering
             req.session.successMessage = null; // Clear the success message after rendering 
         } catch (err) {
-            console.error(err);
+            logger.error(err + " User: "+ req.user.username);
             req.session.failMessage = 'Server error';
             return res.redirect('/vaulter/dashboard');
         }
@@ -301,7 +301,7 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
           req.session.failMessage = null; // Clear the fail message after rendering
           req.session.successMessage = null; // Clear the success message after rendering
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
           req.session.failMessage = 'Server error';
           return res.redirect('/vaulter/dashboard');
         }
@@ -309,7 +309,7 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
       vaulterRouter.post('/edit/:id',Verify, VerifyRole(), Validate, async (req, res) => {
         try {
           const vaulter = await Vaulter.findByIdAndUpdate(req.params.id, req.body, { runValidators: true });
-          dblogger.db(`Vaulter ${vaulter.name} updated by user ${req.user.username}.`);
+          logger.db(`Vaulter ${vaulter.name} updated by user ${req.user.username}.`);
           if (!vaulter) {
             req.session.failMessage = 'Vaulter not found';
             return res.redirect('/vaulter/dashboard');
@@ -318,7 +318,7 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
           res.redirect('/vaulter/dashboard'
           );
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
       
           const errorMessage = err.errors
             ? Object.values(err.errors).map(e => e.message).join(' ')
@@ -334,62 +334,118 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
         }
       });
 
-      vaulterRouter.delete('/delete/:id',Verify, VerifyRole(), async (req, res) => {
+      /* vaulterRouter.delete('/delete/:id',Verify, VerifyRole(), async (req, res) => {
         try {
 
           const vaulter = await Vaulter.findByIdAndDelete(req.params.id);
-          dblogger.db(`Vaulter ${vaulter.name} deleted by user ${req.user.username}.`);
+          logger.db(`Vaulter ${vaulter.name} deleted by user ${req.user.username}.`);
           if (!vaulter) {
             req.session.failMessage = 'Vaulter not found';
             return res.status(404).json({ message: 'Vaulter not found' });
           }
           res.status(200).json({ message: 'Vaulter deleted successfully' });
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
           req.session.failMessage = 'Server error';
           res.status(500).json({ message: 'Server error' });
         }
-      });
+      });*/
       vaulterRouter.delete('/deleteIncident/:id', Verify, VerifyRole(), async (req, res) => {
         try {
           const vaulter = await Vaulter.findById(req.params.id);
-          dblogger.db(`Vaulter ${vaulter.name} incident deleted by user ${req.user.username}.`);
+          logger.db(`Vaulter ${vaulter.Name} incident delete requested by user ${req.user.username}.`);
           if (!vaulter) {
             req.session.failMessage = 'Vaulter not found';
             return res.status(404).json({ message: 'Vaulter not found' });
           }
-          
-         
-          
-          vaulter.VaulterIncident = vaulter.VaulterIncident.filter(incident =>
-            !(
-              incident.description === req.body.description &&
-              incident.incidentType === req.body.type             )
-          );
+
+
+          // Helper: parse many date formats to ms (fallback tries to extract y,m,d,h,m,s)
+          const parseDateToMs = (input) => {
+            if (!input && input !== 0) return null;
+            if (typeof input === 'number') return input;
+            const d1 = new Date(input);
+            if (!Number.isNaN(d1.getTime())) return d1.getTime();
+
+            // try to extract components like "2025. 11. 05. 12:44:01" or "2025-11-05 12:44:01"
+            const m = String(input).match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})\D+(\d{1,2}):(\d{2}):(\d{2})/);
+            if (m) {
+              const [ , y, mo, da, hh, mm, ss ] = m;
+              const d2 = new Date(Number(y), Number(mo)-1, Number(da), Number(hh), Number(mm), Number(ss));
+              if (!Number.isNaN(d2.getTime())) return d2.getTime();
+            }
+
+            // try shorter pattern without seconds
+            const m2 = String(input).match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})\D+(\d{1,2}):(\d{2})/);
+            if (m2) {
+              const [ , y, mo, da, hh, mm ] = m2;
+              const d3 = new Date(Number(y), Number(mo)-1, Number(da), Number(hh), Number(mm));
+              if (!Number.isNaN(d3.getTime())) return d3.getTime();
+            }
+
+            return null;
+          };
+
+          const reqDateMs = parseDateToMs(req.body.date);
+          const DATE_TOLERANCE_MS = 20 * 1000; // 20s tolerance (adjust as needed)
+
+          vaulter.VaulterIncident = vaulter.VaulterIncident.filter(incident => {
+            const incDesc = String(incident.description || '');
+            const incType = String(incident.incidentType || '');
+            // support both `user` and `User` as stored in DB
+            const incUser = String(incident.user || incident.User || '');
+            const incDateMs = parseDateToMs(incident.date);
+
+            const descMatch = incDesc === String(req.body.description || '');
+            const typeMatch = incType === String(req.body.incidentType || req.body.type || '');
+            const userMatch = incUser === String(req.user._id);
+
+            let dateMatch = false;
+            if (reqDateMs === null) {
+              // if client didn't send a date, ignore date in matching
+              dateMatch = true;
+            } else if (incDateMs === null) {
+              // if incident date is not set, consider it a match (or handle as needed)
+              dateMatch = true;
+            } else {
+              // check if dates are the same within the tolerance
+              dateMatch = Math.abs(incDateMs - reqDateMs) <= DATE_TOLERANCE_MS;
+            }
+
+            const matchesAll = descMatch && typeMatch && userMatch && dateMatch;
+
+
+            // keep incidents that do NOT match all criteria
+            return !matchesAll;
+          });
+
+          // persist
           await Vaulter.findByIdAndUpdate(req.params.id, vaulter, { runValidators: true });
-          res.status(200).json({ message: 'Incident deleted successfully' });
-        } catch (err) {
-          console.error(err);
-          req.session.failMessage = 'Server error';
-          res.status(500).json({ message: 'Server error' });
-        }
-      });
+           res.status(200).json({ message: 'Incident deleted successfully' });
+         } catch (err) {
+           logger.error(err + " User: "+ req.user.username);
+           req.session.failMessage = 'Server error';
+           res.status(500).json({ message: 'Server error' });
+         }
+       });
      vaulterRouter.post('/newIncident/:id',Verify,VerifyRole(), async (req,res) =>{
       try{
         const vaulter = await Vaulter.findById(req.params.id);
-        dblogger.db(`Vaulter ${vaulter.Name} incident created by user ${req.user.username}.`);
+        logger.db(`Vaulter ${vaulter.Name} incident created by user ${req.user.username}.`);
         const newIncident = {
           description: req.body.description,
           incidentType: req.body.incidentType,
           date: Date.now(),
-          User: req.user._id
+          User: req.user._id,
+          eventID: res.locals.selectedEvent._id
 
         }    
         vaulter.VaulterIncident.push(newIncident);
         await Vaulter.findByIdAndUpdate(req.params.id, vaulter, { runValidators: true })
+        req.session.successMessage = 'Incident added successfully!';
         res.status(200).json({ message: 'Incident added successfully!' })
       } catch (err) {
-        console.error(err);
+        logger.error(err + " User: "+ req.user.username);
         const errorMessage = err.errors
             ? Object.values(err.errors).map(e => e.message).join(' ')
             : 'Server error';

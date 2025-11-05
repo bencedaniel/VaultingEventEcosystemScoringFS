@@ -1,6 +1,6 @@
 import express from 'express';
 
-import {dblogger, logger} from "../logger.js";
+import {logger} from '../logger.js';
 import { Login } from "../controllers/auth.js";
 import { Logout } from "../controllers/auth.js";
 import Validate from "../middleware/Validate.js";
@@ -225,11 +225,11 @@ lungerRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
     try {
         const newLunger = new Lunger(req.body);
         await newLunger.save()
-        dblogger.db(`Lunger ${newLunger.name} created by user ${req.user.username}.`);
+        logger.db(`Lunger ${newLunger.name} created by user ${req.user.username}.`);
         req.session.successMessage = 'Lunger created successfully!';
         res.redirect('/lunger/dashboard');
     } catch (err) {
-    console.error(err);
+    logger.error(err + " User: "+ req.user.username);
 
     const errorMessage = err.errors
       ? Object.values(err.errors).map(e => e.message).join(' ')
@@ -279,7 +279,7 @@ lungerRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
             req.session.failMessage = null; // Clear the fail message after rendering
             req.session.successMessage = null; // Clear the success message after rendering 
         } catch (err) {
-            console.error(err);
+            logger.error(err + " User: "+ req.user.username);
             req.session.failMessage = 'Server error';
             return res.redirect('/lunger/dashboard');
         }
@@ -302,7 +302,7 @@ lungerRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
           req.session.failMessage = null; // Clear the fail message after rendering
           req.session.successMessage = null; // Clear the success message after rendering
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
           req.session.failMessage = 'Server error';
           return res.redirect('/lunger/dashboard');
         }
@@ -310,7 +310,7 @@ lungerRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
       lungerRouter.post('/edit/:id',Verify, VerifyRole(), Validate, async (req, res) => {
         try {
           const lunger = await Lunger.findByIdAndUpdate(req.params.id, req.body, { runValidators: true });
-          dblogger.db(`Lunger ${lunger.name} updated by user ${req.user.username}.`);
+          logger.db(`Lunger ${lunger.name} updated by user ${req.user.username}.`);
           if (!lunger) {
             req.session.failMessage = 'Lunger not found';
             return res.redirect('/lunger/dashboard');
@@ -319,7 +319,7 @@ lungerRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
           res.redirect('/lunger/dashboard'
           );
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
       
           const errorMessage = err.errors
             ? Object.values(err.errors).map(e => e.message).join(' ')
@@ -335,26 +335,26 @@ lungerRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
         }
       });
 
-      lungerRouter.delete('/delete/:id',Verify, VerifyRole(), async (req, res) => {
+     /* lungerRouter.delete('/delete/:id',Verify, VerifyRole(), async (req, res) => {
         try {
 
           const lunger = await Lunger.findByIdAndDelete(req.params.id);
-          dblogger.db(`Lunger ${lunger.name} deleted by user ${req.user.username}.`);
+          logger.db(`Lunger ${lunger.name} deleted by user ${req.user.username}.`);
           if (!lunger) {
             req.session.failMessage = 'Lunger not found';
             return res.status(404).json({ message: 'Lunger not found' });
           }
           res.status(200).json({ message: 'Lunger deleted successfully' });
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
           req.session.failMessage = 'Server error';
           res.status(500).json({ message: 'Server error' });
         }
-      });
+      });*/
       lungerRouter.delete('/deleteIncident/:id', Verify, VerifyRole(), async (req, res) => {
         try {
           const lunger = await Lunger.findById(req.params.id);
-          dblogger.db(`Lunger ${lunger.name} incident deleted by user ${req.user.username}.`);
+          logger.db(`Lunger ${lunger.name} incident deleted by user ${req.user.username}.`);
           if (!lunger) {
             req.session.failMessage = 'Lunger not found';
             return res.status(404).json({ message: 'Lunger not found' });
@@ -370,7 +370,7 @@ lungerRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
           await Lunger.findByIdAndUpdate(req.params.id, lunger, { runValidators: true });
           res.status(200).json({ message: 'Incident deleted successfully' });
         } catch (err) {
-          console.error(err);
+          logger.error(err + " User: "+ req.user.username);
           req.session.failMessage = 'Server error';
           res.status(500).json({ message: 'Server error' });
         }
@@ -378,18 +378,20 @@ lungerRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
      lungerRouter.post('/newIncident/:id',Verify,VerifyRole(), async (req,res) =>{
       try{
         const lunger = await Lunger.findById(req.params.id);
-        dblogger.db(`Lunger ${lunger.Name} incident created by user ${req.user.username}.`);
+        logger.db(`Lunger ${lunger.Name} incident created by user ${req.user.username}.`);
         const newIncident = {
           description: req.body.description,
           incidentType: req.body.incidentType,
           date: Date.now(),
-          User: req.user._id
+          User: req.user._id,
+          eventID: res.locals.selectedEvent._id
 
         }    
         lunger.LungerIncident.push(newIncident);
         await Lunger.findByIdAndUpdate(req.params.id, lunger, { runValidators: true })
         res.status(200).json({ message: 'Incident added successfully!' })
       } catch (err) {
+        logger.error(err);
         const errorMessage = err.errors
             ? Object.values(err.errors).map(e => e.message).join(' ')
             : 'Server error';

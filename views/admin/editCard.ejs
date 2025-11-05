@@ -74,9 +74,34 @@
       </div>
 
       <!-- Submit -->
-      <div class="col-md-12">
-        <button type="submit" class="btn btn-primary mt-3 w-100">Edit Card</button>
+      <div class="col-md-12 d-flex">
+        <button type="button" class="btn btn-secondary mt-3 w-50 m-1" onclick="showCardPopup()">Preview</button>
+        <button type="submit" class="btn btn-primary mt-3 w-50 m-1">Edit Card</button>
       </div>
+
+
+
+              <div class="modal fade" id="CardViewModal" tabindex="-1" aria-labelledby="CardViewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content border-0 shadow">
+            <div class="modal-header">
+              <h5 class="modal-title text-center" id="CardViewModalLabel">Card preview</h5>
+              <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+            </div>
+            <div id="CardDiv" class="modal-body d-flex justify-content-center text-center g-4">
+              
+             </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+
 
     </div>
   </form>
@@ -124,4 +149,47 @@ function addLinkInput(href = '', label = '') {
 <% } %>
   
 <% } %>
+</script>
+
+<script>
+
+    function showCardPopup() {
+      const modal = new bootstrap.Modal(document.getElementById('CardViewModal'));
+      const cardDiv = document.getElementById('CardDiv');
+
+      let buttons = [];
+      const style = document.getElementById('style').value;
+      const title = document.getElementById('title').value;
+      const text = document.getElementById('text').value;
+      const linkList = document.getElementById('linkList');
+      Array.from(linkList.children).forEach(element => {
+        element.children[1] ? buttons.push(element.children[1].value) : null;
+      });
+      let buttonsHtml = [];
+      console.log(buttons);
+      buttons.forEach(button => {
+        buttonsHtml.push(`<a href="" class="btn btn-outline-${style} w-100 mb-3">${button}</a>
+`);
+      });
+
+
+
+      cardDiv.innerHTML = ` <div class="col-md-4 w-100" style="max-width: 310px;">
+                <div class="p-4 bg-${style} bg-opacity-10 border border-1 border-black border-opacity-10 rounded h-100 d-flex flex-column justify-content-between">
+                  <h5 id="CardTitle">${title}</h5>
+                  <p id="CardText">${text}</p>
+                  <div id="ButtonDiv">
+                    ${buttonsHtml.join('\n')}
+                  </div>
+                  
+                </div>
+              </div>
+
+
+            </div>
+
+
+      `;
+    modal.show();
+  }
 </script>

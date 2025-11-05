@@ -16,6 +16,8 @@ export async function Verify(req, res, next) {
         return res.redirect("/login");
     }
 
+    
+
     // 2️⃣ Blacklist ellenőrzés
     const blacklisted = await Blacklist.findOne({ token });
 
@@ -40,6 +42,38 @@ export async function Verify(req, res, next) {
       req.session.failMessage = "User not found.";
       return res.redirect("/login");
     }
+    if(!user.active){
+      req.session.failMessage = "Your account has been deactivated. Please contact a system administrator."
+        try {
+          const authHeader = req.headers['cookie']; // get the session cookie from request header
+          if (!authHeader) return res.sendStatus(204); // No content
+          const cookie = authHeader.split('=')[1]; // If there is, split the cookie string to get the actual jwt token
+          const accessToken = cookie.split(';')[0];
+          const checkIfBlacklisted = await Blacklist.findOne({ token: accessToken }); // Check if that token is blacklisted
+          // if true, send a no content response.
+          if (checkIfBlacklisted) return res.sendStatus(204);
+          // otherwise blacklist token
+          const newBlacklist = new Blacklist({
+            token: accessToken,
+          });
+          await newBlacklist.save();
+          res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.SECURE_MODE === 'true',
+            sameSite: 'lax',
+            path: '/' // ha más path-ot használtál set-nél, add meg ugyanazt
+          });
+          req.session.failMessage = "Your account has been deactivated. Please contact a system administrator."
+          return res.redirect('/login'); // redirect to home page
+        } catch (err) {
+          console.error(err);
+          res.status(500).json({
+            status: 'error',
+            message: 'Internal Server Error'+ err,
+          });
+        }
+      
+    }
 
     // 5️⃣ Rolling JWT generálása
     const newToken = jwt.sign({ id: user._id }, SECRET_ACCESS_TOKEN, { expiresIn: "90m" });
@@ -59,8 +93,8 @@ export async function Verify(req, res, next) {
     next();
 
   } catch (err) {
-    console.error("Verify middleware catch error:", err);
-    if (req.session) req.session.failMessage = "This session has expired or is invalid.";
+    logger.error("Verify middleware catch error:" + err +" User: "+ req.user?.username);
+    if (req.session) req.session.failMessage = "This session has expired or is invalid. (Error)";
     return res.redirect("/login");
   }
 }
@@ -76,7 +110,7 @@ export async function VerifyNoerror(req, res, next) {
     next();
 
   } catch (err) {
-    console.error("Verify middleware catch error:", err);
+    logger.error("Verify middleware catch error:" + err + " User: "+ req.user?.username);
     if (req.session) req.session.failMessage = "This session has expired or is invalid.";
     return res.redirect("/login");
   }
@@ -123,7 +157,7 @@ export function VerifyRole() {
             next();
         } catch (err) {
 
-            logger.error("Internal server error in VerifyRole middleware: ", err);
+            logger.error("Internal server error in VerifyRole middleware: "+ err +" User: "+ req.user?.username);
             req.session.failMessage = "Internal server error.";
                 return res.redirect(req.get('Referer') || '/login'); // vissza az előző oldalra, vagy login ha nincs
         }
@@ -142,7 +176,7 @@ export async function UserIDValidator(req,res,next) {
         }
         next();
     } catch (err) {
-        console.error("UserIDValidator catch error:", err);
+        logger.error("UserIDValidator catch error:" + err + " User: "+ req.user?.username);
         req.session.failMessage = "Internal server error.";
         return res.redirect("/login");
     }
@@ -198,7 +232,7 @@ export async function StoreUserWithoutValidation(req,res,next){
     next();
 
   } catch (err) {
-    console.error("Verify middleware catch error:", err);
+    logger.error("Verify middleware catch error:" + err + " User: "+ req.user?.username);
     if (req.session) req.session.failMessage = "This session has expired or is invalid.";
           return next();
 
@@ -245,7 +279,7 @@ export async function  CheckLoggedIn(req, res, next) {
     console.info("User already logged in:", user.username);
     return res.redirect("/dashboard");
   } catch (err) {
-    console.error("Verify middleware catch error:", err);
+    logger.error("Verify middleware catch error:" +  err + " User: "+ req.user?.username);
     if (req.session) req.session.failMessage = "This session has expired or is invalid.";
     return res.redirect("/login");
   }

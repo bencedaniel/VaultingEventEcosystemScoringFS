@@ -38,6 +38,8 @@
 
         </thead>
         <tbody class="align-middle" id="TableBody">
+        <% if (entrys.length != 0) { %>
+
             <% entrys.forEach(entry => { %>
       <tr>
         <td>
@@ -61,6 +63,8 @@
         </td>
       </tr>
             <% }); %>
+                        <% } %>
+
         </tbody>
     </table>
 

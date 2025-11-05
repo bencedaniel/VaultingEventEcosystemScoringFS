@@ -39,14 +39,29 @@
         <tbody class="align-middle" id="TableBody">
             <% horses.forEach(horse => { %>
       <tr>
-        <td>
-          <%= horse.Horsename %>
-        </td>
+        <td><%= horse.Horsename %></td>
         <td><%= horse.feiid %></td>
         <td><%= horse.Nationality %></td>
         <td><%= horse.ResponsiblePersonName %></td>
         <td><%= horse.HorseStatus %></td>
+
+        <% 
+          const vetArr = Array.isArray(horse.VetCheckStatus) ? horse.VetCheckStatus : [];
+          const sortedVetArr = vetArr.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+          const lastVet = sortedVetArr.length ? sortedVetArr[sortedVetArr.length - 1] : null; // legutolsó elem
+          const currentStatus = (lastVet && lastVet.status) ? String(lastVet.status) : 'before';
+          const vetStatuses = ['before','passed','failed','pending','holding','reinspection','withdrawn','ToBeFollowed'];
+        %>
+
         <td class="text-center" style="width: 15%;">
+          <select class="form-select shadow-none" id="vetStatus_<%= horse._id %>" name="vetStatus"
+                  onchange="updateVetStatus('<%= horse._id %>', this.value)" required>
+            <% vetStatuses.forEach(status => { 
+                 const label = status === 'ToBeFollowed' ? 'To Be Followed' : (status[0].toUpperCase() + status.slice(1));
+            %>
+              <option value="<%= status %>" <%= currentStatus.toLowerCase() === status.toLowerCase() ? 'selected' : '' %>><%= label %></option>
+            <% }) %>
+          </select>
         </td>
       </tr>
             <% }); %>
@@ -76,6 +91,17 @@
 
 
 <script>
+    function updateVetStatus(horseId, newStatus) {
+        fetch('/entry/updateVetStatus/' + horseId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status: newStatus })
+        }).then(response => {
+                window.location.reload();
+        });
+    }
 document.addEventListener('DOMContentLoaded', function() {
     let IdToDelete = null;
     const deleteModal = document.getElementById('deleteModal');
@@ -86,15 +112,13 @@ document.addEventListener('DOMContentLoaded', function() {
         IdToDelete = button.getAttribute('data-horseid');
     });
 
+
     confirmDeleteButton?.addEventListener('click', () => {
         fetch('/horse/delete/' + IdToDelete, {
             method: 'DELETE'
         }).then(response => {
-            if (response.ok) {
                 window.location.reload();
-            } else {
-                window.location.reload();
-            }
+
         });
     });
 });
