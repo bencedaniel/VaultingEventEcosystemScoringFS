@@ -31,8 +31,8 @@ const VaulterSchema = new mongoose.Schema({
             default: 'active',
         },  
         ArmNr:{
-            type: String,
-            required: [true, 'Arm number required!'],
+            type: [{      eventID: { type: mongoose.Schema.Types.ObjectId, ref:'events' ,required: true }, // User who reported the incident
+            armNumber: { type: String, required: true }}]
         },  
         VaulterIncident:{
             type: [{
@@ -48,5 +48,36 @@ const VaulterSchema = new mongoose.Schema({
 
         
 },{ timestamps: true });
+
+// compound index: egy adott vaulter (_id) ArmNr tömbjén belül az eventID csak egyszer szerepelhet
+VaulterSchema.index(
+  { _id: 1, 'ArmNr.eventID': 1 },
+  { unique: true, partialFilterExpression: { 'ArmNr.eventID': { $exists: true } } }
+);
+
+// pre-validate check a barátságosabb hibajelzéshez (megakadályozza az index hibát)
+VaulterSchema.pre('validate', function(next) {
+  if (!Array.isArray(this.ArmNr) || this.ArmNr.length === 0) return next();
+  const seen = new Set();
+  for (const a of this.ArmNr) {
+    if (!a || !a.eventID) continue;
+    const id = String(a.eventID);
+    if (seen.has(id)) {
+      const err = new mongoose.Error.ValidationError(this);
+      err.addError('ArmNr', new mongoose.Error.ValidatorError({
+        message: 'Minden eventID-hez csak egy ArmNr adható meg az ArmNr tömbben.'
+      }));
+      return next(err);
+    }
+    seen.add(id);
+  }
+  next();
+});
+
+
+
+
+
+
 
 export default mongoose.model('vaulters', VaulterSchema);

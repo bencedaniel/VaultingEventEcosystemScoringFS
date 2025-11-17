@@ -32,6 +32,7 @@
             <th scope="col">Fei ID</th>
             <th scope="col">Nationality</th>
             <th scope="col">Responsible person </th>
+            <th scope="col">Head Nr</th>
             <th scope="col">Status</th>
             <th scope="col"  width="10%">Vet Check status</th>
 
@@ -39,10 +40,12 @@
         <tbody class="align-middle" id="TableBody">
             <% horses.forEach(horse => { %>
       <tr>
+
         <td><%= horse.Horsename %></td>
         <td><%= horse.feiid %></td>
         <td><%= horse.Nationality %></td>
         <td><%= horse.ResponsiblePersonName %></td>
+        <td><%= horse.HeadNr[0].headNumber %></td>
         <td><%= horse.HorseStatus %></td>
 
         <% 

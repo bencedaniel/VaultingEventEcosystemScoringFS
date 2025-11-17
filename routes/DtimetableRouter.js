@@ -16,7 +16,7 @@ import Event from '../models/Event.js';
 const dailytimetableRouter = express.Router();
 
 dailytimetableRouter.get('/new',Verify, VerifyRole(), (req, res) => {
-    res.render('dailytimetable/newDailyTimeTable', {
+    res.render('dailytimetable/newdailytimetable', {
         formData: req.session.formData, 
         rolePermissons: req.user?.role?.permissions
         , failMessage: req.session.failMessage, successMessage: req.session.successMessage,
@@ -143,7 +143,8 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
 
       dailytimetableRouter.delete('/delete/:id',Verify, VerifyRole(), async (req, res) => {
         try {
-
+          const TimetableParts = await TimetablePart.deleteMany({ dailytimetable: req.params.id });
+          logger.db(`TimetableParts for DailyTimeTable ${req.params.id} deleted by user ${req.user.username}.`);
           const dailytimetable = await DailyTimeTable.findByIdAndDelete(req.params.id);
           logger.db(`DailyTimeTable ${dailytimetable.DayName} deleted by user ${req.user.username}.`);
           if (!dailytimetable) {

@@ -12,63 +12,133 @@
         </div>
       </div>
 
-
-
-      <!-- Horse -->
+            <!-- Horse -->
       <div class="col-md-12">
-        <div class="form-floating">
-          <select class="form-select shadow-none" id="horse" name="horse" required>
-            <option value="">Select Horse</option>
-            <% horses.forEach(element => { %>
-              <option value="<%= element._id %>" <%= formData && formData.horse === element._id ? 'selected' : '' %>><%= element.Horsename %></option>
+        <div class="form-floating position-relative searchable-dropdown">
+          <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
+          <input type="text" class="form-control shadow-none searchable-input"
+                 placeholder="Search Horse"
+                 autocomplete="off" 
+                 <% if (formData) { %>
+                 <% horses.forEach(element => { %>
+                    <% if (String(element._id) === String(formData.horse._id)) { %>
+                      value="<%= element.Horsename %>"
+                    <% } %>
+                 <% }) %>
+                  <% }%>
+
+                  >
+          <label class="form-label">Horse</label>
+          <!-- Hidden input for form submission -->
+          <input type="hidden" class="searchable-hidden" name="horse"
+                 value="<%= formData ? formData.horse._id : '' %>">
+
+          <!-- Dropdown list -->
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+              style="max-height: 200px; overflow-y: auto; z-index: 1000;">
+              <% horses.forEach(element => { %>
+              <li class="list-group-item list-group-item-action searchable-item" val="<%= element._id %>" ><%= element.Horsename %></li>
+
             <% }) %>
-          </select>
-          <label for="horse">Select Horse</label>
+          </ul>
         </div>
       </div>
-      <!-- Lunger --> 
+
       <div class="col-md-12">
-        <div class="form-floating">
-          <select class="form-select shadow-none" id="lunger" name="lunger" required>
-            <option value="">Select Lunger</option>
-            <% lungers.forEach(element => { %>
-              <option value="<%= element._id %>" <%= formData && formData.lunger === element._id ? 'selected' : '' %>><%= element.Name %></option>
+        <div class="form-floating position-relative searchable-dropdown">
+          <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
+          <input type="text" class="form-control shadow-none searchable-input"
+                 placeholder="Search Lunger"
+                 autocomplete="off" 
+                 <% if (formData) { %>
+                 <% lungers.forEach(element => { %>
+                    <% if (String(element._id) === String(formData.lunger._id)) { %>
+                      value="<%= element.Name %>"
+                    <% } %>
+                 <% }) %>
+                  <% }%>
+
+                  >
+          <label class="form-label">Lunger</label>
+          <!-- Hidden input for form submission -->
+          <input type="hidden" class="searchable-hidden" name="lunger"
+                 value="<%= formData ? formData.lunger._id : '' %>">
+
+          <!-- Dropdown list -->
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+              style="max-height: 200px; overflow-y: auto; z-index: 1000;">
+              <% lungers.forEach(element => { %>
+              <li class="list-group-item list-group-item-action searchable-item" val="<%= element._id %>" ><%= element.Name %></li>
+
             <% }) %>
-          </select>
-          <label for="lunger">Select Lunger</label>
+          </ul>
         </div>
       </div>
 
+        <div class="col-md-12">
+        <div class="form-floating position-relative searchable-dropdown">
+          <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
+          <input type="text" class="form-control shadow-none searchable-input"
+                 placeholder="Search Category"
+                 autocomplete="off" 
+                 <% if (formData) { %>
+                 <% categorys.forEach(element => { %>
+                    <% if (String(element._id) === String(formData.category._id)) { %>
+                      value="<%= element.CategoryDispName %>"
+                    <% } %>
+                 <% }) %>
+                  <% }%>
 
+                  >
+          <label class="form-label">Category</label>
+          <!-- Hidden input for form submission -->
+          <input type="hidden" class="searchable-hidden" id="valueinput" name="category"
+                 value="<%= formData ? formData.category._id : '' %>">
 
-        <!-- Category -->
-      <div class="col-md-12">
-        <div class="form-floating">
-          <select class="form-select shadow-none" id="category" name="category" required>
-            <option value="">Select Category</option>
-            <% categorys.forEach(element => { %>
-              <option value="<%= element._id %>" <%= formData && formData.category === element._id ? 'selected' : '' %> id="<%= element.Type %>"><%= element.CategoryDispName %></option>
+          <!-- Dropdown list -->
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+              style="max-height: 200px; overflow-y: auto; z-index: 1000;">
+              <% categorys.forEach(element => { %>
+              <li class="list-group-item list-group-item-action searchable-item" val="<%= element._id %>" ><%= element.CategoryDispName %></li>
+
             <% }) %>
-
-          </select>
-          <label for="category">Select Category</label>
+          </ul>
         </div>
       </div>
-        <!-- Status-->
+
+      <% 
+  const statusDisplayMap = {
+    registered: 'Registered',
+    withdrawn: 'Withdrawn',
+    confirmed: 'Confirmed',
+    cancelled: 'Cancelled'
+  };
+  const selectedStatusDisplay = formData && formData.status ? (statusDisplayMap[formData.status] || formData.status) : '';
+%>
+            <!-- Status -->
       <div class="col-md-12">
-        <div class="form-floating">
-          <select class="form-select shadow-none" id="status" name="status" required>
-            <option value="">Select Status</option>
-            <option value="registered" <%= formData && formData.status === 'registered' ? 'selected' : '' %>>Registered</option>
-            <option value="withdrawn" <%= formData && formData.status === 'withdrawn' ? 'selected' : '' %>>Withdrawn</option>
-            <option value="confirmed" <%= formData && formData.status === 'confirmed' ? 'selected' : '' %>>Confirmed</option>
-            <option value="cancelled" <%= formData && formData.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
-          </select>
-          <label for="status">Select Status</label>
+        <div class="form-floating position-relative searchable-dropdown">
+          <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
+          <input type="text" class="form-control shadow-none searchable-input"
+                 placeholder="Search Status"
+                 autocomplete="off"
+                 value="<%= selectedStatusDisplay %>">
+          <label class="form-label">Status</label>
+          <!-- Hidden input for form submission -->
+          <input type="hidden" class="searchable-hidden" name="status"
+                 value="<%= formData ? formData.status : '' %>">
+
+          <!-- Dropdown list -->
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+              style="max-height: 200px; overflow-y: auto; z-index: 1000;">
+
+              <li class="list-group-item list-group-item-action searchable-item" val="registered" >Registered</li>
+              <li class="list-group-item list-group-item-action searchable-item" val="withdrawn" >Withdrawn</li>
+              <li class="list-group-item list-group-item-action searchable-item" val="confirmed" >Confirmed</li>
+              <li class="list-group-item list-group-item-action searchable-item" val="cancelled">Inactive</li>
+          </ul>
         </div>
       </div>
-
-
 
 
            <div class="col-md-12 mt-5">
@@ -96,41 +166,103 @@
     categoryTypeMap["<%= cat._id %>"] = "<%= cat.Type %>";
   <% }); %>
 
-  // Vaulter select template
-  function getVaulterSelect(index, vaulters, formData) {
-    let options = '<option value="">Select Vaulter ' + (index + 1) + '</option>';
-    <% vaulters.forEach(element => { %>
-      options += `<option value="<%= element._id %>">${"<%= element.Name %>"}</option>`;
-    <% }); %>
-    return `
-      <div class="form-floating mb-2">
-        <select class="form-select shadow-none" name="vaulter[]" required>
-          ${options}
-        </select>
-        <label>Select Vaulter ${index + 1}</label>
-      </div>
-    `;
-  }
+  const vaulters = <%- JSON.stringify(vaulters) %>;
+  const formVaulters = <%- JSON.stringify(formData && formData.vaulter ? formData.vaulter : []) %>;
 
-  function renderVaulterInputs(count) {
+  // Vaulter select template
+  function getVaulterSelect(index, vaulters, formVaulters) {
+    let options = '';
+    let selected = {
+          id :'',
+          name : ''};
+    vaulters.forEach(element => {
+      if (
+        formVaulters &&
+        formVaulters[index] &&
+        (
+          formVaulters[index]._id === element._id ||
+          formVaulters[index] === element._id
+        )
+      ) {
+        selected = {
+          id :formVaulters[index]._id,
+          name : formVaulters[index].Name};
+      }
+
+      options += `<li class="list-group-item list-group-item-action searchable-item" val="${element._id}" >${element.Name}</li>`;
+    });
+
+      
+    return `
+    
+    
+      <div class="form-floating mb-2">
+        <div class="form-floating position-relative searchable-dropdown">
+          <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
+          <input type="text" class="form-control shadow-none searchable-input"
+                 placeholder="Search Lunger"
+                 autocomplete="off" 
+                      value="${selected.name}">
+          <label class="form-label">Select Vaulter ${index + 1}</label>
+          <!-- Hidden input for form submission -->
+          <input type="hidden" class="searchable-hidden" name="vaulter[]"
+                 value="${selected.id}">
+
+          <!-- Dropdown list -->
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+              style="max-height: 200px; overflow-y: auto; z-index: 1000;">
+              ${options}
+          </ul>
+        </div>
+      </div>
+
+      `;
+  }
+  
+
+  function renderVaulterInputs(count, formVaulters) {
     const vaulterContainer = document.getElementById('vaulterContainer');
     vaulterContainer.innerHTML = '';
     for (let i = 0; i < count; i++) {
-      vaulterContainer.innerHTML += getVaulterSelect(i, <%- JSON.stringify(vaulters) %>, <%- JSON.stringify(formData && formData.vaulter ? formData.vaulter : []) %>);
+      vaulterContainer.innerHTML += getVaulterSelect(i, vaulters, formVaulters);
     }
   }
 
   document.addEventListener('DOMContentLoaded', function() {
-    const categorySelect = document.getElementById('category');
+    const categorySelect = document.getElementById('valueinput');
     function updateVaulterInputs() {
       const selectedCategoryId = categorySelect.value;
       const type = categoryTypeMap[selectedCategoryId];
-      if (type === 'Squad') renderVaulterInputs(6);
-      else if (type === 'PDD') renderVaulterInputs(2);
-      else if (type === 'Individual') renderVaulterInputs(1);
+      if (type === 'Squad') renderVaulterInputs(6, formVaulters);
+      else if (type === 'PDD') renderVaulterInputs(2, formVaulters);
+      else if (type === 'Individual') renderVaulterInputs(1, formVaulters);
       else document.getElementById('vaulterContainer').innerHTML = '';
+      console.log('Lefut')
     }
-    categorySelect.addEventListener('change', updateVaulterInputs);
-    updateVaulterInputs(); // Initial render
+    categorySelect.addEventListener('change', function() {
+      // Ha a kategória változik, ne legyenek előre kiválasztott vaulterek
+      const selectedCategoryId = categorySelect.value;
+      const type = categoryTypeMap[selectedCategoryId];
+      if (type === 'Squad') renderVaulterInputs(6, []);
+      else if (type === 'PDD') renderVaulterInputs(2, []);
+      else if (type === 'Individual') renderVaulterInputs(1, []);
+      else document.getElementById('vaulterContainer').innerHTML = '';
+            console.log('Lefut chg')
+
+      document.querySelectorAll('.searchable-dropdown').forEach(wrapper => {
+
+         input = wrapper.querySelector('.searchable-input');
+         hidden = wrapper.querySelector('.searchable-hidden');
+         list = wrapper.querySelector('.searchable-list');
+         items = list ? list.querySelectorAll('.searchable-item') : null;
+         icon = wrapper.querySelector('.bi-chevron-down');
+        
+        if (input && hidden && list && items && typeof listCreator === 'function') {
+          listCreator(input, hidden, list, items, icon);
+        }
+      });
+    });
+    updateVaulterInputs(); // Initial render with formVaulters
   });
 </script>
+

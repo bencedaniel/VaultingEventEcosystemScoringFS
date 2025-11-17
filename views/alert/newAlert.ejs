@@ -1,0 +1,91 @@
+<div class="container my-4 border border-black border-1 border-opacity-10 rounded p-3  shadow bg-primary bg-opacity-10 " style="max-width: 80vh;">
+  <h1 class="text-center mb-3">Add new alert</h1>
+
+  <form action="/alerts/new" method="POST">
+    <div class="row justify-content-center g-3 m-auto">
+      
+      <!-- Title -->
+      <div class="col-md-12">
+        <div class="form-floating">
+          <input type="text" class="form-control shadow-none" id="title" name="title" placeholder="Title"
+                 value="<%= formData ? formData.title : '' %>" autocomplete="off">
+          <label for="title">Title</label>
+        </div>
+      </div>
+
+      <div class="col-md-12">
+        <div class="form-floating">
+          <input type="text" class="form-control shadow-none" id="description" name="description" placeholder="Description"
+                 value="<%= formData ? formData.description : '' %>" autocomplete="off">
+          <label for="description">Description</label>
+        </div>
+      </div>
+
+      <div class="col-md-12">
+        <div class="form-floating position-relative searchable-dropdown">
+          <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
+          <input type="text" class="form-control shadow-none searchable-input"
+                 placeholder="Search permission"
+                 autocomplete="off" 
+                 <% if (formData) { %>
+                 <% permissionList.forEach(element => { %>
+                    <% if (String(element.name) === String(formData.perm)) { %>
+                      value="<%= element.displayName %>"
+                    <% } %>
+                 <% }) %>
+                  <% }%>
+
+                  >
+          <label class="form-label">Required permission</label>
+          <!-- Hidden input for form submission -->
+          <input type="hidden" class="searchable-hidden" name="permission"
+                 value="<%= formData ? formData.perm : '' %>">
+
+          <!-- Dropdown list -->
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+              style="max-height: 200px; overflow-y: auto; z-index: 1000;">
+              <% permissionList.forEach(element => { %>
+              <li class="list-group-item list-group-item-action searchable-item" val="<%= element.name %>" ><%= element.displayName %></li>
+
+            <% }) %>
+          </ul>
+        </div>
+      </div>
+
+
+
+      <!-- Active status -->
+      <div class="col-md-12">
+        <div class="form-floating">
+          <select class="form-select shadow-none" id="active" name="active">
+            <option value="true" <%= formData && formData.active === true ? 'selected' : '' %>>Active</option>
+            <option value="false" <%= formData && formData.active === false ? 'selected' : '' %>>Inactive</option>
+          </select>
+          <label for="active">Status</label>
+        </div>
+                </div>
+
+
+
+
+
+
+
+
+      <div class="col-md-12">
+        <div class="form-floating">
+          <input type="number" class="form-control shadow-none" id="reappear" name="reappear" placeholder="Reappear with popup (Minutes)"
+                 value="<%= formData ? formData.reappear : '' %>">
+          <label for="reappear">Reappear with popup (Minutes)</label>
+        </div>
+      </div>
+
+
+
+      <div class="col-md-12 mt-3">
+        <button type="submit" class="btn btn-primary w-100">Add alert</button>
+      </div>
+
+    </div>
+  </form>
+</div>

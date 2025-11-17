@@ -7,12 +7,28 @@
       
       <!-- Dashboard type -->
       <div class="col-md-12">
-        <label for="dashtype" class="form-label">Dashboard Type</label>
-        <select id="dashtype" name="dashtype" class="form-select shadow-none">
-          <option value="admin" <%= formData?.dashtype === "admin" ? "selected" : "" %>>Admin</option>
-          <option value="user" <%= formData?.dashtype === "user" ? "selected" : "" %>>User</option>
-        </select>
+        <div class="form-floating position-relative searchable-dropdown">
+          <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
+          <input type="text" class="form-control shadow-none searchable-input"
+                 placeholder="Search Status"
+                 autocomplete="off"
+                 value="<%= formData ? (formData.Status === 'user' ? 'User' : 'Admin') : '' %>">
+          <label class="form-label">Status</label>
+
+          <!-- Hidden input for form submission -->
+          <input type="hidden" class="searchable-hidden" name="dashtype"
+                 value="<%= formData ? formData.Status : '' %>">
+
+          <!-- Dropdown list -->
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+              style="max-height: 200px; overflow-y: auto; z-index: 1000;">
+
+              <li class="list-group-item list-group-item-action searchable-item" val="user">User</li>
+              <li class="list-group-item list-group-item-action searchable-item" val="admin">Admin</li>
+          </ul>
+        </div>
       </div>
+
             <!-- Priority -->
       <div class="col-md-12">
         <div class="form-floating">
@@ -23,28 +39,77 @@
       </div>
       
 
-      <!-- Style -->
+    <% 
+  const styleDisplayMap = {
+    primary: 'Primary',
+    secondary: 'Secondary',
+    success: 'Success',
+    danger: 'Danger',
+    warning: 'Warning',
+    info: 'Info',
+    dark: 'Dark'
+  };
+  const selectedStyleDisplay = formData && formData.style ? (styleDisplayMap[formData.style] || formData.style) : '';
+%>
+            <!-- Style -->
       <div class="col-md-12">
-        <label for="style" class="form-label">Style</label>
-        <select id="style" name="style" class="form-select shadow-none">
-            <option value="primary"   <%= formData?.style === "primary" ? "selected" : "" %>>Primary</option>
-            <option value="secondary" <%= formData?.style === "secondary" ? "selected" : "" %>>Secondary</option>
-            <option value="success"   <%= formData?.style === "success" ? "selected" : "" %>>Success</option>
-            <option value="danger"    <%= formData?.style === "danger" ? "selected" : "" %>>Danger</option>
-            <option value="warning"   <%= formData?.style === "warning" ? "selected" : "" %>>Warning</option>
-            <option value="info"      <%= formData?.style === "info" ? "selected" : "" %>>Info</option>
-            <option value="dark"      <%= formData?.style === "dark" ? "selected" : "" %>>Dark</option>
-        </select>
+        <div class="form-floating position-relative searchable-dropdown">
+          <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
+          <input type="text" class="form-control shadow-none searchable-input"
+                 placeholder="Search Style"
+                 autocomplete="off"
+                 value="<%= selectedStyleDisplay %>">
+          <label class="form-label">Style</label>
+          <!-- Hidden input for form submission -->
+          <input type="hidden" class="searchable-hidden" name="style" id="style"
+                 value="<%= formData ? formData.style : '' %>">
+
+          <!-- Dropdown list -->
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+              style="max-height: 200px; overflow-y: auto; z-index: 1000;">
+
+            <li class="list-group-item list-group-item-action searchable-item" val="primary">Primary</li>
+            <li class="list-group-item list-group-item-action searchable-item" val="secondary">Secondary</li>
+            <li class="list-group-item list-group-item-action searchable-item" val="success">Success</li>
+            <li class="list-group-item list-group-item-action searchable-item" val="danger">Danger</li>
+            <li class="list-group-item list-group-item-action searchable-item" val="warning">Warning</li>
+            <li class="list-group-item list-group-item-action searchable-item" val="info">Info</li>
+            <li class="list-group-item list-group-item-action searchable-item" val="dark">Dark</li>
+          </ul>
+        </div>
       </div>
 
-        <div class="col-md-12">
-        <label for="perm" class="form-label">Permission</label>
-        <select id="perm" name="perm" class="form-select shadow-none">
-              <% permissionList.forEach(permission => { %>
-                    <option value="<%= permission.name %>"  <%= formData && formData.perm === permission.name ? "selected" : "" %>><%= permission.displayName %></option>
-                    <% }) %>
-        </select>
+      <div class="col-md-12">
+        <div class="form-floating position-relative searchable-dropdown">
+          <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
+          <input type="text" class="form-control shadow-none searchable-input"
+                 placeholder="Search permission"
+                 autocomplete="off" 
+                 <% if (formData) { %>
+                 <% permissionList.forEach(element => { %>
+                    <% if (String(element.name) === String(formData.perm)) { %>
+                      value="<%= element.displayName %>"
+                    <% } %>
+                 <% }) %>
+                  <% }%>
+
+                  >
+          <label class="form-label">Required permission</label>
+          <!-- Hidden input for form submission -->
+          <input type="hidden" class="searchable-hidden" name="horse"
+                 value="<%= formData ? formData.perm : '' %>">
+
+          <!-- Dropdown list -->
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+              style="max-height: 200px; overflow-y: auto; z-index: 1000;">
+              <% permissionList.forEach(element => { %>
+              <li class="list-group-item list-group-item-action searchable-item" val="<%= element.name %>" ><%= element.displayName %></li>
+
+            <% }) %>
+          </ul>
+        </div>
       </div>
+
 
 
 

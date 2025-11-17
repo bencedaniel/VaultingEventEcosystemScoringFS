@@ -19,16 +19,18 @@ router.get("/", async (req, res) => {
 
 });
 router.dashboard = router.get("/dashboard", VerifyNoerror, Verify, async (req, res) => {
-    req.session.successMessage = null; // Üzenet törlése a session-ből  
-    req.session.failMessage = null; // Üzenet törlése a session-ből
+
     res.render("dashboard", {userrole: req.user.role, 
         cardsFromDB: await DashCards.find({ dashtype: 'user' }).sort({ priority: 1 }),
         successMessage: req.session.successMessage, 
         rolePermissons: req.user.role.permissions,
         failMessage: req.session.failMessage,
         formData: req.session.formData,
+        
         user: req.user
     });
+    req.session.successMessage = null; // Üzenet törlése a session-ből  
+    req.session.failMessage = null; // Üzenet törlése a session-ből
 });
 
 
@@ -55,10 +57,10 @@ router.get("/profile/:id" , Verify, UserIDValidator, async (req, res) => {
     if (!user) {
         return res.status(404).render("errorpage", { errorCode: 404, failMessage: "User not found" });
     }
-    res.render("selfEdit", { formData:user,roleList: roles, rolePermissons: req.user?.role.permissions,
+    res.render("selfEdit", { formID: req.params.id,formData:user,roleList: roles, rolePermissons: req.user?.role.permissions,
         user: req.user,
-         successMessage: req.session.successMessage,
-         failMessage: req.session.failMessage });
+        successMessage: req.session.successMessage,
+        failMessage: req.session.failMessage });
     req.session.successMessage = null; // Üzenet törlése a session-ből
     req.session.failMessage = null; // Üzenet törlése a session-ből
 
@@ -84,8 +86,10 @@ router.post("/profile/:id", Verify, UserIDValidator, async (req, res) => {
 
             const errorMessage = err.errors
                 ? Object.values(err.errors).map(error => error.message).join(' ')
-                : 'Ez a User már létezik!';
+                : 'Az adatok már megtalálhatóak az adatbázisban!';
             return res.render('selfEdit', {
+                formID : req.params.id,
+                formData: { ...req.body },
                 formData: req.body,
                 successMessage: null,
                 failMessage: errorMessage,

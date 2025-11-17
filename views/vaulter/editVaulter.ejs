@@ -24,13 +24,25 @@
 
       <!-- Gender -->
       <div class="col-md-12">
-        <div class="form-floating">
-          <select class="form-select shadow-none" id="gender" name="gender">
-            <option value="">Select Gender</option>
-            <option value="Male" <%= formData && formData.gender === 'Male' ? 'selected' : '' %>>Male</option>
-            <option value="Female" <%= formData && formData.gender === 'Female' ? 'selected' : '' %>>Female</option>
-          </select>
-          <label for="gender">Gender</label>
+        <div class="form-floating position-relative searchable-dropdown">
+          <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
+          <input type="text" class="form-control shadow-none searchable-input"
+                 placeholder="Search Gender"
+                 autocomplete="off"
+                 value="<%= formData ? formData.gender : '' %>">
+          <label class="form-label">Gender</label>
+
+          <!-- Hidden input for form submission -->
+          <input type="hidden" class="searchable-hidden" name="gender"
+                 value="<%= formData ? formData.gender : '' %>">
+
+          <!-- Dropdown list -->
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+              style="max-height: 200px; overflow-y: auto; z-index: 1000;">
+
+              <li class="list-group-item list-group-item-action searchable-item" >Male</li>
+              <li class="list-group-item list-group-item-action searchable-item" >Female</li>
+          </ul>
         </div>
       </div>
 
@@ -43,37 +55,69 @@
         </div>
       </div>
 
-      <!-- Nationality -->
+      <!-- Nationality (Searchable Dropdown with arrow) -->
       <div class="col-md-12">
-        <div class="form-floating">
-          <select class="form-select shadow-none" id="Nationality" name="Nationality">
-            <option value="">-- Select Nationality --</option>
+        <div class="form-floating position-relative searchable-dropdown">
+          <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
+          <input type="text" class="form-control shadow-none searchable-input"
+                 placeholder="Search Nationality"
+                 autocomplete="off"
+                 value="<%= formData ? formData.Nationality : '' %>">
+          <label class="form-label">Nationality</label>
+
+          <!-- Hidden input for form submission -->
+          <input type="hidden" class="searchable-hidden" name="Nationality"
+                 value="<%= formData ? formData.Nationality : '' %>">
+
+          <!-- Dropdown list -->
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+              style="max-height: 200px; overflow-y: auto; z-index: 1000;">
             <% countries.forEach(country => { %>
-              <option value="<%= country %>" <%= formData && formData.Nationality === country ? "selected" : "" %>>
-                <%= country %>
-              </option>
+              <li class="list-group-item list-group-item-action searchable-item"><%= country %></li>
             <% }) %>
-          </select>
-          <label for="Nationality">Nationality</label>
+          </ul>
         </div>
       </div>
 
-      <!-- Vaulter Status -->
+            <!-- Status -->
       <div class="col-md-12">
-        <div class="form-floating">
-          <select class="form-select shadow-none" id="Status" name="Status">
-            <option value="active" <%= formData && formData.Status === 'active' ? 'selected' : '' %>>Active</option>
-            <option value="inactive" <%= formData && formData.Status === 'inactive' ? 'selected' : '' %>>Inactive</option>
-          </select>
-          <label for="Status">Vaulter Status</label>
+        <div class="form-floating position-relative searchable-dropdown">
+          <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
+          <input type="text" class="form-control shadow-none searchable-input"
+                 placeholder="Search Status"
+                 autocomplete="off"
+                 value="<%= formData ? (formData.Status === 'active' ? 'Active' : 'Inactive') : '' %>">
+          <label class="form-label">Status</label>
+
+          <!-- Hidden input for form submission -->
+          <input type="hidden" class="searchable-hidden" name="Status"
+                 value="<%= formData ? formData.Status : '' %>">
+
+          <!-- Dropdown list -->
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+              style="max-height: 200px; overflow-y: auto; z-index: 1000;">
+
+              <li class="list-group-item list-group-item-action searchable-item" val="active">Active</li>
+              <li class="list-group-item list-group-item-action searchable-item" val="inactive">Inactive</li>
+          </ul>
         </div>
       </div>
-
-      <!-- Arm Number -->
+    
       <div class="col-md-12">
         <div class="form-floating">
           <input type="text" class="form-control shadow-none" id="ArmNr" name="ArmNr" placeholder="Arm Number"
-                 value="<%= formData ? formData.ArmNr : '' %>">
+                value="<%   
+                let armValue = '';
+              
+                 if (formData) {
+
+                  if (Array.isArray(formData.ArmNr) && formData.ArmNr.length > 0){
+                      armValue = formData.ArmNr[0].armNumber ? formData.ArmNr[0].armNumber : ''
+                    } else {
+                      armValue =   formData.arm ? formData.arm : '';
+
+                  }}
+                 %><%= armValue %>"> 
           <label for="ArmNr">Arm Number</label>
         </div>
       </div>

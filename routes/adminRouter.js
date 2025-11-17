@@ -416,6 +416,7 @@ adminRouter.get('/editPermission/:id', Verify, VerifyRole(), async (req, res) =>
 adminRouter.post('/editPermission/:id', Verify, VerifyRole(), async (req, res) => {
     try {
         const { name, displayName, attachedURL, requestType } = req.body;
+        console.debug(req.body)
         const updatedPermission = await Permissions.findByIdAndUpdate(req.params.id, {
             name,
             displayName,
@@ -440,9 +441,10 @@ adminRouter.post('/editPermission/:id', Verify, VerifyRole(), async (req, res) =
         : 'Server error';
         req.session.failMessage = errorMessage;
         return res.render('admin/editPerm', {
+            
             rolePermissons: req.user.role.permissions,
             failMessage: req.session.failMessage,
-            formData: permission,
+            formData: await Permissions.findById(req.params.id),
             successMessage: req.session.successMessage,
             user: req.user
         });
@@ -463,9 +465,9 @@ adminRouter.delete('/deletePermission/:permId', Verify, VerifyRole(), async (req
             return res.status(400).send('Cannot delete permission. It is assigned to one or more roles.');
         }
 
-       // await Permissions.findByIdAndDelete(permId);
         logger.db(`Permission ${permission.name} deleted by user ${req.user.username}.`);
         req.session.successMessage = 'Permission successfully deleted.';
+        await Permissions.findByIdAndDelete(permId);
         res.status(200).send('Permission deleted.');
     } catch (err) {
         logger.error("Err:" + err.toString());

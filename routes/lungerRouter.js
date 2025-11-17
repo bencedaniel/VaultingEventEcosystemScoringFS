@@ -225,7 +225,7 @@ lungerRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
     try {
         const newLunger = new Lunger(req.body);
         await newLunger.save()
-        logger.db(`Lunger ${newLunger.name} created by user ${req.user.username}.`);
+        logger.db(`Lunger ${newLunger.Name} created by user ${req.user.username}.`);
         req.session.successMessage = 'Lunger created successfully!';
         res.redirect('/lunger/dashboard');
     } catch (err) {
@@ -263,7 +263,7 @@ lungerRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
 
     lungerRouter.get('/details/:id',Verify, VerifyRole(), async (req, res) => {
         try {
-          const lunger = await Lunger.findById(req.params.id);
+          const lunger = await Lunger.findById(req.params.id).populate('LungerIncident.eventID', 'EventName');
             if (!lunger) {
             req.session.failMessage = 'Lunger not found';
             return res.redirect('/lunger/dashboard');
@@ -310,7 +310,7 @@ lungerRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
       lungerRouter.post('/edit/:id',Verify, VerifyRole(), Validate, async (req, res) => {
         try {
           const lunger = await Lunger.findByIdAndUpdate(req.params.id, req.body, { runValidators: true });
-          logger.db(`Lunger ${lunger.name} updated by user ${req.user.username}.`);
+          logger.db(`Lunger ${lunger.Name} updated by user ${req.user.username}.`);
           if (!lunger) {
             req.session.failMessage = 'Lunger not found';
             return res.redirect('/lunger/dashboard');
@@ -339,7 +339,7 @@ lungerRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
         try {
 
           const lunger = await Lunger.findByIdAndDelete(req.params.id);
-          logger.db(`Lunger ${lunger.name} deleted by user ${req.user.username}.`);
+          logger.db(`Lunger ${lunger.Name} deleted by user ${req.user.username}.`);
           if (!lunger) {
             req.session.failMessage = 'Lunger not found';
             return res.status(404).json({ message: 'Lunger not found' });
@@ -354,7 +354,7 @@ lungerRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
       lungerRouter.delete('/deleteIncident/:id', Verify, VerifyRole(), async (req, res) => {
         try {
           const lunger = await Lunger.findById(req.params.id);
-          logger.db(`Lunger ${lunger.name} incident deleted by user ${req.user.username}.`);
+          logger.db(`Lunger ${lunger.Name} incident deleted by user ${req.user.username}.`);
           if (!lunger) {
             req.session.failMessage = 'Lunger not found';
             return res.status(404).json({ message: 'Lunger not found' });

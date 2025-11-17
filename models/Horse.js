@@ -10,10 +10,12 @@ const HorseSchema = new mongoose.Schema({
     type: String,
     required: [true, 'FEI-ID required!'],
     unique: true,
-    match: [/^\d{8}$/, 'FEI-ID must be exactly 8 digits!'],
+    match: [/^[A-Za-z0-9]{7}$/, 'FEI-ID must be exactly 7 characters!'],
+    
   },
   sex: {
     type: String,
+    enum: ['Mare','Gelding','Stallion'],
     required: [ true, 'Sex required!'],
   },
   Bdate: {
@@ -39,12 +41,12 @@ const HorseSchema = new mongoose.Schema({
   },
 
   BoxNr: {
-    type: String,
-    required: [true, 'Box number required!'],
+    type: [{      eventID: { type: mongoose.Schema.Types.ObjectId, ref:'events' ,required: true }, // User who reported the incident
+      boxNumber: { type: String, required: true }}]
   },
   HeadNr: {
-    type: String,
-    required: [true, 'Head number required!'],
+    type: [{      eventID: { type: mongoose.Schema.Types.ObjectId, ref:'events' ,required: true }, // User who reported the incident
+      headNumber: { type: String, required: true }}]
   },
   Notes: {
     type: [{

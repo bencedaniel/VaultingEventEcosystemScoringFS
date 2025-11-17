@@ -106,6 +106,7 @@ entryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
       entryRouter.post('/edit/:id', Verify, VerifyRole(), Validate, async (req, res) => {
         try {
           // Üres string helyett undefined/null, ha nincs kiválasztva
+                    logger.debug(req.body)
 
           const updateData = { ...req.body, _id: req.params.id };
           const entry = await Entries.findByIdAndDelete(req.params.id);
@@ -140,7 +141,7 @@ entryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
         }
       });
 
-      entryRouter.delete('/delete/:id',Verify, VerifyRole(), async (req, res) => {
+       entryRouter.delete('/delete/:id',Verify, VerifyRole(), async (req, res) => {
         try {
 
           const entry = await Entries.findByIdAndDelete(req.params.id);
@@ -217,6 +218,9 @@ entryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
         
         const uniqueHorses = Array.from(new Set(horsesontheEvent.map(entry => entry.horse._id.toString())));
         const horses = await Horse.find({ _id: { $in: uniqueHorses },}).sort({ name: 1 });
+        horse.HeadNr = horse.HeadNr.filter(h => String(h.eventID) === String(res.locals.selectedEvent._id));
+        horse.BoxNr = horse.BoxNr.filter(b => String(b.eventID) === String(res.locals.selectedEvent._id));
+        
         res.render('entry/vetcheckdash', {
             horses,
             rolePermissons: req.user?.role?.permissions,

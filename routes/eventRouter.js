@@ -49,6 +49,7 @@ eventRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
 });
   eventRouter.get('/dashboard',Verify, VerifyRole(), async (req, res) => {
         const events = await Event.find().sort({ name: 1 });
+        logger.debug(req.session.successMessage)
         res.render('event/eventdash', {
             events,
             rolePermissons: req.user?.role?.permissions,
@@ -110,22 +111,7 @@ eventRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
         }
       });
 
-      eventRouter.delete('/delete/:id',Verify, VerifyRole(), async (req, res) => {
-        try {
 
-          const event = await Event.findByIdAndDelete(req.params.id);
-          logger.db(`Event ${event.name} deleted by user ${req.user.username}.`);
-          if (!event) {
-            req.session.failMessage = 'Event not found';
-            return res.status(404).json({ message: 'Event not found' });
-          }
-          res.status(200).json({ message: 'Event deleted successfully' });
-        } catch (err) {
-          logger.error(err + " User: "+ req.user.username);
-          req.session.failMessage = 'Server error';
-          res.status(500).json({ message: 'Server error' });
-        }
-      });
 
        eventRouter.get('/details/:id',Verify, VerifyRole(), async (req, res) => {
         try {
@@ -212,13 +198,13 @@ eventRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
               logger.db(`Event ${event.EventName} selected by user ${req.user.username}.`);
               await Event.setSelected(event._id); // eventId is the _id of the event to select
               req.session.selectedEvent = event._id;
-              req.session.successMessage = `Selected event: ${event.EventName}`;
-              res.redirect('/admin/event/dashboard');
+              req.session.successMessage = 'Event selected successfully! ' + event.EventName;
+              res.status(200).json({ message: 'Event selected successfully! ' + event.EventName });
           }
           catch (err) {
               logger.error(err + " User: "+ req.user.username);
-              req.session.failMessage = 'Server error';
-              return res.redirect('/admin/event/dashboard');
+              return res.status(500).json({ message: 'Server error' });
+              ;
           }
       });
 

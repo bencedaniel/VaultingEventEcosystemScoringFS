@@ -45,9 +45,19 @@
 
       <!-- Incidents -->
       <div class="col-md-12 bg-secondary bg-opacity-10 rounded p-3" style="max-width: 97%;">
+        <div class="d-flex justify-content-between m-2">
         <label class="form-label mb-2">Incidents</label>
+        <div class="p-1 px-2 border border-1 border-black border-opacity-25 rounded">
+        <input type="checkbox" class="form-check-input me-2" id="filterCheck" onchange="loadFilteredData()" checked>
+        <label for="filterCheck"> Filter to the selected event</label>
+        </div>
+        </div>
+
         <div id="IncidentList"></div>
+
         <a type="button" class="btn btn-sm btn-danger mt-2" id="addIncident">+ Add Incident</a>
+                  
+
       </div>
 
       <!-- Edit button -->
@@ -71,6 +81,8 @@
             </div>
             <div class="modal-body">
               <form action="/lunger/newIncident/<%= formData ? formData._id : '' %>" id="IncidentModalForm" method="POST">
+                
+                
                 <div class="col-md-12 mb-2">
                   <div class="form-floating">
                     <select class="form-select" id="incidentType" name="incidentType" required>
@@ -111,11 +123,12 @@
         <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <p><strong>Type:</strong> <span id="incidentTypeContent"></span></p>
-        <p><strong>Reported by:</strong> <span id="incidentUser"></span></p>
+     <p class="mt-3"><strong>Type:</strong> <span id="incidentTypeContent"></span></p>
+        <p class="mt-3"><strong>Reported by:</strong> <span id="incidentUser"></span></p>
+        <p class="mt-3"><strong>Date:</strong> <span id="incidentDate"></span></p>
+        <p class="mt-3"><strong>Event:</strong> <span id="eventName"></span></p>
         <p><strong>Description:</strong></p>
         <pre id="incidentDescription" class="bg-light p-2 rounded"></pre>
-        <p class="mt-3"><strong>Date:</strong> <span id="incidentDate"></span></p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -151,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-function addIncidentInput(type = '', description = '', date = '', user = '') {
+function addIncidentInput(type = '', description = '', date = '', user = '', event = '') {
     const incidentList = document.getElementById('IncidentList');
 
     const wrapper = document.createElement('div');
@@ -175,11 +188,6 @@ function addIncidentInput(type = '', description = '', date = '', user = '') {
     inputDate.value = date;
     inputDate.disabled = true;
     
-    const inputUser = document.createElement('input');
-    inputUser.type = 'text';
-    inputUser.classList.add('form-control');
-    inputUser.value = user;
-    inputUser.disabled = true;
 
     const viewBtn = document.createElement('button');
     viewBtn.type = 'button';
@@ -187,7 +195,7 @@ function addIncidentInput(type = '', description = '', date = '', user = '') {
     const zoomicon = document.createElement('i');
     zoomicon.classList.add('bi', 'bi-search');
     viewBtn.appendChild(zoomicon);
-    viewBtn.onclick = () => showIncidentPopup(type, description, date, user);
+    viewBtn.onclick = () => showIncidentPopup(type, description, date, user, event);
 
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -200,7 +208,6 @@ function addIncidentInput(type = '', description = '', date = '', user = '') {
     wrapper.appendChild(inputType);
     wrapper.appendChild(inputDesc);
     wrapper.appendChild(inputDate);
-    wrapper.appendChild(inputUser);
 
     wrapper.appendChild(viewBtn);
     wrapper.appendChild(btn);
@@ -220,24 +227,54 @@ function removeIncident(parentElement) {
     }).then(() => window.location.reload());
 }
 
-function showIncidentPopup(type, description, date, user) {
+function showIncidentPopup(type, description, date, user, event) {
     document.getElementById('incidentTypeContent').textContent = type;
     document.getElementById('incidentDescription').textContent = description;
     document.getElementById('incidentUser').textContent = user;
     document.getElementById('incidentDate').textContent = date;
+    document.getElementById('eventName').textContent = event;
+
     const modal = new bootstrap.Modal(document.getElementById('IncidentViewModal'));
     modal.show();
 }
 
+
+function loadFilteredData(datalist) {
+  const checker = document.getElementById('filterCheck')
+  const incidentList = document.getElementById('IncidentList')
+  incidentList.innerHTML = ''
+
+  if(checker.checked){
+      dataList.forEach(element => {
+        if(String(element.eventId) === eventId){
+          addIncidentInput(element.type,element.desc,element.date,element.user, element.eventName)
+        }
+    });
+
+  }else{
+    dataList.forEach(element => {
+      addIncidentInput(element.type,element.desc,element.date,element.user, element.eventName)
+    });
+  }
+  
+
+}
+
+let dataList =[]
+let eventId = "<%= selectedEvent._id %>"
 <% if (formData && formData.LungerIncident) { %>
   <% formData.LungerIncident.forEach(function(incident) { %>
     
-    addIncidentInput(
-      "<%= incident.incidentType %>",
-      "<%= incident.description %>",
-      "<%= new Date(incident.date).toLocaleString('hu-HU', {timeZone: 'Europe/Budapest'}) %>",
-      "<%= users.find(user => user._id.toString() === incident.User.toString())?.username %>"
-    );
+    dataList.push({
+      type: "<%= incident.incidentType %>",
+      desc: "<%= incident.description %>",
+      date: "<%= new Date(incident.date).toLocaleString('hu-HU', {timeZone: 'Europe/Budapest'}) %>",
+      user: "<%= users.find(user => user._id.toString() === incident.User.toString())?.username %>",
+      eventId: "<%= incident.eventID._id %>",
+      eventName: "<%= incident.eventID.EventName %>" })
+    
   <% }) %>
 <% } %>
+loadFilteredData()
 </script>
+

@@ -22,12 +22,12 @@
         </div>
       </div>
 
-      <!-- Gender -->
+      <!-- Sex -->
       <div class="col-md-12">
         <div class="form-floating">
-          <input type="text" class="form-control shadow-none" id="gender" name="gender" placeholder="Gender" disabled
-                 value="<%= formData ? formData.gender : '' %>">
-          <label for="Gender">Gender</label>
+          <input type="text" class="form-control shadow-none" id="sex" name="sex" placeholder="Sex" disabled
+                 value="<%= formData ? formData.sex : '' %>">
+          <label for="sex">Sex</label>
         </div>
       </div>
 
@@ -49,9 +49,15 @@
         </div>
       </div>
 
-      <!-- Notes -->
+      <!-- Vet -->
       <div class="col-md-12 bg-secondary bg-opacity-10 rounded p-3 " style="max-width: 97%;" >
-        <label class="form-label mb-2">Notes</label>
+          <div class="d-flex justify-content-between m-2">
+        <label class="form-label mb-2">Vet Check history</label>
+        <div class="p-1 px-2 border border-1 border-black border-opacity-25 rounded">
+        <input type="checkbox" class="form-check-input me-2" id="filterCheckVet" onchange="loadFilteredVetData()" checked>
+        <label for="filterCheckVet"> Filter to the selected event</label>
+        </div>
+        </div>
         <div id="VetCheckActions"></div>
       </div>
      
@@ -70,7 +76,7 @@
       <div class="col-md-12">
         <div class="form-floating">
           <input type="text" class="form-control shadow-none" id="BoxNr" name="BoxNr" placeholder="Box Number" disabled
-                 value="<%= formData ? formData.BoxNr : '' %>">
+                 value="<%= formData ? formData.BoxNr[0].boxNumber ? formData.BoxNr[0].boxNumber : 'No Box Nr' : '' %>">
           <label for="BoxNr">Box Number</label>
         </div>
       </div>
@@ -79,14 +85,21 @@
       <div class="col-md-12">
         <div class="form-floating">
           <input type="text" class="form-control shadow-none" id="HeadNr" name="HeadNr" placeholder="Head Number" disabled
-                 value="<%= formData ? formData.HeadNr : '' %>">
+                 value="<%= formData ? formData.HeadNr[0].headNumber ? formData.HeadNr[0].headNumber : 'No Head Nr' : '' %>">
           <label for="HeadNr">Head Number</label>
         </div>
       </div>
 
       <!-- Notes -->
       <div class="col-md-12 bg-secondary bg-opacity-10 rounded p-3 " style="max-width: 97%;" >
+       <div class="d-flex justify-content-between m-2">
         <label class="form-label mb-2">Notes</label>
+        <div class="p-1 px-2 border border-1 border-black border-opacity-25 rounded">
+        <input type="checkbox" class="form-check-input me-2" id="filterCheck" onchange="loadFilteredData()" checked>
+        <label for="filterCheck"> Filter to the selected event</label>
+        </div>
+        </div>
+
         <div id="NoteList"></div>
         <a type="button" class="btn btn-sm btn-success mt-2" id="addNote">+ Add Note</a>
       </div>
@@ -326,6 +339,52 @@ document.addEventListener('DOMContentLoaded', function() {
     modal.show();
   }
 
+  function loadFilteredData() {
+    const checker = document.getElementById('filterCheck')
+    const NoteList = document.getElementById('NoteList')
+    NoteList.innerHTML = ''
+
+    if(checker.checked){
+        dataList.forEach(element => {
+          if(String(element.eventId) === eventId){
+            addUrlInput(element.note,element.date,element.user, element.eventName)
+          }
+      });
+
+    }else{
+      dataList.forEach(element => {
+        addUrlInput(element.note,element.date,element.user, element.eventName)
+      });
+    }
+    
+
+}
+  function loadFilteredVetData() {
+    const Vetchecker = document.getElementById('filterCheckVet')
+    const VetCheckActions = document.getElementById('VetCheckActions')
+    VetCheckActions.innerHTML = ''
+
+    if(Vetchecker.checked){
+        vetCheckList.forEach(element => {
+          if(String(element.eventID) === eventId){
+            addVetCheckInput(element.status, element.eventName, element.timestamp)
+          }
+      });
+
+    }else{
+      vetCheckList.forEach(element => {
+        addVetCheckInput(element.status, element.eventName, element.timestamp)
+      });
+    }
+    
+
+}
+
+let dataList = []
+let eventId = "<%= selectedEvent._id %>"
+console.log(dataList)
+let vetCheckList = []
+
 
 
   <% if (formData && formData.VetCheckStatus) { %>
@@ -335,6 +394,7 @@ document.addEventListener('DOMContentLoaded', function() {
          .sort((a,b) => new Date(b.date || b.timestamp || 0) - new Date(a.date || a.timestamp || 0));
     %>
     <% sortedVet.forEach(function(v) { 
+         const eventID = v?.eventID._id || {};
          const eventName = v?.eventID?.EventName || '';
          const rawTs = v?.date || v?.timestamp || null;
          const d = rawTs ? new Date(rawTs) : null;
@@ -342,12 +402,19 @@ document.addEventListener('DOMContentLoaded', function() {
            ? d.toLocaleString('hu-HU', { timeZone: 'Europe/Budapest' })
            : '';
     %>
-      addVetCheckInput(
-        <%- JSON.stringify(v?.status || '') %>,
-        <%- JSON.stringify(eventName) %>,
-        <%- JSON.stringify(ts) %>
-      );
+      vetCheckList.push({
+        eventID: <%- JSON.stringify(eventID) %>,
+        status: <%- JSON.stringify(v?.status || '') %>,
+        eventName: <%- JSON.stringify(eventName) %>,
+        timestamp: <%- JSON.stringify(ts) %>
+      });
     <% }) %>
+
+
+
+
+
+
 
     <% // Notes rendezése timestamp szerint (legújabb elöl)
        const sortedNotes = (formData?.Notes || [])
@@ -355,11 +422,17 @@ document.addEventListener('DOMContentLoaded', function() {
          .sort((a,b) => new Date(b.timestamp || b.date || 0) - new Date(a.timestamp || a.date || 0));
     %>
     <% sortedNotes.forEach(function(note) { %>
-      addUrlInput(
-        <%- JSON.stringify(note?.note || '') %>, 
-        <%- JSON.stringify(new Date(note?.timestamp || note?.date).toLocaleString('hu-HU', { timeZone: 'Europe/Budapest' })) %>,
-        <%- JSON.stringify((note?.user && note.user.username) ? note.user.username : '') %>
-      );
+      
+      dataList.push({
+        note: <%- JSON.stringify(note?.note || '') %>, 
+        date: <%- JSON.stringify(new Date(note?.timestamp || note?.date).toLocaleString('hu-HU', { timeZone: 'Europe/Budapest' })) %>,
+        user: <%- JSON.stringify((note?.user && note.user.username) ? note.user.username : '') %>,
+        eventId: <%- JSON.stringify(note?.eventID._id || '') %>,
+        event: <%- JSON.stringify(note?.eventID.EventName || '') %>})
+      ;
     <% }) %>
   <% } %>
+
+  loadFilteredData()
+loadFilteredVetData()
 </script>

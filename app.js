@@ -21,7 +21,8 @@ import categoryRouter from './routes/categoryRouter.js';
 import entryRouter from './routes/entryRouter.js';
 import JudgesRouter from './routes/judgesRouter.js';
 import dailytimetableRouter from './routes/DtimetableRouter.js';
-
+import alertRouter from './routes/alertRouter.js';
+import Alert from './models/Alert.js';
 // Az aktuális fájl és könyvtár meghatározása
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -44,11 +45,8 @@ app.set('views', path.join(__dirname, 'views')); // A 'views' könyvtár beáll�
 app.set('view engine', 'ejs'); // EJS sablonmotor beállítása
 
 app.use(expressLayouts); // Layout
-if(TESTDB==='true'){ 
-    app.set('layout', 'layouts/testlayout'); // Layout könyvtár beállítása
-}else{
-    app.set('layout', 'layouts/layout'); // Layout könyvtár beállítása
-}
+app.set('layout', 'layouts/layout'); // Layout könyvtár beállítása
+
 app.use(express.json()); // JSON formátumú adatok feldolgozása és elérhetősége a 'req.body' objektumon keresztül
 app.use(express.urlencoded({ extended: true })); // URL-en keresztül érkező, formázott adatok feldolgozása és elérhetősége a 'req.body' objektumon keresztül
 app.use(cors());
@@ -80,11 +78,17 @@ app.use((req, res, next) => {
   });
   next();
 });
-const version = '0.0.15';
+const version = '0.0.18';
 app.use(async (req, res, next) => {
-  res.locals.prevpage = req.get('Referrer') || '/dashboard';
+    if(TESTDB==='true'){ 
+      res.locals.test = true
+  }else{
+      res.locals.test = false
+  }
+  res.locals.alerts= await Alert.find({ active: true });
+  res.locals.parent = '/dashboard';
   res.locals.selectedEvent = await Event.findOne({ selected: true });
-  res.locals.version = version; // vagy amit szeretnél
+  res.locals.version = version;
   next();
 });
 
@@ -99,6 +103,8 @@ app.use('/admin/event', eventRouter); // Event útvonalak kezelése
 app.use('/entry', entryRouter); // Entry útvonalak kezelése
 app.use('/judges', JudgesRouter); // Judges útvonalak kezelése
 app.use('/dailytimetable', dailytimetableRouter); // DailyTimeTable útvonalak kezelése
+app.use('/alerts', alertRouter); // Alert útvonalak kezelése
+
 
 
 

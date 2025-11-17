@@ -15,7 +15,6 @@ export async function Verify(req, res, next) {
       req.session.failMessage = "Your session has expired or you are not authorized. Please log in to continue.";
         return res.redirect("/login");
     }
-
     
 
     // 2️⃣ Blacklist ellenőrzés
@@ -46,22 +45,28 @@ export async function Verify(req, res, next) {
       req.session.failMessage = "Your account has been deactivated. Please contact a system administrator."
         try {
           const authHeader = req.headers['cookie']; // get the session cookie from request header
-          if (!authHeader) return res.sendStatus(204); // No content
+          if (!authHeader) {
+            req.session.failMessage = "Your account has been deactivated. Please contact a system administrator."
+            return res.sendStatus(204);
+          } 
           const cookie = authHeader.split('=')[1]; // If there is, split the cookie string to get the actual jwt token
           const accessToken = cookie.split(';')[0];
           const checkIfBlacklisted = await Blacklist.findOne({ token: accessToken }); // Check if that token is blacklisted
           // if true, send a no content response.
-          if (checkIfBlacklisted) return res.sendStatus(204);
+          if (checkIfBlacklisted){
+            req.session.failMessage = "Your account has been deactivated. Please contact a system administrator."
+            return res.sendStatus(204);
+          } 
           // otherwise blacklist token
           const newBlacklist = new Blacklist({
             token: accessToken,
           });
+
           await newBlacklist.save();
           res.clearCookie('token', {
             httpOnly: true,
             secure: process.env.SECURE_MODE === 'true',
             sameSite: 'lax',
-            path: '/' // ha más path-ot használtál set-nél, add meg ugyanazt
           });
           req.session.failMessage = "Your account has been deactivated. Please contact a system administrator."
           return res.redirect('/login'); // redirect to home page
@@ -74,6 +79,7 @@ export async function Verify(req, res, next) {
         }
       
     }
+
 
     // 5️⃣ Rolling JWT generálása
     const newToken = jwt.sign({ id: user._id }, SECRET_ACCESS_TOKEN, { expiresIn: "90m" });
@@ -146,20 +152,29 @@ export function VerifyRole() {
             // Most minden permission dokumentum elérhető a permissionsDocs tömbben
             const allAttachedURLs = permissionsDocs.flatMap(p => p.attachedURL);
 
-
+            let hasPermission = false
             
-            const hasPermission = allAttachedURLs.some(pattern => urlsMatch(pattern, req.originalUrl));
+            const perm = allAttachedURLs.find(pattern => urlsMatch(pattern.url, req.originalUrl));
+            if (!perm) {
+              hasPermission = false;
+            } else {
+              req.session.parent = perm.parent;
+              hasPermission = true;
+                res.locals.parent = (typeof req.session?.parent === 'string' && req.session.parent.trim() !== '')
+                  ? req.session.parent
+                  : '/dashboard';
+            }
             if (!roleFromDB || !hasPermission)  {
                 logger.warn(`User ${user.username} with role ${roleFromDB ? roleFromDB.roleName : 'unknown'} tried to access ${req.originalUrl} without permission.`);
                 req.session.failMessage = "You do not have permission to access this resource.";
-                return res.redirect(req.get('Referer') || '/login'); // vissza az előző oldalra, vagy login ha nincs
-            }
+                return res.redirect(req.get('Referer') || '/dashboard'); // vissza az előző oldalra, vagy login ha nincs
+              }
             next();
         } catch (err) {
 
             logger.error("Internal server error in VerifyRole middleware: "+ err +" User: "+ req.user?.username);
             req.session.failMessage = "Internal server error.";
-                return res.redirect(req.get('Referer') || '/login'); // vissza az előző oldalra, vagy login ha nincs
+                return res.redirect(req.get('Referer') || '/dashboard'); // vissza az előző oldalra, vagy login ha nincs
         }
     };
 }

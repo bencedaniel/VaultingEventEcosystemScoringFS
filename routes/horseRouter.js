@@ -8,6 +8,8 @@ import { check } from "express-validator";
 import { Verify, VerifyRole } from "../middleware/Verify.js";
 import Horse from '../models/Horse.js';
 import Permissions from '../models/Permissions.js';
+import Entries from '../models/Entries.js';
+
 const countries = [
   "Afghanistan",
   "Albania",
@@ -221,8 +223,23 @@ HorseRouter.get('/new',Verify, VerifyRole(), (req, res) => {
 });
 
 HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
+        const forerr = req.body;
+        forerr.box = req.body.BoxNr;
+        forerr.head = req.body.HeadNr;
     try {
+        const headNr = req.body.HeadNr;
+        const boxNr = req.body.BoxNr;
+        delete req.body.HeadNr;
+        delete req.body.BoxNr;
         const newHorse = new Horse(req.body);
+        newHorse.HeadNr.push({
+          headNumber: headNr,
+          eventID: res.locals.selectedEvent._id
+        });
+        newHorse.BoxNr.push({
+          boxNumber: boxNr,
+          eventID: res.locals.selectedEvent._id
+        }); 
         await newHorse.save()
         logger.db(`Horse ${newHorse.Horsename} created by user ${req.user.username}.`);
         req.session.successMessage = 'Horse created successfully!';
@@ -237,7 +254,7 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
         return res.render('horse/newHorse', {
             permissionList: await Permissions.find(),
             countries:countries,
-          formData: req.body,
+          formData: forerr,
           successMessage: null,
           failMessage: errorMessage,
           card: { ...req.body, _id: req.params.id },
@@ -251,7 +268,7 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
     return res.render('horse/newHorse', {
         permissionList: await Permissions.find(),
         countries:countries,
-      formData: req.body,
+      formData: forerr,
       successMessage: null,
       failMessage: errorMessage,
       card: { ...req.body, _id: req.params.id },
@@ -262,6 +279,10 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
 });
   HorseRouter.get('/dashboard',Verify, VerifyRole(), async (req, res) => {
         const horses = await Horse.find().sort({ name: 1 });
+        horses.forEach(horse => {
+           horse.HeadNr = horse.HeadNr.filter(h => String(h.eventID) === String(res.locals.selectedEvent._id));
+           horse.BoxNr = horse.BoxNr.filter(b => String(b.eventID) === String(res.locals.selectedEvent._id));
+        });
         res.render('horse/horsedash', {
             horses,
             rolePermissons: req.user?.role?.permissions,
@@ -276,7 +297,10 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
 
     HorseRouter.get('/details/:id',Verify, VerifyRole(), async (req, res) => {
         try {
-            const horse = await Horse.findById(req.params.id).populate('Notes.user', '-password -__v').populate('VetCheckStatus.eventID', 'EventName').populate('VetCheckStatus.user', '-password -__v');
+            const horse = await Horse.findById(req.params.id).populate('Notes.user', '-password -__v').populate('VetCheckStatus.eventID', 'EventName').populate('VetCheckStatus.user', '-password -__v').populate('Notes.eventID', 'EventName');
+           horse.HeadNr = horse.HeadNr.filter(h => String(h.eventID) === String(res.locals.selectedEvent._id));
+           horse.BoxNr = horse.BoxNr.filter(b => String(b.eventID) === String(res.locals.selectedEvent._id));
+
             if (!horse) {
             req.session.failMessage = 'Horse not found';
             return res.redirect('/horse/dashboard');
@@ -299,6 +323,8 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
     HorseRouter.get('/edit/:id',Verify, VerifyRole(), async (req, res) => {
         try {
           const horse = await Horse.findById(req.params.id);
+           horse.HeadNr = horse.HeadNr.filter(h => String(h.eventID) === String(res.locals.selectedEvent._id));
+           horse.BoxNr = horse.BoxNr.filter(b => String(b.eventID) === String(res.locals.selectedEvent._id));
           if (!horse) {
             req.session.failMessage = 'Horse not found';
             return res.redirect('/horse/dashboard');
@@ -320,8 +346,47 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
         }
       });
       HorseRouter.post('/edit/:id',Verify, VerifyRole(), Validate, async (req, res) => {
+                  const forerr = req.body;
+                  forerr.box = req.body.BoxNr;
+                  forerr.head = req.body.HeadNr;
+
         try {
+          const boxNr = req.body.BoxNr;
+          const headNr = req.body.HeadNr;
+          delete req.body.BoxNr;
+          delete req.body.HeadNr;
+          
           const horse = await Horse.findByIdAndUpdate(req.params.id, req.body, { runValidators: true });
+          const horseToUpdate = await Horse.findById(req.params.id);
+          let editedCount = 0;
+          horseToUpdate.BoxNr.forEach(b => {
+            if (String(b.eventID) === String(res.locals.selectedEvent._id)) {
+              b.boxNumber = boxNr;
+              editedCount++;
+            }
+          });
+          if (editedCount === 0) {
+            horseToUpdate.BoxNr.push({
+              boxNumber: boxNr,
+              eventID: res.locals.selectedEvent._id
+            });
+          }
+
+          editedCount = 0;
+          horseToUpdate.HeadNr.forEach(h => {
+            if (String(h.eventID) === String(res.locals.selectedEvent._id)) {
+              h.headNumber = headNr;
+              editedCount++;
+            }
+          });
+          if (editedCount === 0) {
+            horseToUpdate.HeadNr.push({
+              headNumber: headNr,
+              eventID: res.locals.selectedEvent._id
+            });
+          }
+
+          await horseToUpdate.save();
           logger.db(`Horse ${horse.Horsename} updated by user ${req.user.username}.`);
           if (!horse) {
             req.session.failMessage = 'Horse not found';
@@ -339,7 +404,7 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
       
           return res.render('horse/editHorse', {
             countries:countries,
-            formData: { ...req.body, _id: req.params.id },
+            formData: { ...forerr, _id: req.params.id },
             rolePermissons: req.user?.role?.permissions,
             failMessage: errorMessage,
             successMessage: req.session.successMessage,
@@ -403,5 +468,84 @@ HorseRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
         
 
     });
+
+
+
+     HorseRouter.get('/numbers' ,Verify, VerifyRole(), async (req, res) => {
+          try {
+            const horsesontheEvent = await Entries.find({ event: res.locals.selectedEvent._id }).populate('horse').select('horse');
+            
+            const uniqueHorses = Array.from(new Set(horsesontheEvent.map(entry => entry.horse._id.toString())));
+            const horses = await Horse.find({ _id: { $in: uniqueHorses },}).sort({ name: 1 });
+
+            horses.forEach(horse => {
+               horse.HeadNr = horse.HeadNr.filter(h => String(h.eventID) === String(res.locals.selectedEvent._id));
+               horse.BoxNr = horse.BoxNr.filter(b => String(b.eventID) === String(res.locals.selectedEvent._id));
+            });
+            res.render('horse/numberedit', {
+                horses,
+                rolePermissons: req.user?.role?.permissions,
+                failMessage: req.session.failMessage,
+                successMessage: req.session.successMessage,
+            user: req.user
+            });
+            req.session.failMessage = null; // Clear the fail message after rendering
+            req.session.successMessage = null; // Clear the success message after rendering 
+        } catch (err) {
+    
+              logger.error(err + " User: "+ req.user.username);
+              const horsesontheEvent = await Entries.find({ event: res.locals.selectedEvent._id }).populate('horse').select('horse');
+    
+              if (horsesontheEvent.length === 0) {
+                req.session.failMessage = 'No entries found for the selected event';
+                return res.redirect('/entry/dashboard');
+              }else {
+                req.session.failMessage = 'Server error';
+                return res.redirect('/entry/dashboard');
+              }
+            }
+          });
+
+      HorseRouter.post('/updatenums/:id',Verify, VerifyRole(), async (req, res) => {
+        try {
+          const horse = await Horse.findById(req.params.id);
+          let editedCount = 0;
+          horse.HeadNr.forEach(h => {
+            if (String(h.eventID) === String(res.locals.selectedEvent._id)) {
+              h.headNumber = req.body.headNumber;
+              editedCount++;
+            }
+          });
+          if (editedCount === 0) {
+            horse.HeadNr.push({
+              headNumber: req.body.headNumber,
+              eventID: res.locals.selectedEvent._id
+            });
+          }
+
+          editedCount = 0;
+          horse.BoxNr.forEach(b => {
+            if (String(b.eventID) === String(res.locals.selectedEvent._id)) {
+              b.boxNumber = req.body.boxNumber;
+              editedCount++;
+            }
+          });
+          if (editedCount === 0) {
+            horse.BoxNr.push({
+              boxNumber: req.body.boxNumber,
+              eventID: res.locals.selectedEvent._id
+            });
+          }
+
+          await Horse.findByIdAndUpdate(req.params.id, horse, { runValidators: true});
+          logger.db(`Horse ${horse.HorseName} numbers updated by user ${req.user.username}.`);
+
+          res.status(200).json({ message: 'Numbers updated successfully!'})
+        } catch (err) {
+          logger.error(err + " User: "+ req.user.username);
+          req.session.failMessage = 'Server error';
+          res.status(500).json({ message: 'Server error' });
+        }
+      });
 
 export default HorseRouter;

@@ -44,7 +44,7 @@
                 <td><%= permission.displayName %></td>
 
                 <td>
-                  <%= Array.isArray(permission.attachedURL) ? permission.attachedURL.join(', ') : permission.attachedURL %>
+                  <%= Array.isArray(permission.attachedURL) ? permission.attachedURL.map(urlObj => urlObj.url).join(', ') : permission.attachedURL.url %>
                 </td>
 
 

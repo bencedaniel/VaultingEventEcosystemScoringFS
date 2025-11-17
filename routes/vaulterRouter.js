@@ -9,6 +9,7 @@ import { Verify, VerifyRole } from "../middleware/Verify.js";
 import Vaulter from '../models/Vaulter.js';
 import Permissions from '../models/Permissions.js';
 import User from '../models/User.js';
+import Entries from '../models/Entries.js';
 const countries = [
   "Afghanistan",
   "Albania",
@@ -222,9 +223,18 @@ vaulterRouter.get('/new',Verify, VerifyRole(), (req, res) => {
 });
 
 vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
+  const forerr = req.body;
+  forerr.ArmNr = req.body.ArmNr;
     try {
-        const newVaulter = new Vaulter(req.body);
-        await newVaulter.save()
+        const newVaulter = req.body;
+
+        const armNr = {
+          eventID: res.locals.selectedEvent._id,
+          armNumber: req.body.ArmNr
+        };
+        newVaulter.ArmNr = [armNr];
+        const vaulterforsave = new Vaulter(newVaulter);
+        await vaulterforsave.save()
         logger.db(`Vaulter ${newVaulter.name} created by user ${req.user.username}.`);
         req.session.successMessage = 'Vaulter created successfully!';
         res.redirect('/vaulter/dashboard');
@@ -232,11 +242,12 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
     logger.error(err + " User: "+ req.user.username);
 
     const errorMessage = err.errors
-      ? Object.values(err.errors).map(e => e.message).join(' ')
+      ? Object.values(err.errors).map(e => e.message).join(', ')
       : 'Server error';
 
     return res.render('vaulter/newVaulter', {
         permissionList: await Permissions.find(),
+        countries:countries,
       formData: req.body,
       successMessage: null,
       failMessage: errorMessage,
@@ -248,6 +259,9 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
 });
   vaulterRouter.get('/dashboard',Verify, VerifyRole(), async (req, res) => {
         const vaulters = await Vaulter.find().sort({ name: 1 });
+        vaulters.forEach(element => {
+          element.ArmNr = element.ArmNr.filter(a => String(a.eventID) === String(res.locals.selectedEvent._id));
+        });
         res.render('vaulter/vaulterdash', {
             vaulters,
             rolePermissons: req.user?.role?.permissions,
@@ -262,7 +276,9 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
 
     vaulterRouter.get('/details/:id',Verify, VerifyRole(), async (req, res) => {
         try {
-            const vaulter = await Vaulter.findById(req.params.id);
+            const eventID = res.locals.selectedEvent._id
+            const vaulter = await Vaulter.findById(req.params.id).populate('VaulterIncident.eventID', 'EventName')
+            vaulter.ArmNr = vaulter.ArmNr.filter(a => String(a.eventID) === String(eventID));
             if (!vaulter) {
             req.session.failMessage = 'Vaulter not found';
             return res.redirect('/vaulter/dashboard');
@@ -285,7 +301,8 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
     });
     vaulterRouter.get('/edit/:id',Verify, VerifyRole(), async (req, res) => {
         try {
-          const vaulter = await Vaulter.findById(req.params.id);
+          const vaulter = await Vaulter.findById(req.params.id).lean();
+          vaulter.ArmNr = vaulter.ArmNr.filter(a => String(a.eventID) === String(res.locals.selectedEvent._id));
           if (!vaulter) {
             req.session.failMessage = 'Vaulter not found';
             return res.redirect('/vaulter/dashboard');
@@ -307,8 +324,27 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
         }
       });
       vaulterRouter.post('/edit/:id',Verify, VerifyRole(), Validate, async (req, res) => {
+          const forerr = req.body;
+          forerr.ArmNr = req.body.ArmNr;
         try {
+          const ArmNr = req.body.ArmNr;
+          delete req.body.ArmNr;
           const vaulter = await Vaulter.findByIdAndUpdate(req.params.id, req.body, { runValidators: true });
+          const vaulterToUpdate = await Vaulter.findById(req.params.id);
+          let editedCount = 0;
+          vaulterToUpdate.ArmNr.forEach(element => {
+            if (String(element.eventID) === String(res.locals.selectedEvent._id)) {
+              element.armNumber = ArmNr;
+              editedCount++;
+            }
+          });
+          if (editedCount === 0) {
+            vaulterToUpdate.ArmNr.push({
+              eventID: res.locals.selectedEvent._id,
+              armNumber: ArmNr
+            });
+          }
+          await vaulterToUpdate.save();
           logger.db(`Vaulter ${vaulter.name} updated by user ${req.user.username}.`);
           if (!vaulter) {
             req.session.failMessage = 'Vaulter not found';
@@ -325,6 +361,7 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
             : 'Server error';
       
           return res.render('vaulter/editVaulter', {
+            countries:countries,
             permissionList: await Permissions.find(),
             formData: { ...req.body, _id: req.params.id },
             successMessage: null,
@@ -455,5 +492,65 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
         
 
     });
+
+
+    vaulterRouter.get('/numbers',Verify,VerifyRole(), async (req,res) =>{
+      const entries =await Entries.find().populate('vaulter');
+      const VaulterSet = new Set();
+      entries.forEach(entry => {
+        entry.vaulter.forEach(vaulter => {
+          vaulter.ArmNr = vaulter.ArmNr.filter(a => String(a.eventID) === String(res.locals.selectedEvent._id));
+          VaulterSet.add(vaulter);
+        });
+      });
+    res.render('vaulter/numberedit', {
+      vaulters: Array.from(VaulterSet),
+      rolePermissons: req.user?.role?.permissions,
+      failMessage: req.session.failMessage,
+      successMessage: req.session.successMessage,
+      user: req.user
+    });
+    req.session.failMessage = null; // Clear the fail message after rendering
+    req.session.successMessage = null; // Clear the success message after rendering
+    
+
+
+
+
+    });
+
+    vaulterRouter.post('/updatenums/:id',Verify,VerifyRole(), async (req,res) =>{
+      try{
+        const vaulterToUpdate = await Vaulter.findById(req.params.id);
+        let editedCount = 0;
+        vaulterToUpdate.ArmNr.forEach(element => {
+          if (String(element.eventID) === String(res.locals.selectedEvent._id)) {
+            element.armNumber = req.body.armNumber;
+            editedCount++;
+          }
+        });
+        if (editedCount === 0) {
+          vaulterToUpdate.ArmNr.push({
+            eventID: res.locals.selectedEvent._id,
+            armNumber: req.body.armNumber
+          });
+        }
+        await vaulterToUpdate.save();
+        logger.db(`Vaulter ${vaulterToUpdate.Name} arm number updated by user ${req.user.username}.`);
+        res.status(200).json({ message: 'Arm number updated successfully!' })
+      } catch (err) {
+        logger.error(err + " User: "+ req.user.username);
+        const errorMessage = err.errors
+            ? Object.values(err.errors).map(e => e.message).join(' ')
+            : 'Server error';
+        req.session.failMessage = errorMessage;
+          res.status(500).json({ message: errorMessage });
+        }
+
+    });
+
+
+
+
 
 export default vaulterRouter;

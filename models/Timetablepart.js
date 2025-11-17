@@ -40,10 +40,6 @@ const TimetablePartSchema = new mongoose.Schema({
             enum: ['1', '2', 'Final'],
             required: [true, 'Round required!'],
         },
-        Starters: {
-            type: [mongoose.Schema.Types.ObjectId],
-            ref: 'Entries',
-            default: [],},
         StartingOrder: {
             type: [{ Entry: mongoose.Schema.Types.ObjectId, Order: Number, submittedtables: [mongoose.Schema.Types.ObjectId] }],
             ref: 'Entries',

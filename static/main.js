@@ -1,3 +1,89 @@
+function listCreator(searchInput, hiddenInput, list, items, icon) {
+    if (!searchInput || !hiddenInput || !list) return;
+
+    // Érvényes értékek (ha li-hez data-value/val van megadva, azt is figyelembe vesszük)
+    const validValues = Array.from(items).map(i => (i.dataset.value ?? i.getAttribute('val') ?? i.textContent.trim()));
+
+    // Keresés a listában
+    function filterList(value) {
+      const q = (value || '').toLowerCase();
+      let hasVisible = false;
+      items.forEach(item => {
+        const show = item.textContent.toLowerCase().includes(q);
+        item.style.display = show ? "block" : "none";
+        if (show) hasVisible = true;
+      });
+      list.classList.toggle("d-none", !hasVisible);
+    }
+
+    // Open / close list
+    function openList() {
+      filterList('');
+      list.classList.remove("d-none");
+    }
+    function closeList() {
+      list.classList.add("d-none");
+    }
+    function toggleList() {
+      if (list.classList.contains("d-none")) openList(); else closeList();
+    }
+
+    // Input events
+    searchInput.addEventListener("input", (e) => filterList(e.target.value));
+    searchInput.addEventListener("focus", () => openList());
+
+    // Icon: make clickable and keyboard accessible
+    if (icon) {
+      icon.style.cursor = 'pointer';
+      icon.setAttribute('role', 'button');
+      icon.tabIndex = 0;
+      icon.addEventListener("click", (e) => { e.stopPropagation(); toggleList(); });
+      icon.addEventListener("keydown", (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); toggleList(); }
+      });
+    }
+
+    // Listaelem kiválasztás
+    items.forEach(item => {
+      item.addEventListener("click", () => {
+        const textvalue = item.textContent.trim();
+        // Ha van data-value vagy val attribútum, azt használjuk a hidden input értékének,
+        // különben a megjelenített szöveget (textvalue).
+        const value = item.dataset.value ?? item.getAttribute('val') ?? textvalue;
+
+        searchInput.value = textvalue;
+        hiddenInput.value = value;
+        closeList();
+        // jelzés, ha más kód figyel a change eseményre
+        hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    });
+
+    // Kattintás kívül → lista elrejtése (figyelembe vesszük az ikont is)
+    document.addEventListener("click", function(e) {
+      const target = e.target;
+      const clickedInside = searchInput.contains(target) || list.contains(target) || (icon && icon.contains(target));
+      if (!clickedInside) closeList();
+    });
+
+    // Form submit ellenőrzés → csak listaelem lehet
+    const form = searchInput.closest('form');
+    if (form) {
+      form.addEventListener("submit", function(e) {
+        const value = hiddenInput.value.trim();
+        // validValues tartalmazza a megengedett értékeket (data-value vagy text)
+        if (!validValues.includes(value)) {
+          e.preventDefault();
+          searchInput.classList.add('is-invalid');
+          setTimeout(()=> searchInput.classList.remove('is-invalid'), 1200);
+        }
+      });
+    }
+  }
+
+
+
+
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -153,3 +239,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 });
+
+
+
+  document.addEventListener('DOMContentLoaded', () => {
+
+      document.querySelectorAll('.searchable-dropdown').forEach(wrapper => {
+        const input = wrapper.querySelector('.searchable-input');
+        const hidden = wrapper.querySelector('.searchable-hidden');
+        const list = wrapper.querySelector('.searchable-list');
+        const items = list ? list.querySelectorAll('.searchable-item') : null;
+        const icon = wrapper.querySelector('.bi-chevron-down');
+        
+        if (input && hidden && list && items && typeof listCreator === 'function') {
+          listCreator(input, hidden, list, items, icon);
+        }
+      });
+    
+    });
