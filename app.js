@@ -24,6 +24,7 @@ import dailytimetableRouter from './routes/DtimetableRouter.js';
 import alertRouter from './routes/alertRouter.js';
 import Alert from './models/Alert.js';
 import orderRouter from './routes/orderRouter.js';
+import SSTempRouter from './routes/SSTempRouter.js';
 // Az aktuális fájl és könyvtár meghatározása
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -106,6 +107,7 @@ app.use('/judges', JudgesRouter); // Judges útvonalak kezelése
 app.use('/dailytimetable', dailytimetableRouter); // DailyTimeTable útvonalak kezelése
 app.use('/alerts', alertRouter); // Alert útvonalak kezelése
 app.use('/order', orderRouter); // Order útvonalak kezelése
+app.use('/scoresheets', SSTempRouter); // ScoreSheetTemp útvonalak kezelése
 
 
 

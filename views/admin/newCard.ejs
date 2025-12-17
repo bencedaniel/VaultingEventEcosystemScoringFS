@@ -10,14 +10,14 @@
         <div class="form-floating position-relative searchable-dropdown">
           <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
           <input type="text" class="form-control shadow-none searchable-input"
-                 placeholder="Search Status"
+                 placeholder="Dashboard type"
                  autocomplete="off"
-                 value="<%= formData ? (formData.Status === 'user' ? 'User' : 'Admin') : '' %>">
-          <label class="form-label">Status</label>
+                 value="<%= formData ? (formData.dashtype === 'user' ? 'User' : 'Admin') : '' %>">
+          <label class="form-label">Dashboard type</label>
 
           <!-- Hidden input for form submission -->
           <input type="hidden" class="searchable-hidden" name="dashtype"
-                 value="<%= formData ? formData.Status : '' %>">
+                 value="<%= formData ? formData.dashtype : '' %>">
 
           <!-- Dropdown list -->
           <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
@@ -96,7 +96,7 @@
                   >
           <label class="form-label">Required permission</label>
           <!-- Hidden input for form submission -->
-          <input type="hidden" class="searchable-hidden" name="horse"
+          <input type="hidden" class="searchable-hidden" name="perm" id="perm"
                  value="<%= formData ? formData.perm : '' %>">
 
           <!-- Dropdown list -->

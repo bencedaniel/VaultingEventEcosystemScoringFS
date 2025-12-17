@@ -1,0 +1,352 @@
+<div class="container my-4 border border-black border-1 border-opacity-10 rounded p-3 shadow bg-primary bg-opacity-10" style="max-width: 80vh;">
+  <h1 class="text-center mb-3">Edit Template</h1>
+
+
+  <form action="/scoresheets/edit/<%= formData._id %>" method="POST" enctype="multipart/form-data">
+    <div class="row justify-content-center g-3 m-auto">
+
+
+
+      <!-- TestType -->
+      <div class="col-md-12">
+        <div class="form-floating">
+          <select class="form-select shadow-none" id="TestType" name="TestType" required>
+            <option value="">Select Test type</option>
+            <option value="compulsory" <%= formData && formData.TestType === 'compulsory' ? 'selected' : '' %>>Compulsory</option>
+            <option value="freestyle" <%= formData && formData.TestType === 'freestyle' ? 'selected' : '' %>>Freestyle</option>
+            <option value="technical" <%= formData && formData.TestType === 'technical' ? 'selected' : '' %>>Technical</option>
+
+          </select>
+          <label for="Test Type">Test Type</label>
+        </div>
+      </div>
+
+
+
+      <!-- Categories -->
+      <div class="col-md-12 bg-secondary bg-opacity-10 p-3 rounded">
+        <label class="form-label mb-2">Categories</label>
+        <div class="row">
+          <% const selected = formData && formData.CategoryId ? formData.CategoryId.map(x => x._id.toString()) : []; %>
+          <% categorys.forEach(category => { %>
+            <div class="col-md-6 col-lg-4 mb-2">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox"
+                       name="Category[]" 
+                       value="<%= category._id %>"
+                       id="cat_<%= category._id %>"
+                       <%= selected.includes(category._id.toString()) ? 'checked' : '' %>>
+                <label class="form-check-label" for="cat_<%= category._id %>">
+                  <%= category.CategoryDispName %>
+                </label>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+
+            <!-- Number Of judges -->
+            <div class="col-md-12">
+        <div class="form-floating">
+          <select class="form-select shadow-none" id="numberOfJudges" name="numberOfJudges" required>
+            <option value="">Select number of judges</option>
+            <option value="1" <%= formData && formData.numberOfJudges === 1 ? 'selected' : '' %>>1</option>
+            <option value="2" <%= formData && formData.numberOfJudges === 2 ? 'selected' : '' %>>2</option>
+            <option value="4" <%= formData && formData.numberOfJudges === 4 ? 'selected' : '' %>>4</option>
+            <option value="6" <%= formData && formData.numberOfJudges === 6 ? 'selected' : '' %>>6</option>
+            <option value="8" <%= formData && formData.numberOfJudges === 8 ? 'selected' : '' %>>8</option>
+
+
+          </select>
+          <label for="numberOfJudges">Number of Judges</label>
+        </div>
+      </div>
+            <div class="col-md-12">
+        <div class="form-floating">
+          <select class="form-select shadow-none" id="typeOfScores" name="typeOfScores" required>
+            <option value="">Select score type</option>
+            <option value="horse" <%= formData && formData.typeOfScores === 'horse' ? 'selected' : '' %>>Horse</option>
+            <option value="artistic" <%= formData && formData.typeOfScores === 'artistic' ? 'selected' : '' %>>Artistic</option>
+            <option value="technical" <%= formData && formData.typeOfScores === 'technical' ? 'selected' : '' %>>Technical</option>
+          </select>
+          <label for="typeOfScores">Type of Scores</label>
+        </div>
+      </div>
+
+      <!-- Background image upload -->
+      <div class="col-md-12 border border-black border-opacity-25 rounded p-2">
+        <label class="form-label">Background image</label>
+        <div class="mb-2 small text-muted">
+        Current image: <span id="currentImageLabel"><%= formData?.bgImage || 'none' %></span>
+      </div>
+        <input type="file" class="form-control" id="bgImageFile"   name="bgImageFile" accept="image/*">
+        <input type="hidden" name="bgImage" id="bgImageUrl" value="<%= formData?.bgImage || '' %>">
+      </div>
+
+      <!-- Canvas editor -->
+      <div class="col-md-12 mt-3 border border-black border-opacity-25 rounded pt-2">
+        <div >
+          <div class="d-flex gap-2 mb-2 ">
+          <select id="fieldType" class="form-select" style="max-width: 180px;">
+            <option value="input">Input field</option>
+            <option value="output">Output field</option>
+          </select>
+          <input id="fieldName" class="form-control" placeholder="Field name">
+          <input id="fieldIdOrContent" class="form-control" placeholder="ID (input) / ContentID (output)">
+          </div>
+          <div class="d-flex gap-2 mb-2 w-100 ">
+          <button type="button" class="btn btn-secondary w-50" id="addFieldBtn">Add field</button>
+          <button type="button" class="btn btn-outline-danger w-50" id="clearAllBtn">Clear all</button>
+          </div>
+        </div>
+<hr>
+        <div id="imageStageWrapper" class=" position-relative" style="width: 100%; max-width: 800px; margin: 0 auto;">
+          <img id="bgImage" src="<%= formData?.bgImage || '' %>" class="p-1" alt="Background" style="width: 100%; height: auto; display: none;">
+          <!-- Draggable field overlays will be appended here -->
+        </div>
+        <!-- Hidden JSON outputs -->
+        <input type="hidden" name="outputFieldList" id="outputFieldListJson">
+        <input type="hidden" name="inputFieldList" id="inputFieldListJson">
+      </div>
+
+      <!-- Submit Button -->
+      <div class="col-md-12 mt-3">
+        <button type="submit" class="btn btn-primary w-100">New program</button>
+      </div>
+
+    </div>
+  </form>
+</div>
+
+<script>
+  // State
+  const outputFields = <%- JSON.stringify(formData?.outputFieldList || []) %>;
+  const inputFields  = <%- JSON.stringify(formData?.inputFieldList  || []) %>;
+
+  const bgImageEl   = document.getElementById('bgImage');
+  const bgImageFile = document.getElementById('bgImageFile');
+  const bgImageUrl  = document.getElementById('bgImageUrl');
+  const stage       = document.getElementById('imageStageWrapper');
+
+  const fieldTypeSel = document.getElementById('fieldType');
+  const fieldNameInp = document.getElementById('fieldName');
+  const fieldIdOrContentInp = document.getElementById('fieldIdOrContent');
+  const addFieldBtn  = document.getElementById('addFieldBtn');
+  const clearAllBtn  = document.getElementById('clearAllBtn');
+
+  const outputJsonInp = document.getElementById('outputFieldListJson');
+  const inputJsonInp  = document.getElementById('inputFieldListJson');
+    const currentImageLabel = document.getElementById('currentImageLabel');
+
+
+  // Image upload: preview + URL handling
+  bgImageFile.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // Client preview
+    const objUrl = URL.createObjectURL(file);
+    bgImageEl.src = objUrl;
+    bgImageEl.style.display = 'block';
+        currentImageLabel.textContent = '(new file selected)';
+
+  });
+
+  // Initialize existing fields
+  document.addEventListener('DOMContentLoaded', () => {
+  if (bgImageUrl.value) {
+    bgImageEl.src = bgImageUrl.value;
+    bgImageEl.style.display = 'block';
+          currentImageLabel.textContent = bgImageUrl.value;
+
+  }
+  
+    renderAllFields();
+    syncHiddenJson();
+  });
+
+  // Add field
+  addFieldBtn.addEventListener('click', () => {
+    const type = fieldTypeSel.value;
+    const name = fieldNameInp.value.trim();
+    const idOrContent = fieldIdOrContentInp.value.trim();
+    if (!name || !idOrContent) return;
+
+    // Default position center (50%, 50%)
+    if (type === 'input') {
+      inputFields.push({ name, id: idOrContent, preDefValue: '', position: { x: 50, y: 50 } });
+    } else {
+      outputFields.push({ name, contentid: idOrContent, position: { x: 50, y: 50 } });
+    }
+    renderAllFields();
+    syncHiddenJson();
+
+    fieldNameInp.value = '';
+    fieldIdOrContentInp.value = '';
+  });
+
+  clearAllBtn.addEventListener('click', () => {
+    if (!confirm('Biztos törlöd az összes mezőt?')) return;
+    inputFields.length = 0;
+    outputFields.length = 0;
+    renderAllFields();
+    syncHiddenJson();
+  });
+
+  // Render fields as draggable overlays
+  function renderAllFields() {
+    Array.from(stage.querySelectorAll('.field-overlay')).forEach(el => el.remove());
+
+    outputFields.forEach((f, idx) => {
+      const el = createOverlayElement(f, 'output', idx);
+      stage.appendChild(el);
+    });
+    inputFields.forEach((f, idx) => {
+      const el = createOverlayElement(f, 'input', idx);
+      stage.appendChild(el);
+    });
+  }
+
+  // Create overlay with drag support, tooltip, double-click delete, and better visibility
+  function createOverlayElement(field, kind, idx) {
+    const { name, position } = field;
+    const el = document.createElement('div');
+    el.className = `field-overlay ${kind === 'input' ? 'overlay-input' : 'overlay-output'}`;
+    el.textContent = name;
+
+    el.style.position = 'absolute';
+    el.style.cursor = 'move';
+    el.style.userSelect = 'none';
+
+    // Accessibility and hover tooltip with full field data
+    const tooltipData = kind === 'input'
+      ? `Type: INPUT\nName: ${field.name}\nID: ${field.id}\nDefault: ${field.preDefValue || ''}\nX: ${Math.round(position?.x ?? 50)}%\nY: ${Math.round(position?.y ?? 50)}%`
+      : `Type: OUTPUT\nName: ${field.name}\nContentID: ${field.contentid}\nX: ${Math.round(position?.x ?? 50)}%\nY: ${Math.round(position?.y ?? 50)}%`;
+    el.title = tooltipData; // native tooltip
+
+    // place by percentage
+    placeByPercent(el, position);
+
+    // drag handlers
+    let dragging = false;
+    let startX = 0, startY = 0;
+
+    el.addEventListener('mousedown', (ev) => {
+      // ignore drag if double-click selection just happened
+      dragging = true;
+      startX = ev.clientX;
+      startY = ev.clientY;
+      ev.preventDefault();
+    });
+
+    window.addEventListener('mouseup', () => { dragging = false; });
+
+    window.addEventListener('mousemove', (ev) => {
+      if (!dragging) return;
+      const dx = ev.clientX - startX;
+      const dy = ev.clientY - startY;
+      startX = ev.clientX;
+      startY = ev.clientY;
+
+      const rect = bgImageEl.getBoundingClientRect();
+      const curLeft = parseFloat(el.style.left);
+      const curTop  = parseFloat(el.style.top);
+      const newLeftPx = (curLeft / 100) * rect.width + dx;
+      const newTopPx  = (curTop / 100) * rect.height + dy;
+
+      const newX = clamp((newLeftPx / rect.width) * 100, 0, 100);
+      const newY = clamp((newTopPx  / rect.height) * 100, 0, 100);
+
+      el.style.left = `${newX}%`;
+      el.style.top  = `${newY}%`;
+
+      // update state + tooltip
+      if (kind === 'input') {
+        inputFields[idx].position.x = newX;
+        inputFields[idx].position.y = newY;
+      } else {
+        outputFields[idx].position.x = newX;
+        outputFields[idx].position.y = newY;
+      }
+      el.title = updateTooltip(kind, field, newX, newY);
+      syncHiddenJson();
+    });
+
+    // Double-click to delete a single field
+    el.addEventListener('dblclick', (ev) => {
+      ev.preventDefault();
+      if (!confirm(`Törlöd a(z) "${name}" mezőt?`)) return;
+      if (kind === 'input') {
+        inputFields.splice(idx, 1);
+      } else {
+        outputFields.splice(idx, 1);
+      }
+      renderAllFields();
+      syncHiddenJson();
+    });
+
+    return el;
+  }
+
+  function updateTooltip(kind, field, x, y) {
+    return kind === 'input'
+      ? `Type: INPUT\nName: ${field.name}\nID: ${field.id}\nDefault: ${field.preDefValue || ''}\nX: ${Math.round(x)}%\nY: ${Math.round(y)}%`
+      : `Type: OUTPUT\nName: ${field.name}\nContentID: ${field.contentid}\nX: ${Math.round(x)}%\nY: ${Math.round(y)}%`;
+  }
+
+  function placeByPercent(el, pos) {
+    // stage relative to img
+    const rect = bgImageEl.getBoundingClientRect();
+    el.style.left = `${clamp(pos?.x ?? 50, 0, 100)}%`;
+    el.style.top  = `${clamp(pos?.y ?? 50, 0, 100)}%`;
+  }
+
+  function clamp(v, min, max) {
+    return Math.min(max, Math.max(min, v));
+  }
+
+  function syncHiddenJson() {
+    // Backend: JSON parse-olás; ha stringet küldünk, a router parse-olja
+    outputJsonInp.value = JSON.stringify(outputFields);
+    inputJsonInp.value  = JSON.stringify(inputFields);
+  }
+</script>
+
+<style>
+  #imageStageWrapper { overflow: hidden; }
+  .field-overlay {
+    padding: 0px 20px;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    border: 2px solid rgba(0,0,0,0.25);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    transition: transform 0.06s ease, box-shadow 0.06s ease, opacity 0.12s ease;
+    border-radius: 6px;
+  }
+  .overlay-input {
+    background: rgba(13,110,253,0.85);       /* Bootstrap primary-like */
+    color: #fff;
+  }
+  .overlay-output {
+    background: rgba(108,117,125,0.85);      /* Bootstrap secondary-like */
+    color: #fff;
+  }
+  .field-overlay:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+    opacity: 0.95;
+  }
+  .field-overlay::after {
+    /* small visual anchor dot at the position center */
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    background: #000000;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.9;
+  }
+</style>
+
+
