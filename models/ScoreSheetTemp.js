@@ -2,11 +2,11 @@ import mongoose from "mongoose";
 
 const ScoreSheetSchemaTemp = new mongoose.Schema(
     {
-        TestType: {
+        TestType: [{
             type: String,
-            enum: ['compulsory', 'freestyle','technical'],
+            enum: ['compulsory', 'free test','technical'],
             required: [true, "Test type required!"],
-        },
+        }],
 
         CategoryId: {
             type: [mongoose.Schema.Types.ObjectId],
@@ -20,7 +20,7 @@ const ScoreSheetSchemaTemp = new mongoose.Schema(
         },  
         typeOfScores: {
             type: String,
-            enum: ['horse', 'artistic','technical'],
+            enum: ['horse', 'artistic','technical','compulsory'],
             required: [true, "Type of scores required!"],
         },
 
@@ -30,7 +30,8 @@ const ScoreSheetSchemaTemp = new mongoose.Schema(
                 contentid: { type: String, required: true },
                 position: {
                     x: { type: Number, default: 0 },
-                    y: { type: Number, default: 0 }
+                    y: { type: Number, default: 0 },
+                    w: { type: Number, default: 100 }
                 }
             }],
             default: []
@@ -42,7 +43,8 @@ const ScoreSheetSchemaTemp = new mongoose.Schema(
                 preDefValue: { type: String, default: '' },
                 position: {
                     x: { type: Number, default: 0 },
-                    y: { type: Number, default: 0 }
+                    y: { type: Number, default: 0 },
+                    w: { type: Number, default: 100 }
                 }
             }],
             default: []

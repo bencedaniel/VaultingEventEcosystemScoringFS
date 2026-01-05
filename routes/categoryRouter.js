@@ -86,8 +86,7 @@ categoryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
       });
       categoryRouter.post('/edit/:id', Verify, VerifyRole(), Validate, async (req, res) => {
         try {
-          // Üres string helyett undefined/null, ha nincs kiválasztva
-
+          const oldCategory = await Category.findById(req.params.id);
           const updateData = { ...req.body, _id: req.params.id };
           const category = await Category.findByIdAndDelete(req.params.id);
           if (!category) {
@@ -108,6 +107,7 @@ categoryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
             : 'Server error';
 
           return res.render('category/editCategory', {
+            
             permissionList: await Permissions.find(),
             formData: { ...req.body, _id: req.params.id },
             successMessage: null,
@@ -117,7 +117,7 @@ categoryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
         }
       });
 
-      categoryRouter.delete('/delete/:id',Verify, VerifyRole(), async (req, res) => {
+   /*   categoryRouter.delete('/delete/:id',Verify, VerifyRole(), async (req, res) => {
         try {
 
           const category = await Category.findByIdAndDelete(req.params.id);
@@ -132,57 +132,7 @@ categoryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
           req.session.failMessage = 'Server error';
           res.status(500).json({ message: 'Server error' });
         }
-      });
-      categoryRouter.delete('/deleteIncident/:id', Verify, VerifyRole(), async (req, res) => {
-        try {
-          const category = await Category.findById(req.params.id);
-          logger.db(`Category ${category.name} incident deleted by user ${req.user.username}.`);
-          if (!category) {
-            req.session.failMessage = 'Category not found';
-            return res.status(404).json({ message: 'Category not found' });
-          }
-          
-
-          
-          category.CategoryIncident = category.CategoryIncident.filter(incident =>
-            !(
-              incident.description === req.body.description &&
-              incident.incidentType === req.body.type             )
-          );
-          await Category.findByIdAndUpdate(req.params.id, category, { runValidators: true });
-          res.status(200).json({ message: 'Incident deleted successfully' });
-      } catch (err) {
-        const errorMessage = err.errors
-            ? Object.values(err.errors).map(e => e.message).join(' ')
-            : 'Server error';
-          req.session.failMessage = errorMessage;
-        res.status(500).json({ message: errorMessage });
-        }
-        
-      });
-     categoryRouter.post('/newIncident/:id',Verify,VerifyRole(), async (req,res) =>{
-      try{
-        const category = await Category.findById(req.params.id);
-        logger.db(`Category ${category.Name} incident created by user ${req.user.username}.`);
-        const newIncident = {
-          description: req.body.description,
-          incidentType: req.body.incidentType,
-          date: Date.now(),
-          User: req.user._id
-
-        }    
-        category.CategoryIncident.push(newIncident);
-        await Category.findByIdAndUpdate(req.params.id, category, { runValidators: true })
-        res.status(200).json({ message: 'Incident added successfully!' })
-      } catch (err) {
-        const errorMessage = err.errors
-            ? Object.values(err.errors).map(e => e.message).join(' ')
-            : 'Server error';
-          req.session.failMessage = errorMessage;
-        res.status(500).json({ message: errorMessage });
-        }
-        
-
-    });
+      });*/
+  
 
 export default categoryRouter;

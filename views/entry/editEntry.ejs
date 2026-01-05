@@ -77,7 +77,7 @@
         <div class="col-md-12">
         <div class="form-floating position-relative searchable-dropdown">
           <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
-          <input type="text" class="form-control shadow-none searchable-input"
+          <input type="text" class="form-control shadow-none searchable-input" disabled
                  placeholder="Search Category"
                  autocomplete="off" 
                  <% if (formData) { %>
@@ -136,6 +136,14 @@
               <li class="list-group-item list-group-item-action searchable-item" val="confirmed" >Confirmed</li>
               <li class="list-group-item list-group-item-action searchable-item" val="cancelled">Inactive</li>
           </ul>
+        </div>
+      </div>
+
+      <div class="col-md-12"  id="teamNameDiv" style="display: none;">
+        <div class="form-floating">
+          <input type="text" class="form-control shadow-none" id="teamName" name="teamName" placeholder="Team Name"
+                 value="<%= formData ? formData.teamName : '' %>" autocomplete="off" >
+          <label for="teamName">Team Name</label>
         </div>
       </div>
 
@@ -233,22 +241,45 @@
     const categorySelect = document.getElementById('valueinput');
     function updateVaulterInputs() {
       const selectedCategoryId = categorySelect.value;
+      const teamNameDiv = document.getElementById('teamNameDiv');
       const type = categoryTypeMap[selectedCategoryId];
-      if (type === 'Squad') renderVaulterInputs(6, formVaulters);
-      else if (type === 'PDD') renderVaulterInputs(2, formVaulters);
-      else if (type === 'Individual') renderVaulterInputs(1, formVaulters);
-      else document.getElementById('vaulterContainer').innerHTML = '';
-      console.log('Lefut')
+      if (type === 'Squad') {
+        teamNameDiv.style.display = 'block';
+        renderVaulterInputs(6, formVaulters);
+      }
+      else if (type === 'PDD') {
+        teamNameDiv.style.display = 'none';
+        renderVaulterInputs(2, formVaulters);
+      }
+      else if (type === 'Individual') {
+        teamNameDiv.style.display = 'none';
+        renderVaulterInputs(1, formVaulters);
+      }
+      else {
+        teamNameDiv.style.display = 'none';
+        document.getElementById('vaulterContainer').innerHTML = '';
+      }
     }
     categorySelect.addEventListener('change', function() {
       // Ha a kategória változik, ne legyenek előre kiválasztott vaulterek
       const selectedCategoryId = categorySelect.value;
       const type = categoryTypeMap[selectedCategoryId];
-      if (type === 'Squad') renderVaulterInputs(6, []);
-      else if (type === 'PDD') renderVaulterInputs(2, []);
-      else if (type === 'Individual') renderVaulterInputs(1, []);
-      else document.getElementById('vaulterContainer').innerHTML = '';
-            console.log('Lefut chg')
+      if (type === 'Squad') {
+        teamNameDiv.style.display = 'block';
+        renderVaulterInputs(6, []);
+      }
+      else if (type === 'PDD') {
+        teamNameDiv.style.display = 'none';
+        renderVaulterInputs(2, []);
+      }
+      else if (type === 'Individual') {
+        teamNameDiv.style.display = 'none';
+        renderVaulterInputs(1, []);
+      }
+      else {
+        teamNameDiv.style.display = 'none';
+        document.getElementById('vaulterContainer').innerHTML = '';
+      }
 
       document.querySelectorAll('.searchable-dropdown').forEach(wrapper => {
 

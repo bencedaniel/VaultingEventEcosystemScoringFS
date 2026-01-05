@@ -1,23 +1,87 @@
 <div class="container my-4 border border-black border-1 border-opacity-10 rounded p-3 shadow bg-primary bg-opacity-10" style="max-width: 80vh;">
   <h1 class="text-center mb-3">New Template</h1>
 
+  <!-- Confirm Modal -->
+  <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true" style="backdrop-filter: blur(5px);">
+    <div class="modal-dialog" role="document" style="margin-top: 2rem;">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmModalLabel">Megerősítés</h5>
+          <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="confirmMessage"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-dark" id="confirmCancel" data-bs-dismiss="modal">Mégsem</button>
+          <button type="button" class="btn btn-danger" id="confirmOk">Igen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prompt Modal -->
+  <div class="modal fade" id="promptModal" tabindex="-1" role="dialog" aria-hidden="true" style="backdrop-filter: blur(5px);">
+    <div class="modal-dialog" role="document" style="margin-top: 2rem;">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header">
+          <h5 class="modal-title" id="promptModalLabel">Adatok megadása</h5>
+          <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p id="promptMessage"></p>
+          <input type="text" class="form-control" id="promptInput">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-dark" id="promptCancel" data-bs-dismiss="modal">Mégsem</button>
+          <button type="button" class="btn btn-primary" id="promptOk">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <form action="/scoresheets/create" method="POST" enctype="multipart/form-data">
     <div class="row justify-content-center g-3 m-auto">
 
 
 
-      <!-- TestType -->
-      <div class="col-md-12">
-        <div class="form-floating">
-          <select class="form-select shadow-none" id="TestType" name="TestType" required>
-            <option value="">Select Test type</option>
-            <option value="compulsory" <%= formData && formData.TestType === 'compulsory' ? 'selected' : '' %>>Compulsory</option>
-            <option value="freestyle" <%= formData && formData.TestType === 'freestyle' ? 'selected' : '' %>>Freestyle</option>
-            <option value="technical" <%= formData && formData.TestType === 'technical' ? 'selected' : '' %>>Technical</option>
-
-          </select>
-          <label for="Test Type">Test Type</label>
+      <div class="col-md-12 bg-secondary bg-opacity-10 p-3 rounded">
+        <label class="form-label mb-2">Test Type</label>
+        <div class="row">
+          <div class="col-md-6 col-lg-4 mb-2">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox"
+                     name="TestType[]" 
+                     value="compulsory"
+                     id="test_compulsory"
+                     <%= formData && formData.TestType && (formData.TestType === 'compulsory' || (Array.isArray(formData.TestType) && formData.TestType.includes('compulsory'))) ? 'checked' : '' %>>
+              <label class="form-check-label" for="test_compulsory">
+                Compulsory
+              </label>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-4 mb-2">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox"
+                     name="TestType[]" 
+                     value="freestyle"
+                     id="test_freestyle"
+                     <%= formData && formData.TestType && (formData.TestType === 'freestyle' || (Array.isArray(formData.TestType) && formData.TestType.includes('freestyle'))) ? 'checked' : '' %>>
+              <label class="form-check-label" for="test_freestyle">
+                Freestyle
+              </label>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-4 mb-2">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox"
+                     name="TestType[]" 
+                     value="technical"
+                     id="test_technical"
+                     <%= formData && formData.TestType && (formData.TestType === 'technical' || (Array.isArray(formData.TestType) && formData.TestType.includes('technical'))) ? 'checked' : '' %>>
+              <label class="form-check-label" for="test_technical">
+                Technical
+              </label>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -68,6 +132,7 @@
             <option value="horse" <%= formData && formData.typeOfScores === 'horse' ? 'selected' : '' %>>Horse</option>
             <option value="artistic" <%= formData && formData.typeOfScores === 'artistic' ? 'selected' : '' %>>Artistic</option>
             <option value="technical" <%= formData && formData.typeOfScores === 'technical' ? 'selected' : '' %>>Technical</option>
+            <option value="compulsory" <%= formData && formData.typeOfScores === 'compulsory' ? 'selected' : '' %>>Compulsory</option>
           </select>
           <label for="typeOfScores">Type of Scores</label>
         </div>
@@ -90,6 +155,7 @@
           </select>
           <input id="fieldName" class="form-control" placeholder="Field name">
           <input id="fieldIdOrContent" class="form-control" placeholder="ID (input) / ContentID (output)">
+          <input id="fieldWidth" class="form-control" type="number" placeholder="Width (%)" value="100" min="1">
           </div>
           <div class="d-flex gap-2 mb-2 w-100 ">
           <button type="button" class="btn btn-secondary w-50" id="addFieldBtn">Add field</button>
@@ -98,7 +164,7 @@
         </div>
 <hr>
         <div id="imageStageWrapper" class=" position-relative" style="width: 100%; max-width: 800px; margin: 0 auto;">
-          <img id="bgImage" src="<%= formData?.bgImage || '' %>" class="p-1" alt="Background" style="width: 100%; height: auto; display: none;">
+          <img id="bgImage" src="<%= formData?.bgImage || '' %>" alt="Background" style="width: 100%; height: auto; display: none;">
           <!-- Draggable field overlays will be appended here -->
         </div>
         <!-- Hidden JSON outputs -->
@@ -108,7 +174,7 @@
 
       <!-- Submit Button -->
       <div class="col-md-12 mt-3">
-        <button type="submit" class="btn btn-primary w-100">New program</button>
+        <button type="submit" class="btn btn-primary w-100">New template</button>
       </div>
 
     </div>
@@ -116,9 +182,91 @@
 </div>
 
 <script>
+  // Modal helper functions
+  function showConfirm(message) {
+    return new Promise((resolve) => {
+      const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+      document.getElementById('confirmMessage').textContent = message;
+      
+      const okBtn = document.getElementById('confirmOk');
+      const cancelBtn = document.getElementById('confirmCancel');
+      
+      const cleanup = () => {
+        okBtn.removeEventListener('click', handleOk);
+        cancelBtn.removeEventListener('click', handleCancel);
+      };
+      
+      const handleOk = () => {
+        cleanup();
+        modal.hide();
+        resolve(true);
+      };
+      
+      const handleCancel = () => {
+        cleanup();
+        modal.hide();
+        resolve(false);
+      };
+      
+      okBtn.addEventListener('click', handleOk);
+      cancelBtn.addEventListener('click', handleCancel);
+      
+      modal.show();
+    });
+  }
+
+  function showPrompt(message, defaultValue = '') {
+    return new Promise((resolve) => {
+      const modal = new bootstrap.Modal(document.getElementById('promptModal'));
+      document.getElementById('promptMessage').textContent = message;
+      document.getElementById('promptInput').value = defaultValue;
+      
+      const inputEl = document.getElementById('promptInput');
+      const okBtn = document.getElementById('promptOk');
+      const cancelBtn = document.getElementById('promptCancel');
+      
+      const cleanup = () => {
+        okBtn.removeEventListener('click', handleOk);
+        cancelBtn.removeEventListener('click', handleCancel);
+        inputEl.removeEventListener('keypress', handleEnter);
+      };
+      
+      const handleOk = () => {
+        const result = inputEl.value;
+        cleanup();
+        modal.hide();
+        resolve(result);
+      };
+      
+      const handleCancel = () => {
+        cleanup();
+        modal.hide();
+        resolve(null);
+      };
+      
+      const handleEnter = (e) => {
+        if (e.key === 'Enter') handleOk();
+      };
+      
+      okBtn.addEventListener('click', handleOk);
+      cancelBtn.addEventListener('click', handleCancel);
+      inputEl.addEventListener('keypress', handleEnter);
+      
+      modal.show();
+      inputEl.focus();
+      inputEl.select();
+    });
+  }
+
   // State
-  const outputFields = <%- JSON.stringify(formData?.outputFieldList || []) %>;
-  const inputFields  = <%- JSON.stringify(formData?.inputFieldList  || []) %>;
+  const outputFields = <%- JSON.stringify(formData?.outputFieldList || []) %>.map(f => ({
+    ...f,
+    width: f.width || f.position?.w || 100
+  }));
+  const inputFields  = <%- JSON.stringify(formData?.inputFieldList  || []) %>.map(f => ({
+    ...f,
+    width: f.width || f.position?.w || 100
+  }));
 
   const bgImageEl   = document.getElementById('bgImage');
   const bgImageFile = document.getElementById('bgImageFile');
@@ -128,6 +276,7 @@
   const fieldTypeSel = document.getElementById('fieldType');
   const fieldNameInp = document.getElementById('fieldName');
   const fieldIdOrContentInp = document.getElementById('fieldIdOrContent');
+  const fieldWidthInp = document.getElementById('fieldWidth');
   const addFieldBtn  = document.getElementById('addFieldBtn');
   const clearAllBtn  = document.getElementById('clearAllBtn');
 
@@ -158,23 +307,26 @@
     const type = fieldTypeSel.value;
     const name = fieldNameInp.value.trim();
     const idOrContent = fieldIdOrContentInp.value.trim();
+    const width = Math.max(1, parseFloat(fieldWidthInp.value) || 100);
     if (!name || !idOrContent) return;
 
-    // Default position center (50%, 50%)
+    // Default position center (50%, 50%) with width
     if (type === 'input') {
-      inputFields.push({ name, id: idOrContent, preDefValue: '', position: { x: 50, y: 50 } });
+      inputFields.push({ name, id: idOrContent, preDefValue: '', position: { x: 50, y: 50 }, width });
     } else {
-      outputFields.push({ name, contentid: idOrContent, position: { x: 50, y: 50 } });
+      outputFields.push({ name, contentid: idOrContent, position: { x: 50, y: 50 }, width });
     }
     renderAllFields();
     syncHiddenJson();
 
     fieldNameInp.value = '';
     fieldIdOrContentInp.value = '';
+    fieldWidthInp.value = '100';
   });
 
-  clearAllBtn.addEventListener('click', () => {
-    if (!confirm('Biztos törlöd az összes mezőt?')) return;
+  clearAllBtn.addEventListener('click', async () => {
+    const confirmed = await showConfirm('Biztos törlöd az összes mezőt?');
+    if (!confirmed) return;
     inputFields.length = 0;
     outputFields.length = 0;
     renderAllFields();
@@ -197,7 +349,7 @@
 
   // Create overlay with drag support, tooltip, double-click delete, and better visibility
   function createOverlayElement(field, kind, idx) {
-    const { name, position } = field;
+    const { name, position, width } = field;
     const el = document.createElement('div');
     el.className = `field-overlay ${kind === 'input' ? 'overlay-input' : 'overlay-output'}`;
     el.textContent = name;
@@ -205,11 +357,14 @@
     el.style.position = 'absolute';
     el.style.cursor = 'move';
     el.style.userSelect = 'none';
+    el.style.width = `${width || 100}%`;
+    el.style.overflow = 'hidden';
+    el.style.textAlign = 'center';
 
     // Accessibility and hover tooltip with full field data
     const tooltipData = kind === 'input'
-      ? `Type: INPUT\nName: ${field.name}\nID: ${field.id}\nDefault: ${field.preDefValue || ''}\nX: ${Math.round(position?.x ?? 50)}%\nY: ${Math.round(position?.y ?? 50)}%`
-      : `Type: OUTPUT\nName: ${field.name}\nContentID: ${field.contentid}\nX: ${Math.round(position?.x ?? 50)}%\nY: ${Math.round(position?.y ?? 50)}%`;
+      ? `Type: INPUT\nName: ${field.name}\nID: ${field.id}\nDefault: ${field.preDefValue || ''}\nX: ${Math.round(position?.x ?? 50)}%\nY: ${Math.round(position?.y ?? 50)}%\nWidth: ${width || 100}%\n\n[Right-click to adjust width]`
+      : `Type: OUTPUT\nName: ${field.name}\nContentID: ${field.contentid}\nX: ${Math.round(position?.x ?? 50)}%\nY: ${Math.round(position?.y ?? 50)}%\nWidth: ${width || 100}%\n\n[Right-click to adjust width]`;
     el.title = tooltipData; // native tooltip
 
     // place by percentage
@@ -256,14 +411,29 @@
         outputFields[idx].position.x = newX;
         outputFields[idx].position.y = newY;
       }
-      el.title = updateTooltip(kind, field, newX, newY);
+      el.title = updateTooltip(kind, field, newX, newY, field.width || 100);
+      syncHiddenJson();
+    });
+
+    // Right-click to modify width
+    el.addEventListener('contextmenu', async (ev) => {
+      ev.preventDefault();
+      const currentWidth = field.width || 100;
+      const newWidth = await showPrompt(`Új szélesség (%): [jelenlegi: ${currentWidth}%]`, currentWidth);
+      if (newWidth === null) return;
+      
+      const widthVal = Math.max(1, parseFloat(newWidth) || currentWidth);
+      field.width = widthVal;
+      el.style.width = `${widthVal}%`;
+      el.title = updateTooltip(kind, field, position.x, position.y, widthVal);
       syncHiddenJson();
     });
 
     // Double-click to delete a single field
-    el.addEventListener('dblclick', (ev) => {
+    el.addEventListener('dblclick', async (ev) => {
       ev.preventDefault();
-      if (!confirm(`Törlöd a(z) "${name}" mezőt?`)) return;
+      const confirmed = await showConfirm(`Törlöd a(z) "${name}" mezőt?`);
+      if (!confirmed) return;
       if (kind === 'input') {
         inputFields.splice(idx, 1);
       } else {
@@ -276,10 +446,10 @@
     return el;
   }
 
-  function updateTooltip(kind, field, x, y) {
+  function updateTooltip(kind, field, x, y, w) {
     return kind === 'input'
-      ? `Type: INPUT\nName: ${field.name}\nID: ${field.id}\nDefault: ${field.preDefValue || ''}\nX: ${Math.round(x)}%\nY: ${Math.round(y)}%`
-      : `Type: OUTPUT\nName: ${field.name}\nContentID: ${field.contentid}\nX: ${Math.round(x)}%\nY: ${Math.round(y)}%`;
+      ? `Type: INPUT\nName: ${field.name}\nID: ${field.id}\nDefault: ${field.preDefValue || ''}\nX: ${Math.round(x)}%\nY: ${Math.round(y)}%\nWidth: ${w}%\n\n[Right-click to adjust width]`
+      : `Type: OUTPUT\nName: ${field.name}\nContentID: ${field.contentid}\nX: ${Math.round(x)}%\nY: ${Math.round(y)}%\nWidth: ${w}%\n\n[Right-click to adjust width]`;
   }
 
   function placeByPercent(el, pos) {
@@ -303,7 +473,7 @@
 <style>
   #imageStageWrapper { overflow: hidden; }
   .field-overlay {
-    padding: 0px 20px;
+    padding: 0px 0px;
     transform: translate(-50%, -50%);
     white-space: nowrap;
     border: 2px solid rgba(0,0,0,0.25);
@@ -316,8 +486,10 @@
     color: #fff;
   }
   .overlay-output {
-    background: rgba(108,117,125,0.85);      /* Bootstrap secondary-like */
+    background: rgba(108,117,125,0.55);      /* Bootstrap secondary-like */
     color: #fff;
+    line-height: 1;
+
   }
   .field-overlay:hover {
     box-shadow: 0 4px 12px rgba(0,0,0,0.35);
@@ -337,5 +509,3 @@
     opacity: 0.9;
   }
 </style>
-
-

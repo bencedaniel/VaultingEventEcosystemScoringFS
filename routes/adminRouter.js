@@ -79,7 +79,6 @@ adminRouter.get('/editUser/:id',Verify,VerifyRole(), async (req, res) => {
 
 adminRouter.post('/editUser/:id',Verify,VerifyRole() , async (req, res) => {
     try {
-        logger.debug(req.body)
 
         const updateData = { ...req.body };
         if (req.body.password=== '') {
@@ -100,9 +99,12 @@ adminRouter.post('/editUser/:id',Verify,VerifyRole() , async (req, res) => {
                 ? Object.values(err.errors).map(error => error.message).join(' ')
                 : 'Ez a User már létezik!';
             return res.render('admin/editUser', {
+                roleList: await Role.find(),
                 formData: req.body,
                 successMessage: null,
                 failMessage: errorMessage,
+                rolePermissons: req.user.role.permissions,
+                successMessage: req.session.successMessage,
                 user: req.user
             });
             

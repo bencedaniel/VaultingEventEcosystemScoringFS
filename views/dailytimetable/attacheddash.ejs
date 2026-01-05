@@ -33,6 +33,7 @@
             <th scope="col">Name</th>
             <th scope="col">Start Time Planned</th>
             <th scope="col">Start Time Real</th>
+            <th scope="col">Categories</th>
             <th scope="col">Test Type</th>
             <th scope="col">Round</th>
             <th scope="col"  width="25%%">&nbsp;</th>
@@ -44,6 +45,7 @@
         <td><%= Dttpart.Name %></td>
         <td><%= Dttpart.StartTimePlanned.toLocaleString("hu-HU") %></td>
         <td><%= Dttpart.StartTimeReal ? Dttpart.StartTimeReal.toLocaleString("hu-HU") : 'Not started yet' %></td>
+        <td><%= Dttpart.Category.map(v => v.CategoryDispName).join(', ') %></td>
         <td><%= Dttpart.TestType %></td>
         <td><%= Dttpart.Round %></td>
 

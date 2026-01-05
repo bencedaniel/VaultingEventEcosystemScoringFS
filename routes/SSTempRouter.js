@@ -66,8 +66,11 @@ ScoreSheetTempRouter.get('/dashboard', Verify, VerifyRole(), async (req, res) =>
 
 ScoreSheetTempRouter.get('/create', Verify, VerifyRole(), async (req, res) => {
   try {
+       const   categorys=  await Category.find().sort({ Star: 1 })
+
     res.render('SStemp/newScoreSheet', {
-      categorys: await Category.find(),
+      categorys: categorys,
+
       formData: req.session.formData,
       rolePermissons: req.user?.role?.permissions,
       failMessage: req.session.failMessage,
@@ -90,7 +93,14 @@ function parseJSONArrayField(value, fieldName) {
   try {
     const parsed = JSON.parse(value);
     if (!Array.isArray(parsed)) throw new Error(`${fieldName} must be an array`);
-    return parsed;
+    // add width value to position object
+    return parsed.map(field => ({
+      ...field,
+      position: {
+        ...field.position,
+        w: field.width
+      }
+    }));
   } catch (e) {
     throw new Error(`${fieldName} parse error: ${e.message}`);
   }
@@ -134,7 +144,8 @@ ScoreSheetTempRouter.post('/create', Verify, VerifyRole(), uploadImage.single('b
       : (err?.message || 'Server error');
 
     return res.render('SStemp/newScoreSheet', {
-      categorys: await Category.find(),
+      categorys: await Category.find().sort({ Star: 1 }),
+
       formData: forerr,
       rolePermissons: req.user?.role?.permissions,
       failMessage: errorMessage,
@@ -154,8 +165,10 @@ ScoreSheetTempRouter.get('/edit/:id', Verify, VerifyRole(), async (req, res) => 
       req.session.failMessage = 'Template not found';
       return res.redirect('/scoresheets/dashboard');
     }
+
+    const categorys = await Category.find().sort({ Star: 1 });
     res.render('SStemp/editScoreSheet', {
-      categorys: await Category.find(),
+      categorys: categorys,
       formData: sheet,
       rolePermissons: req.user?.role?.permissions,
       failMessage: req.session.failMessage,
@@ -173,8 +186,25 @@ ScoreSheetTempRouter.get('/edit/:id', Verify, VerifyRole(), async (req, res) => 
 
 // Update
 ScoreSheetTempRouter.post('/edit/:id', Verify, VerifyRole(), uploadImage.single('bgImageFile'), async (req, res) => {
-  const forerr = req.body;
+  const forerr = { ...req.body, _id: req.params.id, CategoryId: req.body.Category };
+
   try {
+    const categories = await Category.find({ _id: { $in: req.body.Category } });
+    if (categories.length === 0) {
+      throw new Error('Selected category does not exist');
+    }
+
+    const firstType = categories[0].Type;
+    const hasMixedAgegroup = categories.some(c => c.Type !== firstType);
+    if (hasMixedAgegroup) {
+      const missmatched = categories.filter(c => c.Type !== firstType).map(c => c.CategoryDispName).join(', ');
+      req.session.failMessage = 'Selected categories must be of the same Agegroup type. Mismatched: ' + missmatched;
+      logger.warn(`ScoreSheetTemp edit failed due to mismatched Agegroup categories by user ${req.user.username}. First Agegroup: ${firstType}`);
+      return res.redirect('/scoresheets/edit/' + req.params.id);
+      
+    }
+    
+
     const old = await ScoreSheetTemp.findById(req.params.id);
     if (!old) {
       req.session.failMessage = 'Template not found';
@@ -213,9 +243,10 @@ ScoreSheetTempRouter.post('/edit/:id', Verify, VerifyRole(), uploadImage.single(
   } catch (err) {
     logger.error(err + ' User: ' + req.user.username);
     const errorMessage = err?.code === 11000 ? 'Duplicate template combination.' : (err?.message || 'Server error');
+    const categorys = await Category.find().sort({ Star: 1 });
     return res.render('SStemp/editScoreSheet', {
-      categorys: await Category.find(),
-      formData: { ...forerr, _id: req.params.id },
+      categorys: categorys,
+      formData: forerr,
       rolePermissons: req.user?.role?.permissions,
       failMessage: errorMessage,
       successMessage: null,

@@ -162,7 +162,7 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
       dailytimetableRouter.get('/dayparts/:id',Verify, VerifyRole(), async (req, res) => {
         try {
 
-            const dailytimetables = await TimetablePart.find({dailytimetable: req.params.id}).sort({ StartTimePlanned: 1 });
+            const dailytimetables = await TimetablePart.find({dailytimetable: req.params.id}).sort({ StartTimePlanned: 1 }).populate('Category').exec();
             const dailytable = await DailyTimeTable.findById(req.params.id);
             if (!dailytimetables) {
             req.session.failMessage = 'DailyTimeTable not found';
@@ -222,7 +222,7 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
 
           const judges = users.filter(u => u.role?.roleName.includes('Judge'));
           const days = await DailyTimeTable.find({event: res.locals.selectedEvent._id}).sort({Date: 1});
-          const categorys = await Category.find();
+          const categorys = await Category.find().sort({ Star: 1 });
           const timetablepart = await TimetablePart.findById(req.params.id).populate('dailytimetable');
 
           if (!timetablepart) {
@@ -280,11 +280,11 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
           const errorMessage = err.errors
             ? Object.values(err.errors).map(e => e.message).join(' ')
             : (err.message || 'Server error');
-
+          const categorys = await Category.find().sort({ Star: 1 });
           return res.render('dailytimetable/editttelement', {
             
             days: await DailyTimeTable.find({event: res.locals.selectedEvent._id}).sort({Date: 1}),
-            categorys: await Category.find(),
+            categorys: categorys,
             formData: { ...req.body, _id: req.params.id },
             rolePermissons: req.user?.role?.permissions,
             successMessage: null,
@@ -334,7 +334,7 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
 
           const judges = users.filter(u => u.role?.roleName.includes('Judge'));
           const days = await DailyTimeTable.find({event: res.locals.selectedEvent._id}).sort({Date: 1});
-          const categorys = await Category.find();
+          const categorys = await Category.find().sort({ Star: 1 });
           const dailytable = await DailyTimeTable.findById(req.params.id);
           const formData = { dailytimetable: dailytable._id };
           if (!dailytable) {
@@ -383,7 +383,7 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
 
     const judges = users.filter(u => u.role?.roleName.includes('Judge'));
     const days = await DailyTimeTable.find({event: res.locals.selectedEvent._id}).sort({Date: 1});
-    const categorys = await Category.find();
+    const categorys = await Category.find().sort({ Star: 1 });
 
     res.render('dailytimetable/newttelement', {
       judges,
@@ -418,10 +418,10 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
         const errorMessage = err.errors
           ? Object.values(err.errors).map(e => e.message).join(' ')
           : (err.message || 'Server error');
-    
+          const categorys = await Category.find().sort({ Star: 1 });
         return res.render('dailytimetable/newttelement', {
           days: await DailyTimeTable.find({event: res.locals.selectedEvent._id}).sort({Date: 1}),
-          categorys: await Category.find(),
+          categorys: categorys,
           formData: req.body,
           successMessage: null,
           failMessage: errorMessage,

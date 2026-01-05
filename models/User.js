@@ -9,10 +9,15 @@ const userSchema = new mongoose.Schema({
         required: [true, 'Username required!'],
         unique: true,
       },
+      fullname:{
+        type: String,
+        required: [true, 'Fullname required!'],
+      },
         password:{
             type: String,
             required: [true, 'Password required!'],
         },
+
         feiid:{
             type: String,
             minlength: [8, 'FEI ID must be at 8 characters!'],

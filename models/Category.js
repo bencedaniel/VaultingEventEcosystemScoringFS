@@ -41,20 +41,30 @@ const CategorySchema = new mongoose.Schema({
     },
     Free: { 
         type: { 
-            R : { type: Number, min: 0.0, max: 1.0, required: true },
-            D : { type: Number, min: 0.0, max: 1.0, required: true },
-            M : { type: Number, min: 0.0, max: 1.0, required: true },
-            E : { type: Number, min: 0.0, max: 1.0, required: true }
+            R : { type: Number, min: 0.0, max: 5.0, required: true },
+            D : { type: Number, min: 0.0, max: 5.0, required: true },
+            M : { type: Number, min: 0.0, max: 5.0, required: true },
+            E : { type: Number, min: 0.0, max: 5.0, required: true }
 
         },
         _id: false
     },
-    Technical: { 
+    Artistic: { 
         type: { 
-            R : { type: Number, min: 0.0, max: 1.0, required: true },
-            D : { type: Number, min: 0.0, max: 1.0, required: true },
-            M : { type: Number, min: 0.0, max: 1.0, required: true },
-            E : { type: Number, min: 0.0, max: 1.0, required: true }
+            CH : { type: Number, min: 0.0, max: 1.0, required: true },
+            C1 : { type: Number, min: 0.0, max: 1.0, required: true },
+            C2 : { type: Number, min: 0.0, max: 1.0, required: true },
+            C3 : { type: Number, min: 0.0, max: 1.0, required: true },
+            C4 : { type: Number, min: 0.0, max: 1.0, required: true }
+        },
+        _id: false
+    },
+        TechArtistic: { 
+        type: { 
+            CH : { type: Number, min: 0.0, max: 1.0, required: true },
+            T1 : { type: Number, min: 0.0, max: 1.0, required: true },
+            T2 : { type: Number, min: 0.0, max: 1.0, required: true },
+            T3 : { type: Number, min: 0.0, max: 1.0, required: true },
         },
         _id: false
     },

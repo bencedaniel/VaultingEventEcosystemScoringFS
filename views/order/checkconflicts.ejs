@@ -44,10 +44,13 @@
         <tbody class="align-middle" id="TableBody">
             <% entries.forEach(entry => { %>
       <tr>
-        <td><% if (Array.isArray(entry.vaulter)) { %>
-            <%= entry.vaulter.map(v => v.Name).join(', ') %>
+          <% if (entry.teamName && entry.teamName !== '') { %>
+            <%= entry.teamName %>
+
           <% } else if (entry.vaulter && entry.vaulter.Name) { %>
             <%= entry.vaulter.Name %>
+          <% } else if (Array.isArray(entry.vaulter)) { %>
+            <%= entry.vaulter.map(v => v.Name).join(', ') %>
           <% } else { %>
             N/A
           <% } %>

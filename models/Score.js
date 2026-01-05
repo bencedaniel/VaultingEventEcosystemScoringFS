@@ -21,6 +21,11 @@ const ScoreSchema = new mongoose.Schema({
         enum: ['compulsory', 'freestyle','technical'],
         required: [true, 'Type required!'],
     },
+    timetablepart: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'timetableparts',
+        required: [true, 'Timetable part required!'],
+    },
     scoresheets: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: 'scoressheet',

@@ -1,0 +1,697 @@
+<div class="container my-3 border border-black border-1 border-opacity-10 rounded p-3 shadow bg-primary bg-opacity-10" style="max-width: 100vh;">
+
+  <form action="/scoring/newscoresheet" method="POST">
+    <div class="row justify-content-center m-auto">
+    <div id="imageStageWrapper" class=" position-relative" style="width: 100%; max-width: 800px; margin: 0 auto;">
+          <img id="bgImage" src="<%= scoresheetTemp?.bgImage || '' %>" alt="Background" style="width: 100%; height: auto;">
+          <% scoresheetTemp.outputFieldList.forEach((outputElement, idx) => { %>
+          <div
+            class="text-center"
+            id="output-<%= outputElement.contentid %>"
+            data-index="<%= idx %>"
+            data-type="output"
+            style="
+              position: absolute;
+              left: <%= outputElement.position.x %>%;
+              top: <%= (Number(outputElement.position.y).toFixed(1)) %>%;
+              transform: translate(-50%, -50%);
+              overflow: hidden;
+              padding: 2px;
+              width: <%= outputElement.position.w || 100 %>%;
+              cursor: pointer;
+              font-size: 0.9rem;
+            "
+            "
+            title=""
+          >
+            <%= outputElement.name%>
+          </div>
+
+           
+          <% }) %>
+          
+        <% scoresheetTemp.inputFieldList.forEach((inputElement, idx) => { %>
+          <input
+            type="text"
+            class="form-control border border-2 border-dark border-opacity-75 text-center input-field"
+            id="input-<%= inputElement.id %>"
+            placeholder=""
+            data-index="<%= idx %>"
+            name="ScoreSheetInput[<%= inputElement.id %>]"
+            data-type="input"
+            style="
+              position: absolute;
+              left: <%= inputElement.position.x %>%;
+              top: <%= Number(inputElement.position.y).toFixed(1) %>%;
+              transform: translate(-50%, -50%);
+              width: <%= inputElement.position.w || 100 %>%;
+              padding: 2px;
+            "
+            data-id="<%= inputElement.id %>"
+          >
+        <% }) %>
+       </div>
+
+      </div>
+      <input type="hidden" name="EntryId" value="<%= entry._id %>">
+      <input type="hidden" name="TimetablePartId" value="<%= timetablePart._id %>">
+      <input type="hidden" name="EventId" value="<%= event._id %>">
+      <input type="hidden" name="TemplateId" value="<%= scoresheetTemp._id %>">
+      <input type="hidden" name="Judge[userId]" value="<%= user._id %>">
+      <input type="hidden" name="Judge[table]" value="<%= judgesTable %>">
+      <input type="hidden" name="totalScore" id="totalScore" value="">
+
+
+      <!-- Submit Button -->
+      <div class="mt-3">
+        <button type="submit" class="btn btn-primary w-100">Submit Scores</button>
+      </div>
+    </div>
+</form>
+</div>
+
+<script>
+  // Store original widths from template
+
+
+
+
+</script>
+
+<style>
+  .output-field, .input-field {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+    line-height: 1.2;
+  }
+  .output-field:hover, .input-field:hover {
+    box-shadow: 0 0 8px rgba(0,0,0,0.2);
+    opacity: 0.9;
+  }
+</style>
+<% if (scoresheetTemp.typeOfScores == "artistic" && scoresheetTemp.TestType.includes("free test")) { %>
+  <script>
+      const artisticCH = <%= entry.category.Artistic?.CH || 0 %>;
+      const artisticC1 = <%= entry.category.Artistic?.C1 || 0 %>;
+      const artisticC2 = <%= entry.category.Artistic?.C2 || 0 %>;
+      const artisticC3 = <%= entry.category.Artistic?.C3 || 0 %>;
+      const artisticC4 = <%= entry.category.Artistic?.C4 || 0 %>;
+  </script>
+<% } else if(scoresheetTemp.typeOfScores == "artistic" && scoresheetTemp.TestType.includes("technical")){
+
+
+
+
+
+} else if (scoresheetTemp.typeOfScores == "technical" && scoresheetTemp.TestType.includes("free test")){
+
+
+
+} %>
+<script>
+
+      
+
+  document.addEventListener('DOMContentLoaded', function() {
+
+    const event = <%- JSON.stringify(event || {}) %>;
+    const timetablePart = <%- JSON.stringify(timetablePart || {}) %>;
+    const entry = <%- JSON.stringify(entry || {}) %>;
+    const JudgeName = "<%= judgeName || '' %>";
+    const JudgesTable = "<%= judgesTable || '' %>";
+
+
+    // Data mappings for output fields
+      const date = timetablePart?.dailytimetable?.Date ? new Date(timetablePart.dailytimetable.Date).toLocaleDateString("Hu") : '';
+      refreshOutputField('output-date', date);
+
+      const eventname = event?.EventName || '';
+      refreshOutputField('output-event', eventname);
+
+      const title = timetablePart?.Name || '';
+      refreshOutputField('output-title', title);
+      const titleField = document.getElementById('output-title');
+      if (titleField) {
+          titleField.style.fontWeight = 'bold';
+          titleField.style.fontSize = '1.1em';
+          titleField.style.setProperty('text-align', 'left', 'important');
+          titleField.style.paddingLeft = '10px';
+      }
+      if (entry?.vaulter.length === 1) {
+          const vaultername = entry?.vaulter[0]?.Name || '';
+          refreshOutputField('output-vaulter', vaultername);
+          const nation = entry?.vaulter[0]?.Nationality || '';
+          refreshOutputField('output-nation', nation);
+      }
+      else if  (entry?.vaulter.length > 2) {
+          let i = 0;
+          entry?.vaulter.forEach(element => {
+            const fieldName = 'output-vaulter' + (i+1) ; ;
+            refreshOutputField(fieldName, element?.Name || '');
+            i++;
+          });
+
+          refreshOutputField('output-teamName', entry?.teamName || '');
+      }
+      else if  (entry?.vaulter.length === 2) {
+          const vaultername1 = entry?.vaulter[0]?.Name || '';
+          refreshOutputField('output-vaulter1', vaultername1);
+          const vaultername2 = entry?.vaulter[1]?.Name || '';
+          refreshOutputField('output-vaulter2', vaultername2);
+      }
+      else {
+          refreshOutputField('output-vaulter', '');
+      }
+
+      const horse = entry?.horse?.Horsename || '';
+      refreshOutputField('output-horse', horse);
+
+      const lunger = entry?.lunger?.Name || '';
+      refreshOutputField('output-lunger', lunger);
+      // Kezeld azt is, ha nem tömb, hanem egyetlen objektum
+      const startObj = entry.vaulter[0].ArmNr.find(s => s && String(s.eventID) === String(event?._id));
+      const startnumber = startObj?.armNumber || '';
+      refreshOutputField('output-armnr', startnumber);
+
+      refreshOutputField('output-judgeName', JudgeName);
+      refreshOutputField('output-judges-table', JudgesTable);
+
+      let startNr = 0;
+      timetablePart.StartingOrder.forEach(element => {
+          if (String(element.Entry) === String(entry._id)) {
+              startNr = element.Order;
+          }
+
+      });
+
+      refreshOutputField('output-startno', startNr);
+
+
+      <% if (scoresheetTemp.typeOfScores == "artistic" && scoresheetTemp.TestType.includes("free test")) { %>
+
+        refreshOutputField('output-CH', artisticCH*100 + '%');
+        refreshOutputField('output-c1', artisticC1*100 + '%');
+        refreshOutputField('output-c2', artisticC2*100 + '%');
+        refreshOutputField('output-c3', artisticC3*100+ '%');
+        refreshOutputField('output-c4', (artisticC4*100) + '%');
+      <% } %>
+      
+
+  }
+
+  );
+
+  document.querySelectorAll('.input-field').forEach(input => {
+      input.addEventListener('change', () => {
+        calculateScore();
+
+
+
+
+      });
+  });
+
+
+
+
+
+  function refreshOutputField(id,value) {
+    const el = document.getElementById(id);
+      if (el) {
+          el.innerHTML = value;
+      }
+    // Implement any dynamic refresh logic if needed
+  }
+
+
+function calculateScore() {
+  const bannedFields = []; // ID-s of non score input fields
+  validateScoreInputs(bannedFields); // Validate all fields 0-10 and only numbers, without banned fields
+  //Horse Score 
+  const A1 = calcA1();
+  const A2 = calcA2();
+  const A3 = calcA3();
+  if ([A1, A2, A3].every(v => typeof v === 'number' && !Number.isNaN(v))) {
+    horseTotal(A1, A2, A3);
+  }
+  indCompcalc();
+
+  artisticScore();
+  calcSquadPddComp();
+  //calcPDDComp();
+
+
+
+
+
+
+
+
+
+
+  }
+
+function calcA1(){
+    // Horse score A1 logic
+  const rythm = document.getElementById('input-rythm');
+  const relaxation = document.getElementById('input-relaxation');
+  const connection = document.getElementById('input-connection');
+  const impulsion = document.getElementById('input-impulsion');
+  const straightness = document.getElementById('input-straightness');
+  const collection = document.getElementById('input-collection');
+  const a1sum = document.getElementById('output-a1sum');
+  const a1total = document.getElementById('output-a1total');
+  const a1percentage = <%= entry.category.Horse.A1 %>;
+    if(rythm && relaxation && connection && impulsion && straightness && collection && a1sum && a1total) {
+        const sum = [rythm, relaxation, connection, impulsion, straightness, collection].reduce((acc, curr) => {
+            const val = parseLocaleNumber(curr.value);
+            return acc + (isNaN(val) ? 0 : val);
+        }, 0)/6;
+        
+        a1sum.innerHTML = excelRound(sum,1);
+        const total = (sum * a1percentage);
+        a1total.innerHTML = excelRound(total,3);
+        return total;
+
+    }
+      return null;
+}
+
+function calcA2(){
+    // Horse score A2 logic
+    const wando = document.getElementById('input-WandO');
+    const bint = document.getElementById('input-bint');
+    const binc = document.getElementById('input-BinC');
+    const a2ded1 = document.getElementById('input-a2ded1')
+    const a2ded2 = document.getElementById('input-a2ded2')
+    const a2ded3 = document.getElementById('input-a2ded3')
+    const a2ded4 = document.getElementById('input-a2ded4')
+    const a2ded5 = document.getElementById('input-a2ded5')
+    const a2dsum = document.getElementById('output-a2dsum')
+    const a2sum = document.getElementById('output-a2sum')
+    const a2total = document.getElementById('output-a2total')
+    const a2percentage = <%= entry.category.Horse.A2 %>;
+    let a2dsumval =0,a2sumval=0;
+
+    if(a2ded1 && a2ded2 && a2ded3 && a2ded4 && a2ded5 && a2dsum ){
+      const sumOfDeductions = [a2ded1, a2ded2, a2ded3, a2ded4, a2ded5].reduce((acc, curr) => {
+        const val = parseLocaleNumber(curr.value);
+        return acc + (isNaN(val) ? 0 : val);
+      }, 0);
+      a2dsum.innerHTML = excelRound(sumOfDeductions, 1);
+      a2dsumval = sumOfDeductions;
+      
+    }
+    if(wando && bint && binc && a2sum ){
+      const Corrwando = parseLocaleNumber(wando.value)*0.5
+      const Corrbint = parseLocaleNumber(binc.value)*0.25
+      const Corrbinc = parseLocaleNumber(bint.value)*0.25
+      const sumOfa2 = [Corrwando, Corrbint, Corrbinc].reduce((acc, curr) => {
+        return acc + (isNaN(curr) ? 0 : curr);
+      }, 0);      
+      a2sum.innerHTML = excelRound(nullLimit(sumOfa2), 1);
+      a2sumval = nullLimit(sumOfa2)
+
+    }
+
+
+    if(a2sum && a2dsum){
+      const A2 = nullLimit((a2sumval - a2dsumval))*a2percentage
+      a2total.innerHTML= excelRound(A2,3);
+      return A2;
+
+
+    }
+    return null;
+
+}
+
+function calcA3(){
+    // Horse score A3 logic
+    const lunging = document.getElementById('input-lunging')
+    const a3ded1 = document.getElementById('input-a3ded1')
+    const a3ded2 = document.getElementById('input-a3ded2')
+    const a3ded3 = document.getElementById('input-a3ded3')
+    const a3ded4 = document.getElementById('input-a3ded4')
+    const a3ded5 = document.getElementById('input-a3ded5')
+    const a3dsum = document.getElementById('output-a3dsum')
+    const a3total = document.getElementById('output-a3total')
+    const a3percentage = <%= entry.category.Horse.A3 %>;
+    let a3dsumval =0,a3sumval=0;
+
+    if(a3ded1 && a3ded2 && a3ded3 && a3ded4 && a3ded5 && a3dsum ){
+      const sumOfDeductions = [a3ded1, a3ded2, a3ded3, a3ded4, a3ded5].reduce((acc, curr) => {
+        const val = parseLocaleNumber(curr.value);
+        return acc + (isNaN(val) ? 0 : val);
+      }, 0);
+      a3dsum.innerHTML = excelRound(sumOfDeductions, 1);
+      a3dsumval = sumOfDeductions;
+      
+    }
+
+    if(lunging){
+      a3sumval = parseLocaleNumber(lunging.value) || 0;
+    }
+
+    if(a3dsum && lunging){
+      const A3 = nullLimit((a3sumval - a3dsumval))*a3percentage
+      a3total.innerHTML= excelRound(A3,3);
+      return A3;
+
+
+    }
+    return null;
+}
+function horseTotal(A1,A2,A3){
+  const horsetotal = document.getElementById('output-total')
+  const totalScoreInput = document.getElementById('totalScore')
+  const total = A1 + A2 + A3;
+  horsetotal.innerHTML = excelRound(total,3);
+  totalScoreInput.value = excelRound(total,3);
+}
+
+function parseLocaleNumber(value) {
+  if (typeof value !== 'string') return NaN;
+  return parseFloat(value.replace(',', '.'));
+}
+
+function excelRound(value, decimals = 1) {
+  const multiplier = Math.pow(10, decimals);
+  return (Math.round((value * multiplier) + Number.EPSILON) / multiplier).toFixed(decimals);
+}
+
+function nullLimit(value){
+  if(value <= 0){
+    return 0.000
+  }else{
+    return value
+  }
+}
+
+
+function indCompcalc(){
+  const inputs = document.querySelectorAll('.input-field');
+  const compfields = ['input-vault-on', 'input-flag','input-mill', 'input-scrissors-forward', 'input-scrissors-backward','input-stand','input-flank1st','input-swingoff','input-basic-seat','input-swingforward', 'input-halfMill','input-swingBack','input-flank']
+  let indcomp = 0;
+  let NoOfComp = 0;
+  inputs.forEach(element => {
+
+      if(compfields.includes(element.getAttribute('id'))){
+          NoOfComp += 1;
+
+          const val = parseLocaleNumber(element.value);
+          if(!isNaN(val)){
+              indcomp += val;
+          }
+            const indcompElement = document.getElementById('output-sumOfComp');
+            indcompElement.innerHTML = excelRound(nullLimit(indcomp),3);
+
+
+          
+      }
+  });
+  if(NoOfComp > 0){
+      const indcompElement = document.getElementById('output-total');
+      const totalScoreInput = document.getElementById('totalScore');
+      const average = indcomp / NoOfComp;
+      totalScoreInput.value = excelRound(nullLimit(average),3);
+      indcompElement.innerHTML = excelRound(nullLimit(average),3);
+
+}
+}
+
+
+
+// Artistic Score calculation
+
+function artisticScore(){
+
+  const cohInput = document.getElementById('input-coh');
+  const cohoutput = document.getElementById('output-cohtotal');
+  let CH = 0, C1 = 0, C2 = 0, C3 = 0, C4 = 0;
+  if(cohInput && cohoutput){
+    const val = cohInput.value
+    if(!isNaN(parseLocaleNumber(val))){
+    CH = nullLimit(parseLocaleNumber(val))*artisticCH;
+    }
+    else{
+      CH = 0;
+    }
+    cohoutput.innerHTML = excelRound(CH,3);
+    
+
+  };
+
+  const c1Input = document.getElementById('input-c1');
+  const c1output = document.getElementById('output-c1total');
+  if(c1Input && c1output){
+    const val = c1Input.value
+    if(!isNaN(parseLocaleNumber(val))){
+    C1 = nullLimit(parseLocaleNumber(val))*artisticC1;
+    }
+    else{
+      C1 = 0;
+
+    }
+    c1output.innerHTML = excelRound(C1,3);
+
+    
+
+  };
+
+  const c2Input = document.getElementById('input-c2');
+  const c2output = document.getElementById('output-c2total');
+  if(c2Input && c2output){
+    const val = c2Input.value
+    if(!isNaN(parseLocaleNumber(val))){
+    C2 = nullLimit(parseLocaleNumber(val))*artisticC2;
+    }
+    else{
+      C2 = 0;
+    }
+
+    c2output.innerHTML = excelRound(C2,3);
+    
+
+  };
+    const c3Input = document.getElementById('input-c3');
+  const c3output = document.getElementById('output-c3total');
+  if(c3Input && c3output){
+    const val = c3Input.value
+    if(!isNaN(parseLocaleNumber(val))){
+    C3 = nullLimit(parseLocaleNumber(val))*artisticC3;
+    }
+    else{
+      C3 = 0;
+    }
+
+
+    c3output.innerHTML = excelRound(C3,3);
+    
+
+  };
+  const c4Input = document.getElementById('input-c4');
+  const c4output = document.getElementById('output-c4total');
+  if(c4Input && c4output){
+    const val = c4Input.value
+    if(!isNaN(parseLocaleNumber(val))){
+    C4 = nullLimit(parseLocaleNumber(val))*artisticC4;
+    }
+    else{
+      C4 = 0;
+    }
+
+
+    c4output.innerHTML = excelRound(C4,3);
+    
+
+  };
+
+
+  if(cohInput && c1Input && c2Input && c3Input && c4Input &&
+     cohoutput && c1output && c2output && c3output && c4output){
+  const totalArtistic = document.getElementById('output-total');
+  const totalScoreInput = document.getElementById('totalScore');
+  const deduction = document.getElementById('input-deduction');
+  const deductionVal = parseLocaleNumber(deduction.value) || 0;
+  const total = nullLimit((CH + C1 + C2 + C3 + C4) - deductionVal);
+  totalArtistic.innerHTML = excelRound(total,3);
+  totalScoreInput.value = excelRound(total,3);
+};
+
+
+}
+
+
+
+
+
+function calcSquadPddComp(){
+  const teamNameElement = document.getElementById('output-teamName');
+  const vaulter1 = document.getElementById('output-vaulter1');
+  const vaulter2 = document.getElementById('output-vaulter2');
+  // Fussunk, ha van teamName (squad), vagy ha nincs teamName, de van vaulter1 és vaulter2 (pair)
+  if (teamNameElement || (!teamNameElement) && (vaulter1 && vaulter2)) {
+
+    const inputs = document.querySelectorAll('.input-field');
+    let vaultOn = 0, flag = 0, mill = 0, scissF = 0, scissB = 0, stand = 0, flank = 0, swingOff = 0, basicSeat = 0, swingF = 0, halfM = 0, swingB = 0;
+    
+    const fieldMappings = {
+        'vaultOn': { variable: () => vaultOn, setter: (v) => vaultOn = v, output: 'output-sumOfVaultOn' },
+        'flag': { variable: () => flag, setter: (v) => flag = v, output: 'output-sumOfFlag' },
+        'mill': { variable: () => mill, setter: (v) => mill = v, output: 'output-sumOfMill' },
+        'scissF': { variable: () => scissF, setter: (v) => scissF = v, output: 'output-sumOfScissF' },
+        'scissB': { variable: () => scissB, setter: (v) => scissB = v, output: 'output-sumOfScissB' },
+        'stand': { variable: () => stand, setter: (v) => stand = v, output: 'output-sumOfStand' },
+        'flank': { variable: () => flank, setter: (v) => flank = v, output: 'output-sumOfFlank' },
+        'swingOff': { variable: () => swingOff, setter: (v) => swingOff = v, output: 'output-sumOfswingOff' },
+        'basicSeat': { variable: () => basicSeat, setter: (v) => basicSeat = v, output: 'output-sumOfbasicSeat' },
+        'swingF': { variable: () => swingF, setter: (v) => swingF = v, output: 'output-sumOfSwingF' },
+        'halfM': { variable: () => halfM, setter: (v) => halfM = v, output: 'output-sumOfHalfMill' },
+        'swingB': { variable: () => swingB, setter: (v) => swingB = v, output: 'output-sumOfSwingB' },
+    };
+    
+    
+    inputs.forEach(element => {
+        const id = element.getAttribute('id');
+        for (const [fieldName, config] of Object.entries(fieldMappings)) {
+            if (id.includes(fieldName)) {
+                const val = parseLocaleNumber(element.value);
+                if (!isNaN(val)) {
+                    config.setter(config.variable() + val);
+
+                }
+                const sum = document.getElementById(config.output);
+                if (sum) {
+                    sum.innerHTML = excelRound(nullLimit(config.variable()), 3);
+                }
+                break;
+            }
+        }
+    });
+    let numberOfVaulters, numberOfExercises;
+    if(teamNameElement){
+    numberOfVaulters = 6;
+    numberOfExercises = 8;
+    }else{
+    numberOfVaulters = 2;
+    numberOfExercises = 7 ;
+    }
+
+    const sumOfComps = document.getElementById('output-sumOfComp');
+    const sumOfCompPerVaulter = document.getElementById('output-sumofCompPerVaulter');
+    if (sumOfComps && sumOfCompPerVaulter) {
+          const sum = vaultOn + flag + mill + scissF + scissB + stand + flank + swingOff + basicSeat + swingF + halfM + swingB;
+          sumOfComps.innerHTML = excelRound(nullLimit(sum),3);
+          sumOfCompPerVaulter.innerHTML = excelRound(nullLimit(sum / numberOfVaulters),3);
+    const totalComp = document.getElementById('output-total');
+    const totalScoreInput = document.getElementById('totalScore');
+    const total = vaultOn + flag + mill + scissF + scissB + stand + flank + swingOff + basicSeat + swingF + halfM + swingB;
+    totalComp.innerHTML = excelRound(nullLimit((total/numberOfVaulters)/numberOfExercises),3);
+    totalScoreInput.value = excelRound(nullLimit((total/numberOfVaulters)/numberOfExercises),3); 
+    }
+
+  }
+}
+
+
+
+function calcPDDComp(){
+  const teamNameElement = document.getElementById('output-teamName');
+  const vaulter1 = document.getElementById('output-vaulter1');
+  const vaulter2 = document.getElementById('output-vaulter2');
+
+  if(vaulter1 && vaulter2 && !teamNameElement){
+
+    const inputs = document.querySelectorAll('.input-field');
+    let vaultOn = 0, flag = 0, mill = 0, scissF = 0, scissB = 0, stand = 0, flank = 0, swingOff = 0;
+    const fieldMappings = {
+        'basicSeat': { variable: () => flag, setter: (v) => flag = v, output: 'output-sumOfbasicSeat' },
+        'flag': { variable: () => mill, setter: (v) => mill = v, output: 'output-sumOfFlag' },
+        'swingF': { variable: () => scissF, setter: (v) => scissF = v, output: 'output-sumOfSwingF' },
+        'halfM': { variable: () => scissB, setter: (v) => scissB = v, output: 'output-sumOfHalfMill' },
+        'stand': { variable: () => stand, setter: (v) => stand = v, output: 'output-sumOfStand' },
+        'swingB': { variable: () => flank, setter: (v) => flank = v, output: 'output-sumOfSwingB' },
+        'swingOff': { variable: () => swingOff, setter: (v) => swingOff = v, output: 'output-sumOfswingOff' }
+    };
+    
+    inputs.forEach(element => {
+        const id = element.getAttribute('id');
+        for (const [fieldName, config] of Object.entries(fieldMappings)) {
+            if (id.includes(fieldName)) {
+                const val = parseLocaleNumber(element.value);
+                if (!isNaN(val)) {
+                    config.setter(config.variable() + val);
+
+                }
+                const sum = document.getElementById(config.output);
+                if (sum) {
+                    sum.innerHTML = excelRound(nullLimit(config.variable()), 3);
+                }
+                break;
+            }
+        }
+    });
+
+    const sumOfComps = document.getElementById('output-sumOfComp');
+    const sumOfCompPerVaulter = document.getElementById('output-sumofCompPerVaulter');
+    if (sumOfComps && sumOfCompPerVaulter) {
+          const sum = vaultOn + flag + mill + scissF + scissB + stand + flank + swingOff;
+          sumOfComps.innerHTML = excelRound(nullLimit(sum),3);
+          sumOfCompPerVaulter.innerHTML = excelRound(nullLimit(sum / 6),3);
+    
+
+    const totalComp = document.getElementById('output-total');
+    const totalScoreInput = document.getElementById('totalScore');
+    const total = vaultOn + flag + mill + scissF + scissB + stand + flank + swingOff;
+    totalComp.innerHTML = excelRound(nullLimit((total/6)/8),3);
+    totalScoreInput.value = excelRound(nullLimit((total/6)/8),3); 
+    }
+
+  }
+}
+
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  calculateScore()
+});
+
+function parseLocaleNumber(value) {
+  if (typeof value !== 'string') return NaN;
+  return parseFloat(value.replace(',', '.'));
+}
+
+function excelRound(value, decimals = 1) {
+  const multiplier = Math.pow(10, decimals);
+  return (Math.round((value * multiplier) + Number.EPSILON) / multiplier).toFixed(decimals);
+}
+
+function nullLimit(value){
+  if( value <= 0){
+    return 0.000
+  }else{
+    return value
+  }
+}
+
+
+function validateScoreInputs(bannedFields) {
+  const inputs = document.querySelectorAll('.input-field');
+  inputs.forEach(element => {
+      const id = element.getAttribute('id');
+      if(!bannedFields.includes(id)){
+          const val = parseLocaleNumber(element.value);
+          if(!isNaN(val) && (val > 10 || val < 0)){
+              ShowErrorToast('Invalid input in field: ' + id);
+              element.value = '';
+          }
+     }; 
+  });
+}
+
+</script>

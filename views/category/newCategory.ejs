@@ -92,7 +92,7 @@
           const scoreTypeDefs = [
             { display: 'Horse score', type: 'Horse', fields: ['A1', 'A2','A3'] },
             { display: 'Free test', type: 'Free', fields: ['R', 'D', 'M', 'E'] },
-            { display: 'Technical test', type: 'Technical', fields: ['R', 'D', 'M','E'] }
+            { display: 'Artistic score', type: 'Artistic', fields: ['CH', 'C1', 'C2', 'C3', 'C4'] }
           ];
         %>
         <% scoreTypeDefs.forEach(function(def) { %>
@@ -120,56 +120,55 @@
   </form>
 </div>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const reqFreeTestCheckbox = document.getElementById('ReqFreeTest');
-  const reqTechnicalTestCheckbox = document.getElementById('ReqTechnicalTest');
-  const freeTestBlock = document.getElementById('FreeBlock');
-  const technicalTestBlock = document.getElementById('TechnicalBlock');
-  const horseBlock = document.getElementById('HorseBlock');
-  const typeSelect = document.getElementById('Type');
-  const sexSelect = document.getElementById('Sex');
-  const starSelect = document.getElementById('Star');
 
-  function setBlockVisible(block, visible) {
-    block.style.display = visible ? 'block' : 'none';
-    block.querySelectorAll('input').forEach(input => input.disabled = !visible);
-  }
+  document.addEventListener('DOMContentLoaded', function() {
+    const reqFreeTestCheckbox = document.getElementById('ReqFreeTest');
+    const reqTechnicalTestCheckbox = document.getElementById('ReqTechnicalTest');
+    const freeTestBlock = document.getElementById('FreeBlock');
+    const artisticBlockElement = document.getElementById('ArtisticBlock');
+    const horseBlock = document.getElementById('HorseBlock');
+        const typeSelect = document.getElementById('Type');
+    const sexSelect = document.getElementById('Sex');
 
-  function updateTestBlocks() {
-    const starValue = parseInt(starSelect.value, 10);
-    const starIsOne = (!Number.isNaN(starValue) && starValue === 1);
+    function toggleBlock(checkbox, block) {
+      if (checkbox.checked) {
 
-    const visibleFree = reqFreeTestCheckbox.checked && !starIsOne;
-    const visibleTech = reqTechnicalTestCheckbox.checked && !starIsOne;
+        block.style.display = 'block';
+        block.querySelectorAll('input').forEach(input => input.disabled = false);
+      } else {
 
-    setBlockVisible(freeTestBlock, visibleFree);
-    setBlockVisible(technicalTestBlock, visibleTech);
-    reqTechnicalTestCheckbox.disabled = starIsOne;
-    if (starIsOne) {
-      reqTechnicalTestCheckbox.checked = false;
+        block.style.display = 'none';
+        block.querySelectorAll('input').forEach(input => input.disabled = true);
+      
     }
-  }
-
-  function toggleTypeSex() {
-    const selectedType = typeSelect.value;
-    if (selectedType !== 'Individual' && selectedType !== '') {
-      sexSelect.value = 'Mixed';
-      sexSelect.disabled = true;
-    } else {
-      sexSelect.disabled = false;
-      if (sexSelect.value === 'Mixed') sexSelect.value = '';
     }
-  }
 
-  // events
-  typeSelect.addEventListener('change', toggleTypeSex);
-  starSelect.addEventListener('change', updateTestBlocks);
-  reqFreeTestCheckbox.addEventListener('change', updateTestBlocks);
-  reqTechnicalTestCheckbox.addEventListener('change', updateTestBlocks);
+    function toggleTypeSex() {
+      const selectedType = typeSelect.value;
+      if (selectedType !== 'Individual' && selectedType !== '') {
 
-  // initial state
-  toggleTypeSex();
-  updateTestBlocks();
-  horseBlock.querySelectorAll('input').forEach(input => input.disabled = false);
-});
+        sexSelect.value = 'Mixed';
+      } else {
+        sexSelect.value = '';
+      }
+    }
+
+
+    typeSelect.addEventListener('change', toggleTypeSex);
+
+
+    reqFreeTestCheckbox.addEventListener('change', function() {
+      toggleBlock(reqFreeTestCheckbox, freeTestBlock,true);
+      toggleBlock(reqFreeTestCheckbox, artisticBlockElement,true);
+
+    });
+
+
+
+    toggleBlock(reqFreeTestCheckbox, freeTestBlock);
+    toggleBlock(reqFreeTestCheckbox, artisticBlockElement);
+    horseBlock.querySelectorAll('input').forEach(input => input.disabled = false);
+
+  });
+
 </script>

@@ -1,0 +1,54 @@
+<div class="container my-4 border border-black border-1 border-opacity-10 rounded p-3  shadow bg-primary bg-opacity-10 " style="max-width: 80vh;">
+  <h1 class="text-center mb-3">Edit Table Mapping</h1>
+
+  <form action="/mapping/edit/<%= formData._id %>" method="POST">
+    <div class="row justify-content-center g-3 m-auto">
+      
+      <!-- Table (A-H) -->
+      <div class="col-md-12">
+        <div class="form-floating">
+          <select class="form-select shadow-none" id="Table" name="Table" required>
+            <option value="">Select Table</option>
+            <% ['A','B','C','D','E','F','G','H'].forEach(t => { %>
+              <option value="<%= t %>" <%= formData && formData.Table === t ? 'selected' : '' %>><%= t %></option>
+            <% }); %>
+          </select>
+          <label for="Table">Table</label>
+        </div>
+      </div>
+
+      <!-- Test Type -->
+      <div class="col-md-12">
+        <div class="form-floating">
+          <select class="form-select shadow-none" id="TestType" name="TestType" required>
+            <option value="">Select Test Type</option>
+            <% ['compulsory','free test','technical'].forEach(tt => { %>
+              <option value="<%= tt %>" <%= formData && formData.TestType === tt ? 'selected' : '' %>><%= tt.charAt(0).toUpperCase() + tt.slice(1) %></option>
+            <% }); %>
+          </select>
+          <label for="TestType">Test Type</label>
+        </div>
+      </div>
+
+      <!-- Role -->
+      <div class="col-md-12">
+        <div class="form-floating">
+          <select class="form-select shadow-none" id="Role" name="Role" required>
+            <option value="">Select Role</option>
+            <% const roles = ['horse','compulsory','artistic','technical']; %>
+            <% roles.forEach(r => { %>
+              <option value="<%= r %>" <%= formData && formData.Role === r ? 'selected' : '' %>><%= r.charAt(0).toUpperCase() + r.slice(1) %></option>
+            <% }); %>
+          </select>
+          <label for="Role">Role</label>
+        </div>
+      </div>
+
+      <div class="col-md-12 mt-3">
+        <button type="submit" class="btn btn-primary w-100">Save Mapping</button>
+      </div>
+
+    </div>
+  </form>
+  </div>
+</div>

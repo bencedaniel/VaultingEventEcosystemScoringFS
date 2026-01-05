@@ -10,16 +10,20 @@ import Lunger from '../models/Lunger.js';
 import Horse from '../models/Horse.js';
 import Category from '../models/Category.js';
 import Event from '../models/Event.js';
+import TimetablePart from '../models/Timetablepart.js';
+
 
 
 const entryRouter = express.Router();
 
 entryRouter.get('/new',Verify, VerifyRole(), async (req, res) => {
+          const categorys = await Category.find().sort({ Star: 1 });
+
     res.render('entry/newEntry', {
         vaulters: await Vaulter.find(),
         lungers: await Lunger.find(),
         horses: await Horse.find(),
-        categorys: await Category.find(),
+        categorys: categorys,
         events: await Event.find(),
         formData: req.session.formData, 
         rolePermissons: req.user?.role?.permissions
@@ -31,6 +35,7 @@ entryRouter.get('/new',Verify, VerifyRole(), async (req, res) => {
 
 entryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
     try {
+
         const newEntry = new Entries(req.body);
         await newEntry.save()
         logger.db(`Entry ${newEntry.name} created by user ${req.user.username}.`);
@@ -42,12 +47,12 @@ entryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
     const errorMessage = err.errors
       ? Object.values(err.errors).map(e => e.message).join(' ')
       : 'Server error';
-
+          
     res.render('entry/newEntry', {
         vaulters: await Vaulter.find(),
         lungers: await Lunger.find(),
         horses: await Horse.find(),
-        categorys: await Category.find(),
+        categorys: categorys,
         events: await Event.find(),
         formData: req.session.formData, 
         rolePermissons: req.user?.role?.permissions
@@ -82,12 +87,12 @@ entryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
             req.session.failMessage = 'Entry not found';
             return res.redirect('/entry/dashboard');
           }
-          console.log(entry);
+          const categorys = await Category.find().sort({ Star: 1 });
           res.render('entry/editEntry', {
         vaulters: await Vaulter.find(),
         lungers: await Lunger.find(),
         horses: await Horse.find(),
-        categorys: await Category.find(),
+        categorys: categorys,
         events: await Event.find(),
             formData: entry,
             rolePermissons: req.user?.role?.permissions,
@@ -117,6 +122,24 @@ entryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
           const updated = new Entries(updateData);
           
           await updated.save(); // await és try/catch-ben!
+
+
+          if (!updated.status !== 'confirmed') {
+            const timetableParts = await TimetablePart.find({
+              event: res.locals.selectedEvent._id,
+              Category: updated.category})
+            for (const tp of timetableParts) {
+              for (const so of tp.StartingOrder) {
+
+                if (so.Entry.toString() === updated._id.toString()) {
+                  tp.StartingOrder = tp.StartingOrder.filter(item => item.Entry.toString() !== updated._id.toString());
+                  await tp.save();
+                }
+              }
+            }
+          }
+
+
           logger.db(`Entry ${entry.EntryDispName} updated by user ${req.user.username}.`);
           req.session.successMessage = 'Entry updated successfully!';
           res.redirect('/entry/dashboard');
@@ -126,11 +149,12 @@ entryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
           const errorMessage = err.errors
             ? Object.values(err.errors).map(e => e.message).join(' ')
             : 'Server error';
+          const categorys = await Category.find().sort({ Star: 1 });
           return res.render('entry/editEntry', {
             vaulters: await Vaulter.find(),
             lungers: await Lunger.find(),
             horses: await Horse.find(),
-            categorys: await Category.find(),
+            categorys: categorys,
         events: await Event.find(),
             formData: entry,
             rolePermissons: req.user?.role?.permissions,
@@ -141,7 +165,7 @@ entryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
         }
       });
 
-       entryRouter.delete('/delete/:id',Verify, VerifyRole(), async (req, res) => {
+     /*  entryRouter.delete('/delete/:id',Verify, VerifyRole(), async (req, res) => {
         try {
 
           const entry = await Entries.findByIdAndDelete(req.params.id);
@@ -156,7 +180,7 @@ entryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
           req.session.failMessage = 'Server error';
           res.status(500).json({ message: 'Server error' });
         }
-      });
+      });*/
       entryRouter.delete('/deleteIncident/:id', Verify, VerifyRole(), async (req, res) => {
         try {
           const entry = await Entries.findById(req.params.id);

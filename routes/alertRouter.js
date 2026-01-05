@@ -121,12 +121,12 @@ alertRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
         try {
 
           const alert = await Alert.findByIdAndDelete(req.params.id);
-          logger.db(`Entry ${alert._id} deleted by user ${req.user.username}.`);
+          logger.db(`Alert ${alert._id} deleted by user ${req.user.username}.`);
           if (!alert) {
-            req.session.failMessage = 'Entry not found';
-            return res.status(404).json({ message: 'Entry not found' });
+            req.session.failMessage = 'Alert not found';
+            return res.status(404).json({ message: 'Alert not found' });
           }
-          res.status(200).json({ message: 'Entry deleted successfully' });
+          res.status(200).json({ message: 'Alert deleted successfully' });
         } catch (err) {
           logger.error(err + " User: "+ req.user.username);
           req.session.failMessage = 'Server error';

@@ -25,6 +25,8 @@ import alertRouter from './routes/alertRouter.js';
 import Alert from './models/Alert.js';
 import orderRouter from './routes/orderRouter.js';
 import SSTempRouter from './routes/SSTempRouter.js';
+import scoringRouter from './routes/scoringRouter.js';
+import mappingRouter from './routes/mappingRouter.js';
 // Az aktuális fájl és könyvtár meghatározása
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -48,7 +50,6 @@ app.set('view engine', 'ejs'); // EJS sablonmotor beállítása
 
 app.use(expressLayouts); // Layout
 app.set('layout', 'layouts/layout'); // Layout könyvtár beállítása
-
 app.use(express.json()); // JSON formátumú adatok feldolgozása és elérhetősége a 'req.body' objektumon keresztül
 app.use(express.urlencoded({ extended: true })); // URL-en keresztül érkező, formázott adatok feldolgozása és elérhetősége a 'req.body' objektumon keresztül
 app.use(cors());
@@ -80,7 +81,7 @@ app.use((req, res, next) => {
   });
   next();
 });
-const version = '0.0.19';
+const version = '0.1.1';
 app.use(async (req, res, next) => {
     if(TESTDB==='true'){ 
       res.locals.test = true
@@ -108,6 +109,8 @@ app.use('/dailytimetable', dailytimetableRouter); // DailyTimeTable útvonalak k
 app.use('/alerts', alertRouter); // Alert útvonalak kezelése
 app.use('/order', orderRouter); // Order útvonalak kezelése
 app.use('/scoresheets', SSTempRouter); // ScoreSheetTemp útvonalak kezelése
+app.use('/scoring', scoringRouter); // Scoring útvonalak kezelése
+app.use('/mapping', mappingRouter); // Mapping útvonalak kezelése
 
 
 

@@ -90,9 +90,10 @@
 
         <% 
           const scoreTypeDefs = [
-            { display: 'Horse score', type: 'Horse', fields: ['A1', 'A2','A3'] },
-            { display: 'Free test', type: 'Free', fields: ['R', 'D', 'M', 'E'] },
-            { display: 'Technical test', type: 'Technical', fields: ['R', 'D', 'M','E'] }
+            { display: 'Horse score', type: 'Horse', fields: ['A1', 'A2','A3'], text: 'Percentage' },
+            { display: 'Free test', type: 'Free', fields: ['R', 'D', 'M', 'E'], text: 'Multipler' },
+            { display: 'Artistic score', type: 'Artistic', fields: ['CH', 'C1', 'C2', 'C3', 'C4'], text: 'Percentage' },
+            { display: 'Artistic score (Technical)', type: 'TechArtistic', fields: ['CH', 'T1', 'T2', 'T3'], text: 'Percentage' }
           ];
         %>
         <% scoreTypeDefs.forEach(function(def) { %>
@@ -102,7 +103,7 @@
               <div class="form-floating mb-2">
                 <input type="number" step="0.01" class="form-control shadow-none" id="<%= def.type %>_<%= field %>" name="<%= def.type %>[<%= field %>]" placeholder="<%= field %> Score"
                        value="<%= formData && formData[def.type] && formData[def.type] ? formData[def.type][field] : 0.0 %>" disabled>
-                <label for="<%= def.type %>_<%= field %>"><%= field %> Score</label>
+                <label for="<%= def.type %>_<%= field %>"><%= field %> <%= def.text %></label>
               </div>
             <% }); %>
 
@@ -125,7 +126,8 @@
     const reqFreeTestCheckbox = document.getElementById('ReqFreeTest');
     const reqTechnicalTestCheckbox = document.getElementById('ReqTechnicalTest');
     const freeTestBlock = document.getElementById('FreeBlock');
-    const technicalTestBlock = document.getElementById('TechnicalBlock');
+    const artisticBlockElement = document.getElementById('ArtisticBlock');
+    const techArtisticBlockElement = document.getElementById('TechArtisticBlock');
     const horseBlock = document.getElementById('HorseBlock');
         const typeSelect = document.getElementById('Type');
     const sexSelect = document.getElementById('Sex');
@@ -159,14 +161,20 @@
 
     reqFreeTestCheckbox.addEventListener('change', function() {
       toggleBlock(reqFreeTestCheckbox, freeTestBlock,true);
+      toggleBlock(reqFreeTestCheckbox, artisticBlockElement,true);
+
+    });
+    reqTechnicalTestCheckbox.addEventListener('change', function() {
+      toggleBlock(reqTechnicalTestCheckbox, techArtisticBlockElement,true);
+
     });
 
-    reqTechnicalTestCheckbox.addEventListener('change', function() {
-      toggleBlock(reqTechnicalTestCheckbox, technicalTestBlock,true);
-    });
+
 
     toggleBlock(reqFreeTestCheckbox, freeTestBlock);
-    toggleBlock(reqTechnicalTestCheckbox, technicalTestBlock);
+    toggleBlock(reqFreeTestCheckbox, artisticBlockElement);
+    toggleBlock(reqTechnicalTestCheckbox, techArtisticBlockElement);
+
     horseBlock.querySelectorAll('input').forEach(input => input.disabled = false);
 
   });

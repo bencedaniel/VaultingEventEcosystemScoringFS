@@ -37,7 +37,12 @@ const EntriesSchema = new mongoose.Schema({
         type: String,
         enum: ['registered', 'withdrawn', 'confirmed', 'cancelled'],
         default: 'registered',
-    }
+    },
+    teamName: {
+        type: String,
+        default: '',
+        maxlength: [100, 'Team name cannot exceed 100 characters.']
+    },
 }, { timestamps: true });
 
 

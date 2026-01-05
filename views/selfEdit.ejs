@@ -16,7 +16,14 @@
                 <label for="username" class="form-label">Username</label>
             </div>
         </div>
-        <div class="border border-1 border-secondary border-opacity-25 p-2 rounded">
+        <div class="col-md-12">
+            <div class="form-floating">
+                <input type="text" class="form-control shadow-none" id="fullname" name="fullname" placeholder="Fullname"
+                    autocomplete="off" value="<%= formData ? formData.fullname : "" %>">
+                <label for="fullname" class="form-label">Fullname</label>
+            </div>
+
+        <div class="border border-1 border-secondary border-opacity-25 p-2 rounded my-3">
         <div class="col-md-12 ms-3">
             <div class="form-check mb-2">
                 <input type="checkbox" class="form-check-input shadow-none" id="changePasswordCheckbox" name="changePassword" autocomplete="off">

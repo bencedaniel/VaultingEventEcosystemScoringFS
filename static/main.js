@@ -92,7 +92,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const dropdownMenu = document.getElementById('dropdownMenu');
     const dropdownButton = document.getElementById('dropdownMenuButton');
     const cells = tableBody?.getElementsByTagName('th');
-    const noresults = document.getElementById('noresults');
     const searchForm = document.getElementById('searchForm');
     var cellIndex = 0;
 
@@ -131,43 +130,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    dropdownButton?.addEventListener('click', fs => {
+      searchInput.value = '';
+      filterTable(fs);
+    });
+
+
     searchInput?.addEventListener('input', fv => {
-        fv.preventDefault();
-        const searchTerm = searchInput.value.toLowerCase();
-        const rows = tableBody.getElementsByTagName('tr');
-        let visibleRowCount = 0;
-
-        Array.from(rows).forEach((row, index) => {
-            if (index === 0) return; // Skip header row
-            const title = row.cells[cellIndex].textContent.toLowerCase();
-            row.style.display = (title.includes(searchTerm)) ? '' : 'none';
-            if (title.includes(searchTerm)) {
-                row.style.display = '';
-                if (searchTerm.length > 0){
-                row.cells[cellIndex].innerHTML = row.cells[cellIndex].textContent.replace(new RegExp(searchTerm, 'gi'), match => `<span class="bg-warning">${match}</span>`);
-                }else{
-                row.cells[cellIndex].innerHTML = row.cells[cellIndex].textContent;}
-                visibleRowCount++;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-        if (visibleRowCount === 0) {
-                        try{
-            noresults.style.display = '';
-
-            }catch(err){    
-                console.error('Noresults element not found:', err);
-            }
-
-        }else{
-            try{
-            noresults.style.display = 'none';
-
-            }catch(err){    
-                console.error('Noresults element not found:', err);
-            }
-        }
+        filterTable(fv);
     }); 
 
 
@@ -194,7 +164,29 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
+    function filterTable(fv) {
+              fv.preventDefault();
+        const searchTerm = searchInput.value.toLowerCase();
+        const rows = tableBody.getElementsByTagName('tr');
+        let visibleRowCount = 0;
 
+        Array.from(rows).forEach((row, index) => {
+            if (index === 0) return; // Skip header row
+            const title = row.cells[cellIndex].textContent.toLowerCase();
+            row.style.display = (title.includes(searchTerm)) ? '' : 'none';
+            if (title.includes(searchTerm)) {
+                row.style.display = '';
+                if (searchTerm.length > 0){
+                row.cells[cellIndex].innerHTML = row.cells[cellIndex].textContent.replace(new RegExp(searchTerm, 'gi'), match => `<span class="bg-warning">${match}</span>`);
+                }else{
+                row.cells[cellIndex].innerHTML = row.cells[cellIndex].textContent;}
+                visibleRowCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+    }
 
 
 
@@ -240,6 +232,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
+
+  function ShowSuccessToast(message) {
+        const toastContainer = document.getElementById('toastContainer');
+        const toastHTML = `
+            <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 9999;">
+                <div id="formSuccessToast" class="toast align-items-center text-white bg-success border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                    ${message}
+                        </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                </div>
+            </div>
+      `;
+        toastContainer.innerHTML = toastHTML;
+
+        setTimeout(() => {
+            toastContainer.innerHTML = '';
+        }, 3000);
+    }
+    function ShowErrorToast(message) {
+        const toastContainer = document.getElementById('toastContainer');
+        const toastHTML = `
+            <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 9999;">
+                <div id="formErrorToast" class="toast align-items-center text-white bg-danger border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                    ${message}
+                        </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                </div>
+            </div>
+      `;
+        toastContainer.innerHTML = toastHTML;
+
+        setTimeout(() => {
+            toastContainer.innerHTML = '';
+        }, 3000);
+    }
 
 
   document.addEventListener('DOMContentLoaded', () => {

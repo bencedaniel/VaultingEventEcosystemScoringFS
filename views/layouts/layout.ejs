@@ -370,6 +370,20 @@
     }
 </script>
 
+<script>
+history.pushState(null, "", location.href);
+
+window.addEventListener("popstate", function () {
+
+    <% if (parent && parent.includes(':did')) { %>
+          window.location.href = "<%= parent.split(':did')[0] + dtId %>";
+        <% } else { %>
+            window.location.href = "<%= parent %>";
+        <% } %>
+});
+</script>
+
+
 </html>
 
 

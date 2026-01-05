@@ -2,57 +2,55 @@ import mongoose from "mongoose";
 
 const ScoreSheetSchema = new mongoose.Schema(
     {
-            EventId: {
+        EventId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "events",
             required: [true, "Event ID required!"],
-        },
-        TestType: {
-            type: String,
-            enum: ['compulsory', 'freestyle','technical'],
-            required: [true, "Test type required!"],
         },
         EntryId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "entries",
             required: [true, "Entry ID required!"],
         },
-        Round: {
+        TemplateId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "scoresheettemps",
+            required: [true, "Template ID required!"],
+        },
+        TimetablePartId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "timetableparts",
+            required: [true, "Timetable Part ID required!"],
+        },
+
+        Judge: {
+            userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: [true, "Judge info required!"],
+            refPath: "users" // dinamikus collection
+            },
+            table: {
             type: String,
-            required: [true, "Round required!"],
+            required: true
+            }
+        }
+        ,
+
+        inputDatas: {
+            type: [{id:String, value: String}],
+            default: [],
+            required: [true, "Input data required!"],
         },
-        CategoryId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "categorys",
-            required: [true, "Category ID required!"],
-        },
-        JudgeId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "users",
-            required: [true, "Judge ID required!"],
-        },
-        TableId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "tables",
-            required: [true, "Table ID required!"],
-        },
-        AddedByJudge: {
-            type: Boolean,
-            required: [true, "Added by judge required!"],
-            default: true,
-        },
-        type: { type: String, enum: ['Horse', 'Comp', 'Exercises', 'Artistic', 'Tech'], required: true },
-        scores: [
-        {
-        criterion: { type: String, required: true }, 
-        value: { type: Number, required: true }
-      }
-    ]
+        totalScore: {
+            type: Number,
+            required: [true, "Total score required!"],
+        }
+        
   }, { timestamps: true }
 );
 
 ScoreSheetSchema.index(
-  { EventId: 1, EntryId: 1, Round: 1 , TestType: 1, CategoryId: 1, type: 1 },
+  { EventId: 1, EntryId: 1, TemplateId: 1 , TimetablePartId: 1, 'Judge.JudgeTable': 1 },
   { unique: true }
 );
 export default mongoose.model("scoresheets", ScoreSheetSchema);
