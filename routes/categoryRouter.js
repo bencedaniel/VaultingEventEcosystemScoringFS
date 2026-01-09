@@ -100,6 +100,7 @@ categoryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
           req.session.successMessage = 'Category updated successfully!';
           res.redirect('/category/dashboard');
         } catch (err) {
+          oldCategory.save(); // Visszaállítás hiba esetén
           logger.error(err + " User: "+ req.user.username);
 
           const errorMessage = err.errors

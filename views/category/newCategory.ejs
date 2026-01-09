@@ -90,9 +90,10 @@
 
         <% 
           const scoreTypeDefs = [
-            { display: 'Horse score', type: 'Horse', fields: ['A1', 'A2','A3'] },
-            { display: 'Free test', type: 'Free', fields: ['R', 'D', 'M', 'E'] },
-            { display: 'Artistic score', type: 'Artistic', fields: ['CH', 'C1', 'C2', 'C3', 'C4'] }
+            { display: 'Horse score', type: 'Horse', fields: ['A1', 'A2','A3'], text: 'Percentage' },
+            { display: 'Free test', type: 'Free', fields: ['R', 'D', 'M', 'E', 'NumberOfMaxExercises'], text: '(R,D,M,E: A Multipler value  )' },
+            { display: 'Artistic score', type: 'Artistic', fields: ['CH', 'C1', 'C2', 'C3', 'C4'], text: 'Percentage' },
+            { display: 'Artistic score (Technical)', type: 'TechArtistic', fields: ['CH', 'T1', 'T2', 'T3', 'TechDivider'], text: '(CH,T1,T2,T3: A Percentage value)' }
           ];
         %>
         <% scoreTypeDefs.forEach(function(def) { %>
@@ -102,7 +103,7 @@
               <div class="form-floating mb-2">
                 <input type="number" step="0.01" class="form-control shadow-none" id="<%= def.type %>_<%= field %>" name="<%= def.type %>[<%= field %>]" placeholder="<%= field %> Score"
                        value="<%= formData && formData[def.type] && formData[def.type] ? formData[def.type][field] : 0.0 %>" disabled>
-                <label for="<%= def.type %>_<%= field %>"><%= field %> Score</label>
+                <label for="<%= def.type %>_<%= field %>"><%= field %> (<%= def.text %>)</label>
               </div>
             <% }); %>
 

@@ -119,12 +119,19 @@
         <% } %>
         <% 
           const safeFormData = (typeof formData !== 'undefined' && formData) ? formData : null;
+          const pid = safeFormData && safeFormData.parent ? String(safeFormData.parent) : '';
           const dtId = safeFormData && safeFormData.dailytimetable ? String(safeFormData.dailytimetable._id || safeFormData.dailytimetable) : '';
         %>
         <% if (parent && parent.includes(':did')) { %>
             <li class="nav-item">
             <a href="<%= parent.split(':did')[0] + dtId %>" class="nav-link btn btn-primary m-1 px-3 d-flex align-items-center">
                 <i class="bi bi-arrow-return-left fs-5 "></i></a>
+          </li>
+          <% } else if (parent && parent.includes(':pid')) { %>
+            <li class="nav-item">
+            <a href="<%= parent.split(':pid')[0] + pid %>" class="nav-link btn btn-primary m-1 px-3 d-flex align-items-center">
+                <i class="bi bi-arrow-return-left fs-5 "></i></a>
+
           </li>
         <% } else { %>
           <li class="nav-item">
@@ -371,16 +378,18 @@
 </script>
 
 <script>
-history.pushState(null, "", location.href);
+/*history.pushState(null, "", location.href);
 
 window.addEventListener("popstate", function () {
 
     <% if (parent && parent.includes(':did')) { %>
           window.location.href = "<%= parent.split(':did')[0] + dtId %>";
+    <% } else if (parent && parent.includes(':pid')) { %>
+          window.location.href = "<%= parent.split(':pid')[0] + pid %>";
         <% } else { %>
             window.location.href = "<%= parent %>";
         <% } %>
-});
+});*/
 </script>
 
 

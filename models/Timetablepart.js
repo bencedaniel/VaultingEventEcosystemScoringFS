@@ -32,7 +32,7 @@ const TimetablePartSchema = new mongoose.Schema({
         },
         TestType: {
             type: String,
-            enum: ['Compulsory', 'Free Test', 'Tech Test'],
+            enum: ['Compulsory', 'Free Test', 'Technical Test'],
             required: [true, 'Test type required!'],
         },
         Round: {

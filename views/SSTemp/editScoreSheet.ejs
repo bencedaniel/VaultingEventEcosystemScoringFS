@@ -65,7 +65,7 @@
                      name="TestType[]" 
                      value="free test"
                      id="test_freestyle"
-                     <%= formData && formData.TestType && (formData.TestType === 'free test' || (Array.isArray(formData.TestType) && formData.TestType.includes('freestyle'))) ? 'checked' : '' %>>
+                     <%= formData && formData.TestType && (formData.TestType === 'free test' || (Array.isArray(formData.TestType) && formData.TestType.includes('free test'))) ? 'checked' : '' %>>
               <label class="form-check-label" for="test_freestyle">
                 Freestyle
               </label>
@@ -75,9 +75,9 @@
             <div class="form-check">
               <input class="form-check-input" type="checkbox"
                      name="TestType[]" 
-                     value="technical"
+                     value="technical test"
                      id="test_technical"
-                     <%= formData && formData.TestType && (formData.TestType === 'technical' || (Array.isArray(formData.TestType) && formData.TestType.includes('technical'))) ? 'checked' : '' %>>
+                     <%= formData && formData.TestType && (formData.TestType === 'technical test' || (Array.isArray(formData.TestType) && formData.TestType.includes('technical test'))) ? 'checked' : '' %>>
               <label class="form-check-label" for="test_technical">
                 Technical
               </label>

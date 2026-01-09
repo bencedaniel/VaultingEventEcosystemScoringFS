@@ -4,7 +4,7 @@ const ScoreSheetSchemaTemp = new mongoose.Schema(
     {
         TestType: [{
             type: String,
-            enum: ['compulsory', 'free test','technical'],
+            enum: ['compulsory', 'free test','technical test'],
             required: [true, "Test type required!"],
         }],
 

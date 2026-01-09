@@ -44,7 +44,8 @@ const CategorySchema = new mongoose.Schema({
             R : { type: Number, min: 0.0, max: 5.0, required: true },
             D : { type: Number, min: 0.0, max: 5.0, required: true },
             M : { type: Number, min: 0.0, max: 5.0, required: true },
-            E : { type: Number, min: 0.0, max: 5.0, required: true }
+            E : { type: Number, min: 0.0, max: 5.0, required: true },
+            NumberOfMaxExercises : { type: Number, min: 1, required: true }
 
         },
         _id: false
@@ -65,6 +66,7 @@ const CategorySchema = new mongoose.Schema({
             T1 : { type: Number, min: 0.0, max: 1.0, required: true },
             T2 : { type: Number, min: 0.0, max: 1.0, required: true },
             T3 : { type: Number, min: 0.0, max: 1.0, required: true },
+            TechDivider : { type: Number, min: 1, max: 10, required: true }
         },
         _id: false
     },

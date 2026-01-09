@@ -41,7 +41,11 @@ const ScoreSheetSchema = new mongoose.Schema(
             default: [],
             required: [true, "Input data required!"],
         },
-        totalScore: {
+        totalScoreFE: {
+            type: Number,
+            required: [true, "Total score required!"],
+        },
+        totalScoreBE: {
             type: Number,
             required: [true, "Total score required!"],
         }
@@ -53,4 +57,11 @@ ScoreSheetSchema.index(
   { EventId: 1, EntryId: 1, TemplateId: 1 , TimetablePartId: 1, 'Judge.JudgeTable': 1 },
   { unique: true }
 );
+ScoreSheetSchema.pre('save', function(next) {
+    if(this.totalScoreBE !== this.totalScoreFE){
+        throw new Error('Total score mismatch between front-end and back-end values');
+    }   
+
+    next();
+});
 export default mongoose.model("scoresheets", ScoreSheetSchema);
