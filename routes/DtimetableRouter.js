@@ -12,6 +12,7 @@ import User from '../models/User.js';
 import TimetablePart from '../models/Timetablepart.js';
 import Category from '../models/Category.js';
 import Event from '../models/Event.js';
+import ScoreSheet from '../models/ScoreSheet.js';
 
 const dailytimetableRouter = express.Router();
 
@@ -115,6 +116,14 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
       });
       dailytimetableRouter.post('/edit/:id',Verify, VerifyRole(), Validate, async (req, res) => {
         try {
+          const timetableParts = await TimetablePart.find({ dailytimetable: req.params.id }).select('_id');
+          const timetablePartIds = timetableParts.map(tp => tp._id);
+          const scoreSheets = await ScoreSheet.find({ TimetablePartId: { $in: timetablePartIds } });
+          if (scoreSheets.length > 0) {
+            req.session.failMessage = 'Cannot edit DailyTimeTable with submitted score sheets';
+            return res.redirect('/dailytimetable/dashboard');
+          }
+
           const dailytimetable = await DailyTimeTable.findByIdAndUpdate(req.params.id, req.body, { runValidators: true });
           logger.db(`DailyTimeTable ${dailytimetable.DayName} updated by user ${req.user.username}.`);
           if (!dailytimetable) {
@@ -251,7 +260,12 @@ dailytimetableRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res
 
      dailytimetableRouter.post('/editTTelement/:id',Verify, VerifyRole(), Validate, async (req, res) => {
         try {
-          console.log('Received form data:', req.body);
+          const scoreSheets = await ScoreSheet.find({ TimetablePartId: req.params.id });
+          if (scoreSheets.length > 0) {
+            req.session.failMessage = 'Cannot edit TimetablePart with submitted score sheets';
+            return res.redirect('/dailytimetable/dashboard');
+          }
+
           const timetablepart = await TimetablePart.findByIdAndUpdate(
             req.params.id,
             req.body,

@@ -81,7 +81,7 @@ app.use((req, res, next) => {
   });
   next();
 });
-const version = '0.0.22';
+const version = '0.0.23';
 app.use(async (req, res, next) => {
     if(TESTDB==='true'){ 
       res.locals.test = true

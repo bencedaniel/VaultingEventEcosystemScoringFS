@@ -61,8 +61,11 @@
         <td><%= entry && entry.horse ? entry.horse.Horsename : '' %></td>
         <td><%= entry && entry.category ? entry.category.CategoryDispName : '' %></td>
 
+        <% const scoreSheetSubmittedForEntry = ScoreSheetsSubmitted.some(sheet => sheet.EntryId.toString() === order.Entry._id.toString()); %>
+
+        
         <td class="text-center">
-            <button type="button" class="btn btn-info btn-sm shadow-none m-1"onclick="location.href='/scoring/newscoresheet/<%= order.Entry._id%>/<%= timetablePart._id%>'" <%= judgeName === "Not authorized judge" ? 'disabled': '' %>><i class="bi bi-list"></i>Add Score sheet</button>
+            <button type="button" class="btn btn-info btn-sm shadow-none m-1"onclick="location.href='/scoring/newscoresheet/<%= order.Entry._id%>/<%= timetablePart._id%>'" <%= judgeName === "Not authorized judge" || scoreSheetSubmittedForEntry ? 'disabled': '' %> ><i class="bi bi-list"></i>Add Score sheet</button>
       </tr>
             <% }); %>
         </tbody>

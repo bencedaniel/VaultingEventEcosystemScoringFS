@@ -1,6 +1,6 @@
 <div class="container my-3 border border-black border-1 border-opacity-10 rounded p-3 shadow bg-primary bg-opacity-10" style="max-width: 100vh;">
 
-  <form action="/scoring/newscoresheet" method="POST">
+  <form action="/scoring/office/newscoresheet" method="POST">
     <div class="row justify-content-center m-auto">
     <div id="imageStageWrapper" class=" position-relative" style="width: 100%; max-width: 800px; margin: 0 auto;">
           <img id="bgImage" src="<%= scoresheetTemp?.bgImage || '' %>" alt="Background" style="width: 100%; height: auto;">
@@ -57,7 +57,7 @@
       <input type="hidden" name="TimetablePartId" value="<%= timetablePart._id %>">
       <input type="hidden" name="EventId" value="<%= event._id %>">
       <input type="hidden" name="TemplateId" value="<%= scoresheetTemp._id %>">
-      <input type="hidden" name="Judge[userId]" value="<%= user._id %>">
+      <input type="hidden" name="Judge[userId]" value="<%= judgeID %>">
       <input type="hidden" name="Judge[table]" value="<%= judgesTable %>">
       <input type="hidden" name="totalScoreFE" id="totalScore" value="">
       

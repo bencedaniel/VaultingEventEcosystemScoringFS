@@ -14,7 +14,7 @@ const ScoreSheetSchema = new mongoose.Schema(
         },
         TemplateId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "scoresheettemps",
+            ref: "scoresheets_temp",
             required: [true, "Template ID required!"],
         },
         TimetablePartId: {

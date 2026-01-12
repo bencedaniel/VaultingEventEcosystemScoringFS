@@ -44,7 +44,7 @@ const TimetablePartSchema = new mongoose.Schema({
             type: [{
               Entry: { type: mongoose.Schema.Types.ObjectId, ref: 'entries', required: [true, 'Entry is required'] },
               Order: { type: Number, required: [true, 'Order is required'] },
-              submittedtables: [{ type: mongoose.Schema.Types.ObjectId }]
+              submittedtables: [{JudgeID: { type: mongoose.Schema.Types.ObjectId, ref: 'users' }, Table: String}],
             }],
             default: [],
         },
