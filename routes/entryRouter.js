@@ -3,28 +3,36 @@ import express from 'express';
 import {logger} from '../logger.js';
 import Validate from "../middleware/Validate.js";
 import { Verify, VerifyRole } from "../middleware/Verify.js";
-import Entries from '../models/Entries.js';
-import Permissions from '../models/Permissions.js';
-import Vaulter from '../models/Vaulter.js';
-import Lunger from '../models/Lunger.js';
-import Horse from '../models/Horse.js';
-import Category from '../models/Category.js';
-import Event from '../models/Event.js';
-import TimetablePart from '../models/Timetablepart.js';
+import {
+    getAllVaulters,
+    getAllLungers,
+    getAllHorses,
+    getAllCategories,
+    getAllEvents,
+    createEntry,
+    getEntriesByEvent,
+    getEntryByIdWithPopulation,
+    updateEntry,
+    deleteEntryIncident,
+    addEntryIncident,
+    getHorsesForEvent,
+    updateHorseVetStatus,
+    getSelectedEvent
+} from '../services/entryData.js';
 
 
 
 const entryRouter = express.Router();
 
 entryRouter.get('/new',Verify, VerifyRole(), async (req, res) => {
-          const categorys = await Category.find().sort({ Star: 1 });
+    const categorys = await getAllCategories();
 
     res.render('entry/newEntry', {
-        vaulters: await Vaulter.find(),
-        lungers: await Lunger.find(),
-        horses: await Horse.find(),
+        vaulters: await getAllVaulters(),
+        lungers: await getAllLungers(),
+        horses: await getAllHorses(),
         categorys: categorys,
-        events: await Event.find(),
+        events: await getAllEvents(),
         formData: req.session.formData, 
         rolePermissons: req.user?.role?.permissions
         , failMessage: req.session.failMessage, successMessage: req.session.successMessage,
@@ -36,8 +44,7 @@ entryRouter.get('/new',Verify, VerifyRole(), async (req, res) => {
 entryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
     try {
 
-        const newEntry = new Entries(req.body);
-        await newEntry.save()
+        const newEntry = await createEntry(req.body);
         logger.db(`Entry ${newEntry.name} created by user ${req.user.username}.`);
         req.session.successMessage = 'Entry created successfully!';
         res.redirect('/entry/dashboard');
@@ -46,14 +53,15 @@ entryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
 
     const errorMessage = err.errors
       ? Object.values(err.errors).map(e => e.message).join(' ')
-      : 'Server error';
+      : (err.message || 'Server error');
+    const categorys = await getAllCategories();
           
     res.render('entry/newEntry', {
-        vaulters: await Vaulter.find(),
-        lungers: await Lunger.find(),
-        horses: await Horse.find(),
+        vaulters: await getAllVaulters(),
+        lungers: await getAllLungers(),
+        horses: await getAllHorses(),
         categorys: categorys,
-        events: await Event.find(),
+        events: await getAllEvents(),
         formData: req.session.formData, 
         rolePermissons: req.user?.role?.permissions
         , failMessage: errorMessage, successMessage: req.session.successMessage,
@@ -64,9 +72,9 @@ entryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
   }
 });
   entryRouter.get('/dashboard',Verify, VerifyRole(), async (req, res) => {
-        const selectedEvent = await Event.findOne({ selected: true });
+        const selectedEvent = await getSelectedEvent();
         
-        const entrys = await Entries.find({ event: selectedEvent._id }).populate('vaulter').populate('horse').populate('lunger').populate('category').sort({ name: 1 });
+        const entrys = await getEntriesByEvent(selectedEvent._id);
 
         res.render('entry/entrydash', {
             entrys,
@@ -82,18 +90,14 @@ entryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
 
     entryRouter.get('/edit/:id',Verify, VerifyRole(), async (req, res) => {
         try {
-          const entry = await Entries.findById(req.params.id).populate('vaulter').populate('horse').populate('lunger').populate('category').populate('event');
-          if (!entry) {
-            req.session.failMessage = 'Entry not found';
-            return res.redirect('/entry/dashboard');
-          }
-          const categorys = await Category.find().sort({ Star: 1 });
+          const entry = await getEntryByIdWithPopulation(req.params.id);
+          const categorys = await getAllCategories();
           res.render('entry/editEntry', {
-        vaulters: await Vaulter.find(),
-        lungers: await Lunger.find(),
-        horses: await Horse.find(),
+        vaulters: await getAllVaulters(),
+        lungers: await getAllLungers(),
+        horses: await getAllHorses(),
         categorys: categorys,
-        events: await Event.find(),
+        events: await getAllEvents(),
             formData: entry,
             rolePermissons: req.user?.role?.permissions,
             failMessage: req.session.failMessage,
@@ -104,7 +108,7 @@ entryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
           req.session.successMessage = null; // Clear the success message after rendering
         } catch (err) {
           logger.error(err + " User: "+ req.user.username);
-          req.session.failMessage = 'Server error';
+          req.session.failMessage = err.message || 'Server error';
           return res.redirect('/entry/dashboard');
         }
       });
@@ -114,33 +118,9 @@ entryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
                     logger.debug(req.body)
 
           const updateData = { ...req.body, _id: req.params.id };
-          const entry = await Entries.findByIdAndDelete(req.params.id);
-          if (!entry) {
-            req.session.failMessage = 'Entry not found';
-            return res.redirect('/entry/dashboard');
-          }
-          const updated = new Entries(updateData);
-          
-          await updated.save(); // await és try/catch-ben!
+          const { oldEntry, newEntry } = await updateEntry(req.params.id, updateData, res.locals.selectedEvent._id);
 
-
-          if (!updated.status !== 'confirmed') {
-            const timetableParts = await TimetablePart.find({
-              event: res.locals.selectedEvent._id,
-              Category: updated.category})
-            for (const tp of timetableParts) {
-              for (const so of tp.StartingOrder) {
-
-                if (so.Entry.toString() === updated._id.toString()) {
-                  tp.StartingOrder = tp.StartingOrder.filter(item => item.Entry.toString() !== updated._id.toString());
-                  await tp.save();
-                }
-              }
-            }
-          }
-
-
-          logger.db(`Entry ${entry.EntryDispName} updated by user ${req.user.username}.`);
+          logger.db(`Entry ${oldEntry.EntryDispName} updated by user ${req.user.username}.`);
           req.session.successMessage = 'Entry updated successfully!';
           res.redirect('/entry/dashboard');
         } catch (err) {
@@ -148,15 +128,15 @@ entryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
 
           const errorMessage = err.errors
             ? Object.values(err.errors).map(e => e.message).join(' ')
-            : 'Server error';
-          const categorys = await Category.find().sort({ Star: 1 });
+            : (err.message || 'Server error');
+          const categorys = await getAllCategories();
           return res.render('entry/editEntry', {
-            vaulters: await Vaulter.find(),
-            lungers: await Lunger.find(),
-            horses: await Horse.find(),
+            vaulters: await getAllVaulters(),
+            lungers: await getAllLungers(),
+            horses: await getAllHorses(),
             categorys: categorys,
-        events: await Event.find(),
-            formData: entry,
+        events: await getAllEvents(),
+            formData: { ...req.body, _id: req.params.id },
             rolePermissons: req.user?.role?.permissions,
             failMessage: errorMessage,
             successMessage: req.session.successMessage,
@@ -183,54 +163,32 @@ entryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
       });*/
       entryRouter.delete('/deleteIncident/:id', Verify, VerifyRole(), async (req, res) => {
         try {
-          const entry = await Entries.findById(req.params.id);
+          const entry = await deleteEntryIncident(req.params.id, req.body);
           logger.db(`Entry ${entry.name} incident deleted by user ${req.user.username}.`);
-          if (!entry) {
-            req.session.failMessage = 'Entry not found';
-            return res.status(404).json({ message: 'Entry not found' });
-          }
-          
-
-          
-          entry.EntryIncident = entry.EntryIncident.filter(incident =>
-            !(
-              incident.description === req.body.description &&
-              incident.incidentType === req.body.type             )
-          );
-          await Entries.findByIdAndUpdate(req.params.id, entry, { runValidators: true });
           res.status(200).json({ message: 'Incident deleted successfully' });
         } catch (err) {
           logger.error(err + " User: "+ req.user.username);
-          req.session.failMessage = 'Server error';
-          res.status(500).json({ message: 'Server error' });
+          req.session.failMessage = err.message || 'Server error';
+          res.status(500).json({ message: err.message || 'Server error' });
         }
       });
      entryRouter.post('/newIncident/:id',Verify,VerifyRole(), async (req,res) =>{
       try{
-        const entry = await Entries.findById(req.params.id);
-        logger.db(`Entry ${entry.Name} incident created by user ${req.user.username}.`);
-        const newIncident = {
+        const incidentData = {
           description: req.body.description,
           incidentType: req.body.incidentType,
-          date: Date.now(),
-          User: req.user._id
-
-        }    
-        entry.EntryIncident.push(newIncident);
-        await Entries.findByIdAndUpdate(req.params.id, entry, { runValidators: true })
+          userId: req.user._id
+        };
+        const entry = await addEntryIncident(req.params.id, incidentData);
+        logger.db(`Entry ${entry.Name} incident created by user ${req.user.username}.`);
         res.status(200).json({ message: 'Incident added successfully!' })
       } catch (err) {
+        logger.error(err + " User: "+ req.user.username);
         const errorMessage = err.errors
             ? Object.values(err.errors).map(e => e.message).join(' ')
-            : 'Server error';
+            : (err.message || 'Server error');
           req.session.failMessage = errorMessage;
-        return res.render('entry/editEntry', {
-            permissionList: await Permissions.find(),
-          formData: { ...req.body, _id: req.params.id },
-          successMessage: null,
-          failMessage: errorMessage,
-          user: req.user
-      }); 
+          res.status(500).json({ message: errorMessage });
         }
         
 
@@ -238,10 +196,7 @@ entryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
 
     entryRouter.get('/vetCheck' ,Verify, VerifyRole(), async (req, res) => {
       try {
-        const horsesontheEvent = await Entries.find({ event: res.locals.selectedEvent._id }).populate('horse').select('horse');
-        
-        const uniqueHorses = Array.from(new Set(horsesontheEvent.map(entry => entry.horse._id.toString())));
-        const horses = await Horse.find({ _id: { $in: uniqueHorses },}).sort({ name: 1 });
+        const horses = await getHorsesForEvent(res.locals.selectedEvent._id);
         horses.forEach(horse => {
         horse.HeadNr = horse.HeadNr.filter(h => String(h.eventID) === String(res.locals.selectedEvent._id));
         horse.BoxNr = horse.BoxNr.filter(b => String(b.eventID) === String(res.locals.selectedEvent._id));
@@ -256,33 +211,20 @@ entryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
         req.session.failMessage = null; // Clear the fail message after rendering
         req.session.successMessage = null; // Clear the success message after rendering 
     } catch (err) {
-
           logger.error(err + " User: "+ req.user.username);
-          const horsesontheEvent = await Entries.find({ event: res.locals.selectedEvent._id }).populate('horse').select('horse');
-
-          if (horsesontheEvent.length === 0) {
-            req.session.failMessage = 'No entries found for the selected event';
-            return res.redirect('/entry/dashboard');
-          }else {
-            req.session.failMessage = 'Server error';
-            return res.redirect('/entry/dashboard');
-          }
+          req.session.failMessage = err.message || 'Server error';
+          return res.redirect('/entry/dashboard');
         }
       });
 
       entryRouter.post('/updateVetStatus/:horseId',Verify, VerifyRole(), async (req, res) => {
         try {
-            const horse = await Horse.findById(req.params.horseId);
-            if (!horse) {
-                return res.status(404).json({ message: 'Horse not found' });
-            }
-            horse.VetCheckStatus.push({
+            const statusData = {
                 status: req.body.status,
-                date: Date.now(),
-                user: req.user._id,
-                eventID: res.locals.selectedEvent._id
-            });
-            await Horse.findByIdAndUpdate(req.params.horseId, horse, { runValidators: true });
+                userId: req.user._id,
+                eventId: res.locals.selectedEvent._id
+            };
+            const horse = await updateHorseVetStatus(req.params.horseId, statusData);
             logger.db(`Horse ${horse.Horsename} vet status updated to ${req.body.status} by user ${req.user.username}.`);
             res.status(200).json({ message: 'Vet status updated successfully' });
         }
@@ -290,7 +232,7 @@ entryRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
             logger.error(err + " User: "+ req.user.username);
             const errorMessage = err.errors
                 ? Object.values(err.errors).map(e => e.message).join(' ')
-                : 'Server error';
+                : (err.message || 'Server error');
             req.session.failMessage = errorMessage;
             res.status(500).json({ message: errorMessage });
         }

@@ -2,63 +2,67 @@ import dotenv from 'dotenv';
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import router from './routes/routes.js';
-import adminRouter from './routes/adminRouter.js';
 import connectDB from './database/db.js';
 import expressLayouts from 'express-ejs-layouts';
 import session from 'express-session';
-import {logger} from './logger.js';
+import { logger } from './logger.js';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import horseRouter from './routes/horseRouter.js';
-import vaulterRouter from './routes/vaulterRouter.js';
-import lungerRouter from './routes/lungerRouter.js';
-import eventRouter from './routes/eventRouter.js';
-import { StoreUserWithoutValidation } from './middleware/Verify.js';
 import morgan from 'morgan';
 import Event from './models/Event.js';
-import categoryRouter from './routes/categoryRouter.js';
-import entryRouter from './routes/entryRouter.js';
-import JudgesRouter from './routes/judgesRouter.js';
-import dailytimetableRouter from './routes/DtimetableRouter.js';
-import alertRouter from './routes/alertRouter.js';
 import Alert from './models/Alert.js';
-import orderRouter from './routes/orderRouter.js';
-import SSTempRouter from './routes/SSTempRouter.js';
-import scoringRouter from './routes/scoringRouter.js';
-import mappingRouter from './routes/mappingRouter.js';
-import resultRouter from './routes/resultRouter.js';
-// Az aktuális fájl és könyvtár meghatározása
+import { StoreUserWithoutValidation } from './middleware/Verify.js';
+import setupRoutes from './routes/index.js';
+
+// ============================================
+// INITIALIZATION
+// ============================================
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const version = '0.0.25';
 
 // Load environment variables first!
 dotenv.config({ path: path.join(__dirname, '.env') });
 
 const app = express();
-const { MONGODB_URI, PORT, SECRET_ACCESS_TOKEN, SECURE_MODE,SECRET_API_KEY,TESTDB } = process.env;
-export { MONGODB_URI, PORT, SECRET_ACCESS_TOKEN, SECURE_MODE,SECRET_API_KEY,TESTDB };
+const { MONGODB_URI, PORT, SECRET_ACCESS_TOKEN, SECURE_MODE, SECRET_API_KEY, TESTDB } = process.env;
+export { MONGODB_URI, PORT, SECRET_ACCESS_TOKEN, SECURE_MODE, SECRET_API_KEY, TESTDB };
+
+// Validate environment variables
 if (!MONGODB_URI || !PORT || !SECRET_ACCESS_TOKEN || !SECRET_API_KEY) {
   logger.error('Missing required environment variables');
   process.exit(1);
-}else{logger.info('All required environment variables are set');}
+} else {
+  logger.info('All required environment variables are set');
+}
 
-connectDB(); // Adatbázis-kapcsolódás
+connectDB(); // Database connection
 
-// Middleware-ek beállítása
-app.set('views', path.join(__dirname, 'views')); // A 'views' könyvtár beállítása
-app.set('view engine', 'ejs'); // EJS sablonmotor beállítása
+// ============================================
+// VIEW ENGINE CONFIGURATION
+// ============================================
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
 
-app.use(expressLayouts); // Layout
-app.set('layout', 'layouts/layout'); // Layout könyvtár beállítása
-app.use(express.json()); // JSON formátumú adatok feldolgozása és elérhetősége a 'req.body' objektumon keresztül
-app.use(express.urlencoded({ extended: true })); // URL-en keresztül érkező, formázott adatok feldolgozása és elérhetősége a 'req.body' objektumon keresztül
+// ============================================
+// GLOBAL MIDDLEWARE - ORDER MATTERS
+// ============================================
+
+// 1. Logging & Security
+app.use(expressLayouts);
+app.set('layout', 'layouts/layout');
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-app.disable("x-powered-by"); //Reduce fingerprinting
+app.disable('x-powered-by');
 app.use(cookieParser());
-app.use('/static', express.static(path.join(__dirname, '/static'))); // static könyvtár elérése
+
+// 2. Static files
+app.use('/static', express.static(path.join(__dirname, '/static')));
+
+// 3. Development logging
 if (process.env.NODE_ENV !== 'production') {
-  app.use(morgan('dev')); // fejlesztéskor részletes log
+  app.use(morgan('dev'));
 }
 
 app.use(session({
@@ -73,6 +77,7 @@ app.use(session({
   }
 }));
 
+// 5. Request logging
 app.use((req, res, next) => {
   res.on('finish', () => {
     const userInfo = req.user ? req.user.username || req.user._id : 'Anonymous';
@@ -82,37 +87,35 @@ app.use((req, res, next) => {
   });
   next();
 });
-const version = '0.0.24';
+
+// 6. Global context middleware
 app.use(async (req, res, next) => {
-    if(TESTDB==='true'){ 
-      res.locals.test = true
-  }else{
-      res.locals.test = false
+  try {
+    res.locals.test = TESTDB === 'true';
+    res.locals.alerts = await Alert.find({ active: true }).populate('permission');
+    res.locals.parent = '/dashboard';
+    res.locals.selectedEvent = await Event.findOne({ selected: true });
+    res.locals.version = version;
+    next();
+  } catch (err) {
+    logger.error(`Error in global middleware: ${err}`);
+    res.locals.alerts = [];
+    res.locals.test = false;
+    res.locals.parent = '/dashboard';
+    res.locals.selectedEvent = null;
+    res.locals.version = version;
+    next();
   }
-  res.locals.alerts= await Alert.find({ active: true }).populate('permission');
-  res.locals.parent = '/dashboard';
-  res.locals.selectedEvent = await Event.findOne({ selected: true });
-  res.locals.version = version;
-  next();
 });
 
-app.use('/', router); // Útvonalak kezelése
+// ============================================
+// ROUTES INITIALIZATION
+// ============================================
+setupRoutes(app);
 
-app.use('/admin', adminRouter); // Admin útvonalak kezelése
-app.use('/horse', horseRouter); // Horse útvonalak kezelése
-app.use('/vaulter', vaulterRouter); // Vaulter útvonalak kezelése
-app.use('/lunger', lungerRouter); // Lunger útvonalak kezelése
-app.use('/category', categoryRouter); // Category útvonalak kezelése
-app.use('/admin/event', eventRouter); // Event útvonalak kezelése
-app.use('/entry', entryRouter); // Entry útvonalak kezelése
-app.use('/judges', JudgesRouter); // Judges útvonalak kezelése
-app.use('/dailytimetable', dailytimetableRouter); // DailyTimeTable útvonalak kezelése
-app.use('/alerts', alertRouter); // Alert útvonalak kezelése
-app.use('/order', orderRouter); // Order útvonalak kezelése
-app.use('/scoresheets', SSTempRouter); // ScoreSheetTemp útvonalak kezelése
-app.use('/scoring', scoringRouter); // Scoring útvonalak kezelése
-app.use('/mapping', mappingRouter); // Mapping útvonalak kezelése
-app.use('/result', resultRouter); // Result útvonalak kezelése
+// ============================================
+// ERROR HANDLING MIDDLEWARE
+// ============================================
 
 
 
@@ -120,42 +123,53 @@ app.use('/result', resultRouter); // Result útvonalak kezelése
 
 
 
+// 404 Not Found handler
 app.use(StoreUserWithoutValidation);
 app.use((req, res, next) => {
-    res.status(404).render("errorpage", {rolePermissons: req.user?.role?.permissions,errorCode: 404, failMessage: req.session.failMessage, user:req.user,
-
-            successMessage: req.session.successMessage
-    });
+  res.status(404).render('errorpage', {
+    rolePermissons: req.user?.role?.permissions,
+    errorCode: 404,
+    failMessage: req.session?.failMessage || 'Page not found',
+    user: req.user,
+    successMessage: req.session?.successMessage
+  });
 });
+
+// Global error handler (must be last)
 app.use((err, req, res, next) => {
-    console.error(err);
-    logger.error(err + " User: "+ req.user?.username);
-    req.session.failMessage = "Internal server error. (Main Thread)";
-    res.status(500).render("errorpage", {rolePermissons: req.user?.role.permissions,errorCode: 500, failMessage: req.session.failMessage,user:req.user,
-            successMessage: req.session.successMessage
-    });
+  console.error(err);
+  logger.error(`Error: ${err.message} | User: ${req.user?.username || 'Unknown'}`);
+  
+  req.session.failMessage = 'Internal server error. Please try again later.';
+  
+  res.status(500).render('errorpage', {
+    rolePermissons: req.user?.role?.permissions,
+    errorCode: 500,
+    failMessage: req.session.failMessage,
+    user: req.user,
+    successMessage: null
+  });
 });
 
-if (process.env.NODE_ENV !== 'production') {
-  app.use(morgan('dev')); // fejlesztéskor részletes log
-}
+// ============================================
+// SERVER START
+// ============================================
 
-app.listen(process.env.PORT, () => {
-    logger.info('---------------------------------------------');
-    logger.info('VaultingEventEcosystemScoring server startup');
-    logger.info(`Start time: ${new Date().toISOString()}`);
-    logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
-    logger.warn(`Version: ${version || 'unknown'}`);
-    logger.info(`Port: ${process.env.PORT}`);
-    logger.info(`Node.js version: ${process.version}`);
-    logger.info(`MongoDB URI: ${process.env.MONGODB_URI ? 'set' : 'NOT SET'}`);
-    logger.warn(`Session secret: ${process.env.SECRET_API_KEY ? 'set' : 'NOT SET'}`);
-    logger.warn(`Secure mode: ${process.env.SECURE_MODE}`);
-    logger.warn(`Test DB: ${process.env.TESTDB === 'true' ? 'ACTIVE' : 'inactive'}`);
-    logger.info(`Layout: ${process.env.TESTDB === 'true' ? 'testlayout' : 'layout'}`);
-    logger.info(`Static dir: ${path.join(__dirname, '/static')}`);
-    logger.info('---------------------------------------------');
-    logger.info(`A szerver fut a ${process.env.NODE_ENV === 'development' 
-  ? `http://localhost:${process.env.PORT}` 
-  : `https://vaultx.bencedaniel.hu`} címen...`);
+app.listen(PORT, () => {
+  logger.info('---------------------------------------------');
+  logger.info('VaultingEventEcosystemScoring server startup');
+  logger.info(`Start time: ${new Date().toISOString()}`);
+  logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.warn(`Version: ${version}`);
+  logger.info(`Port: ${PORT}`);
+  logger.info(`Node.js version: ${process.version}`);
+  logger.info(`MongoDB: ${MONGODB_URI ? 'connected' : 'NOT SET'}`);
+  logger.warn(`Secure mode: ${SECURE_MODE}`);
+  logger.warn(`Test DB: ${TESTDB === 'true' ? 'ACTIVE' : 'inactive'}`);
+  logger.info('---------------------------------------------');
+  logger.info(
+    `Server running at ${process.env.NODE_ENV === 'development'
+      ? `http://localhost:${PORT}`
+      : 'https://vaultx.bencedaniel.hu'}`
+  );
 });

@@ -6,10 +6,9 @@ import { Logout } from "../controllers/auth.js";
 import Validate from "../middleware/Validate.js";
 import { check } from "express-validator";
 import { Verify, VerifyRole } from "../middleware/Verify.js";
-import Vaulter from '../models/Vaulter.js';
+import { getAllVaulters, getVaulterById, getVaulterByIdLean, createVaulter, updateVaulter, updateVaulterArmNumber, addIncidentToVaulter, removeIncidentFromVaulter, getAllEntriesWithVaulters } from '../services/vaulterData.js';
 import Permissions from '../models/Permissions.js';
 import User from '../models/User.js';
-import Entries from '../models/Entries.js';
 const countries = [
   "Afghanistan",
   "Albania",
@@ -225,22 +224,19 @@ vaulterRouter.get('/new',Verify, VerifyRole(), (req, res) => {
 vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
   const forerr = req.body;
   forerr.ArmNr = req.body.ArmNr;
-    try {
-        const newVaulter = req.body;
-
-        const armNr = {
-          eventID: res.locals.selectedEvent._id,
-          armNumber: req.body.ArmNr
-        };
-        newVaulter.ArmNr = [armNr];
-        const vaulterforsave = new Vaulter(newVaulter);
-        await vaulterforsave.save()
-        logger.db(`Vaulter ${newVaulter.name} created by user ${req.user.username}.`);
-        req.session.successMessage = 'Vaulter created successfully!';
-        res.redirect('/vaulter/dashboard');
-    } catch (err) {
+  try {
+    const newVaulter = req.body;
+    const armNr = {
+      eventID: res.locals.selectedEvent._id,
+      armNumber: req.body.ArmNr
+    };
+    newVaulter.ArmNr = [armNr];
+    
+    await createVaulter(newVaulter);
+    req.session.successMessage = 'Vaulter created successfully!';
+    res.redirect('/vaulter/dashboard');
+  } catch (err) {
     logger.error(err + " User: "+ req.user.username);
-
     const errorMessage = err.errors
       ? Object.values(err.errors).map(e => e.message).join(', ')
       : 'Server error';
@@ -248,17 +244,16 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
     return res.render('vaulter/newVaulter', {
         permissionList: await Permissions.find(),
         countries:countries,
-      formData: req.body,
-      successMessage: null,
-      failMessage: errorMessage,
-      card: { ...req.body, _id: req.params.id },
+        formData: req.body,
+        successMessage: null,
+        failMessage: errorMessage,
+        card: { ...req.body, _id: req.params.id },
         user: req.user
     });
-    
   }
 });
   vaulterRouter.get('/dashboard',Verify, VerifyRole(), async (req, res) => {
-        const vaulters = await Vaulter.find().sort({ name: 1 });
+        const vaulters = await getAllVaulters();
         vaulters.forEach(element => {
           element.ArmNr = element.ArmNr.filter(a => String(a.eventID) === String(res.locals.selectedEvent._id));
         });
@@ -269,15 +264,15 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
             successMessage: req.session.successMessage,
         user: req.user
         });
-        req.session.failMessage = null; // Clear the fail message after rendering
-        req.session.successMessage = null; // Clear the success message after rendering 
+        req.session.failMessage = null;
+        req.session.successMessage = null;
     });
 
 
     vaulterRouter.get('/details/:id',Verify, VerifyRole(), async (req, res) => {
         try {
             const eventID = res.locals.selectedEvent._id
-            const vaulter = await Vaulter.findById(req.params.id).populate('VaulterIncident.eventID', 'EventName')
+            const vaulter = await getVaulterById(req.params.id);
             vaulter.ArmNr = vaulter.ArmNr.filter(a => String(a.eventID) === String(eventID));
             if (!vaulter) {
             req.session.failMessage = 'Vaulter not found';
@@ -291,8 +286,8 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
                 successMessage: req.session.successMessage,
         user: req.user
             });
-            req.session.failMessage = null; // Clear the fail message after rendering
-            req.session.successMessage = null; // Clear the success message after rendering 
+            req.session.failMessage = null;
+            req.session.successMessage = null;
         } catch (err) {
             logger.error(err + " User: "+ req.user.username);
             req.session.failMessage = 'Server error';
@@ -301,7 +296,7 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
     });
     vaulterRouter.get('/edit/:id',Verify, VerifyRole(), async (req, res) => {
         try {
-          const vaulter = await Vaulter.findById(req.params.id).lean();
+          const vaulter = await getVaulterByIdLean(req.params.id);
           vaulter.ArmNr = vaulter.ArmNr.filter(a => String(a.eventID) === String(res.locals.selectedEvent._id));
           if (!vaulter) {
             req.session.failMessage = 'Vaulter not found';
@@ -315,8 +310,8 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
             successMessage: req.session.successMessage,
         user: req.user
           });
-          req.session.failMessage = null; // Clear the fail message after rendering
-          req.session.successMessage = null; // Clear the success message after rendering
+          req.session.failMessage = null;
+          req.session.successMessage = null;
         } catch (err) {
           logger.error(err + " User: "+ req.user.username);
           req.session.failMessage = 'Server error';
@@ -329,30 +324,16 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
         try {
           const ArmNr = req.body.ArmNr;
           delete req.body.ArmNr;
-          const vaulter = await Vaulter.findByIdAndUpdate(req.params.id, req.body, { runValidators: true });
-          const vaulterToUpdate = await Vaulter.findById(req.params.id);
-          let editedCount = 0;
-          vaulterToUpdate.ArmNr.forEach(element => {
-            if (String(element.eventID) === String(res.locals.selectedEvent._id)) {
-              element.armNumber = ArmNr;
-              editedCount++;
-            }
-          });
-          if (editedCount === 0) {
-            vaulterToUpdate.ArmNr.push({
-              eventID: res.locals.selectedEvent._id,
-              armNumber: ArmNr
-            });
-          }
-          await vaulterToUpdate.save();
-          logger.db(`Vaulter ${vaulter.name} updated by user ${req.user.username}.`);
+          
+          const vaulter = await updateVaulter(req.params.id, req.body);
+          await updateVaulterArmNumber(req.params.id, res.locals.selectedEvent._id, ArmNr);
+          
           if (!vaulter) {
             req.session.failMessage = 'Vaulter not found';
             return res.redirect('/vaulter/dashboard');
           }
           req.session.successMessage = 'Vaulter updated successfully!';
-          res.redirect('/vaulter/dashboard'
-          );
+          res.redirect('/vaulter/dashboard');
         } catch (err) {
           logger.error(err + " User: "+ req.user.username);
       
@@ -389,85 +370,31 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
       });*/
       vaulterRouter.delete('/deleteIncident/:id', Verify, VerifyRole(), async (req, res) => {
         try {
-          const vaulter = await Vaulter.findById(req.params.id);
+          const vaulter = await getVaulterById(req.params.id);
           logger.db(`Vaulter ${vaulter.Name} incident delete requested by user ${req.user.username}.`);
           if (!vaulter) {
             req.session.failMessage = 'Vaulter not found';
             return res.status(404).json({ message: 'Vaulter not found' });
           }
 
-
-          // Helper: parse many date formats to ms (fallback tries to extract y,m,d,h,m,s)
-          const parseDateToMs = (input) => {
-            if (!input && input !== 0) return null;
-            if (typeof input === 'number') return input;
-            const d1 = new Date(input);
-            if (!Number.isNaN(d1.getTime())) return d1.getTime();
-
-            // try to extract components like "2025. 11. 05. 12:44:01" or "2025-11-05 12:44:01"
-            const m = String(input).match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})\D+(\d{1,2}):(\d{2}):(\d{2})/);
-            if (m) {
-              const [ , y, mo, da, hh, mm, ss ] = m;
-              const d2 = new Date(Number(y), Number(mo)-1, Number(da), Number(hh), Number(mm), Number(ss));
-              if (!Number.isNaN(d2.getTime())) return d2.getTime();
-            }
-
-            // try shorter pattern without seconds
-            const m2 = String(input).match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})\D+(\d{1,2}):(\d{2})/);
-            if (m2) {
-              const [ , y, mo, da, hh, mm ] = m2;
-              const d3 = new Date(Number(y), Number(mo)-1, Number(da), Number(hh), Number(mm));
-              if (!Number.isNaN(d3.getTime())) return d3.getTime();
-            }
-
-            return null;
+          const incidentCriteria = {
+            description: req.body.description,
+            incidentType: req.body.incidentType,
+            date: req.body.date,
+            userId: req.user._id
           };
 
-          const reqDateMs = parseDateToMs(req.body.date);
-          const DATE_TOLERANCE_MS = 20 * 1000; // 20s tolerance (adjust as needed)
-
-          vaulter.VaulterIncident = vaulter.VaulterIncident.filter(incident => {
-            const incDesc = String(incident.description || '');
-            const incType = String(incident.incidentType || '');
-            // support both `user` and `User` as stored in DB
-            const incUser = String(incident.user || incident.User || '');
-            const incDateMs = parseDateToMs(incident.date);
-
-            const descMatch = incDesc === String(req.body.description || '');
-            const typeMatch = incType === String(req.body.incidentType || req.body.type || '');
-            const userMatch = incUser === String(req.user._id);
-
-            let dateMatch = false;
-            if (reqDateMs === null) {
-              // if client didn't send a date, ignore date in matching
-              dateMatch = true;
-            } else if (incDateMs === null) {
-              // if incident date is not set, consider it a match (or handle as needed)
-              dateMatch = true;
-            } else {
-              // check if dates are the same within the tolerance
-              dateMatch = Math.abs(incDateMs - reqDateMs) <= DATE_TOLERANCE_MS;
-            }
-
-            const matchesAll = descMatch && typeMatch && userMatch && dateMatch;
-
-
-            // keep incidents that do NOT match all criteria
-            return !matchesAll;
-          });
-
-          // persist
-          await Vaulter.findByIdAndUpdate(req.params.id, vaulter, { runValidators: true });
-           res.status(200).json({ message: 'Incident deleted successfully' });
-         } catch (err) {
+          await removeIncidentFromVaulter(req.params.id, incidentCriteria);
+          res.status(200).json({ message: 'Incident deleted successfully' });
+        } catch (err) {
            logger.error(err + " User: "+ req.user.username);
            req.session.failMessage = 'Server error';
            res.status(500).json({ message: 'Server error' });
-         }
+        }
        });
      vaulterRouter.post('/newIncident/:id',Verify,VerifyRole(), async (req,res) =>{
       try{
-        const vaulter = await Vaulter.findById(req.params.id);
+        const vaulter = await getVaulterById(req.params.id);
         logger.db(`Vaulter ${vaulter.Name} incident created by user ${req.user.username}.`);
         const newIncident = {
           description: req.body.description,
@@ -475,10 +402,8 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
           date: Date.now(),
           User: req.user._id,
           eventID: res.locals.selectedEvent._id
-
-        }    
-        vaulter.VaulterIncident.push(newIncident);
-        await Vaulter.findByIdAndUpdate(req.params.id, vaulter, { runValidators: true })
+        };
+        await addIncidentToVaulter(req.params.id, newIncident);
         req.session.successMessage = 'Incident added successfully!';
         res.status(200).json({ message: 'Incident added successfully!' })
       } catch (err) {
@@ -489,13 +414,11 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
         req.session.failMessage = errorMessage;
           res.status(500).json({ message: errorMessage });
         }
-        
-
     });
 
 
     vaulterRouter.get('/numbers',Verify,VerifyRole(), async (req,res) =>{
-      const entries =await Entries.find().populate('vaulter');
+      const entries = await getAllEntriesWithVaulters();
       const VaulterSet = new Set();
       entries.forEach(entry => {
         entry.vaulter.forEach(vaulter => {
@@ -510,33 +433,13 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
       successMessage: req.session.successMessage,
       user: req.user
     });
-    req.session.failMessage = null; // Clear the fail message after rendering
-    req.session.successMessage = null; // Clear the success message after rendering
-    
-
-
-
-
+    req.session.failMessage = null;
+    req.session.successMessage = null;
     });
 
     vaulterRouter.post('/updatenums/:id',Verify,VerifyRole(), async (req,res) =>{
       try{
-        const vaulterToUpdate = await Vaulter.findById(req.params.id);
-        let editedCount = 0;
-        vaulterToUpdate.ArmNr.forEach(element => {
-          if (String(element.eventID) === String(res.locals.selectedEvent._id)) {
-            element.armNumber = req.body.armNumber;
-            editedCount++;
-          }
-        });
-        if (editedCount === 0) {
-          vaulterToUpdate.ArmNr.push({
-            eventID: res.locals.selectedEvent._id,
-            armNumber: req.body.armNumber
-          });
-        }
-        await vaulterToUpdate.save();
-        logger.db(`Vaulter ${vaulterToUpdate.Name} arm number updated by user ${req.user.username}.`);
+        await updateVaulterArmNumber(req.params.id, res.locals.selectedEvent._id, req.body.armNumber);
         res.status(200).json({ message: 'Arm number updated successfully!' })
       } catch (err) {
         logger.error(err + " User: "+ req.user.username);
@@ -546,7 +449,6 @@ vaulterRouter.post('/new',Verify, VerifyRole(), Validate, async (req, res) => {
         req.session.failMessage = errorMessage;
           res.status(500).json({ message: errorMessage });
         }
-
     });
 
 

@@ -11,12 +11,14 @@ import {logger} from "../logger.js"
 export async function Register(req, res) {
     // get required variables from request body
     // using es6 object destructing
-    logger.userManagement("Registering user: "+ req.body );
-    const { username , password,feiid, role } = req.body;
+    logger.userManagement("Registering user: "+ JSON.stringify(req.body) );
+    const { username, fullname, password,feiid, role } = req.body;
+
     try {
         // create an instance of a user
         const newUser = new User({
             username,
+            fullname,
             password,
             feiid,
             role
@@ -24,8 +26,8 @@ export async function Register(req, res) {
         });
         // Check if user already exists
         const existingUser = await User.findOne({ username });
-        logger.userManagement("Existing user: "+ existingUser);
         if (existingUser){
+            logger.userManagement("Existing user: "+ existingUser.username );
             req.session.formData = req.body; // Save form data to session
             req.session.failMessage =
                 "User already exists.";
@@ -35,8 +37,13 @@ export async function Register(req, res) {
             "User created successfully.";
             res.redirect("/admin/dashboard/users"); // redirect to dashboard
     } catch (err) {
-        console.error(err.errors + req.body);
+        logger.error(err + JSON.stringify(req.body) + " User: "+ req.user.username);
         let message = "Server error. Please try again later.";
+
+        if(err.code === 11000) {
+            message = "Username or FEI ID already exists.";
+        }
+
         if (err.name === "ValidationError") {
             // Get the first validation error message
             message = Object.values(err.errors)[0].message;

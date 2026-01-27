@@ -1,12 +1,11 @@
-
-export function calculateScore(req, category) {
-  const horse = horseCalc(req, category);
-  const indComp = indCompcalc(req);
-  const artistic = artisticScore(req, category);
-  const squadPddComp = calcSquadPddComp(req,category);
-  const techArtistic = techArtisticScore(req, category);
-  const tech = techCalc(req,category);
-  const techtestTech = techtestTechCalc(req,category);
+export function calculateScore(inputDatas, category) {
+  const horse = horseCalc(inputDatas, category);
+  const indComp = indCompcalc(inputDatas);
+  const artistic = artisticScore(inputDatas, category);
+  const squadPddComp = calcSquadPddComp(inputDatas, category);
+  const techArtistic = techArtisticScore(inputDatas, category);
+  const tech = techCalc(inputDatas, category);
+  const techtestTech = techtestTechCalc(inputDatas, category);
   if (horse !== undefined && horse !== null && !isNaN(horse)) return horse;
   if (indComp !== undefined && indComp !== null && !isNaN(indComp)) return indComp;
   if (squadPddComp !== undefined && squadPddComp !== null && !isNaN(squadPddComp)) return squadPddComp;
@@ -14,12 +13,12 @@ export function calculateScore(req, category) {
   if (techArtistic !== undefined && techArtistic !== null && !isNaN(techArtistic)) return techArtistic;
   if (tech !== undefined && tech !== null && !isNaN(tech)) return tech;
   if (techtestTech !== undefined && techtestTech !== null && !isNaN(techtestTech)) return techtestTech;
-  return excelRound(0,3);
-  }
+  return excelRound(0, 3);
+}
 
 
 
-function horseCalc(req, category){ 
+function horseCalc(inputDatas, category) { 
  const  neededFields = [
   'WandO',
   'bint',
@@ -43,30 +42,26 @@ function horseCalc(req, category){
   'a3ded5'
 ]
 let fieldNumbers = 0
-  req.body.inputDatas. forEach(input => {
+  inputDatas.forEach(input => {
     if(neededFields.includes(input.id)) {
       fieldNumbers++;
     }
   });
   if(fieldNumbers >= neededFields.length ){
-    
-
-    return excelRound(calcA1(req, category) + calcA2(req, category) + calcA3(req, category), 3);
-
-
+    return excelRound(calcA1(inputDatas, category) + calcA2(inputDatas, category) + calcA3(inputDatas, category), 3);
   }
 }
 
 
 
-function calcA1(req, category){
+function calcA1(inputDatas, category) {
     // Horse score A1 logic
-  const rythm = dataLookup('rythm', req)
-  const relaxation = dataLookup('relaxation', req)
-  const connection = dataLookup('connection', req)
-  const impulsion = dataLookup('impulsion', req)
-  const straightness = dataLookup('straightness', req)
-  const collection = dataLookup('collection', req)
+  const rythm = dataLookup('rythm', inputDatas)
+  const relaxation = dataLookup('relaxation', inputDatas)
+  const connection = dataLookup('connection', inputDatas)
+  const impulsion = dataLookup('impulsion', inputDatas)
+  const straightness = dataLookup('straightness', inputDatas)
+  const collection = dataLookup('collection', inputDatas)
   const a1percentage = category.Horse?.A1
         const sum = [rythm, relaxation, connection, impulsion, straightness, collection].reduce((acc, curr) => {
             const val = parseLocaleNumber(curr);
@@ -80,16 +75,16 @@ function calcA1(req, category){
     
 }
 
-function calcA2(req, category){
+function calcA2(inputDatas, category) {
     // Horse score A2 logic
-    const wando = dataLookup('WandO', req)
-    const bint = dataLookup('bint', req)
-    const binc = dataLookup('BinC', req)
-    const a2ded1 = dataLookup('a2ded1', req)
-    const a2ded2 = dataLookup('a2ded2', req)
-    const a2ded3 = dataLookup('a2ded3', req)
-    const a2ded4 = dataLookup('a2ded4', req)
-    const a2ded5 = dataLookup('a2ded5', req)
+    const wando = dataLookup('WandO', inputDatas)
+    const bint = dataLookup('bint', inputDatas)
+    const binc = dataLookup('BinC', inputDatas)
+    const a2ded1 = dataLookup('a2ded1', inputDatas)
+    const a2ded2 = dataLookup('a2ded2', inputDatas)
+    const a2ded3 = dataLookup('a2ded3', inputDatas)
+    const a2ded4 = dataLookup('a2ded4', inputDatas)
+    const a2ded5 = dataLookup('a2ded5', inputDatas)
     const a2percentage = category.Horse?.A2
     let a2dsumval =0,a2sumval=0;
 
@@ -119,14 +114,14 @@ function calcA2(req, category){
 
 }
 
-function calcA3(req, category){
+function calcA3(inputDatas, category) {
     // Horse score A3 logic
-    const lunging = dataLookup('lunging', req)
-    const a3ded1 = dataLookup('a3ded1', req)
-    const a3ded2 = dataLookup('a3ded2', req)
-    const a3ded3 = dataLookup('a3ded3', req)
-    const a3ded4 = dataLookup('a3ded4', req)
-    const a3ded5 = dataLookup('a3ded5', req)
+    const lunging = dataLookup('lunging', inputDatas)
+    const a3ded1 = dataLookup('a3ded1', inputDatas)
+    const a3ded2 = dataLookup('a3ded2', inputDatas)
+    const a3ded3 = dataLookup('a3ded3', inputDatas)
+    const a3ded4 = dataLookup('a3ded4', inputDatas)
+    const a3ded5 = dataLookup('a3ded5', inputDatas)
     const a3percentage = category.Horse?.A3
     let a3dsumval =0,a3sumval=0;
 
@@ -177,24 +172,23 @@ function tenLimit(value){
   }
 }
 
-function dataLookup(id, req) {
-  const input = req.body.inputDatas.find(input => input.id === id);
+function dataLookup(id, inputDatas) {
+  const input = inputDatas.find(input => input.id === id);
   if (input) {
     return input.value;
   }
   return '';
-
 }
 
 
 
 
-function indCompcalc(req){
+function indCompcalc(inputDatas){
   const compfields = ['vault-on', 'flag','mill', 'scrissors-forward', 'scrissors-backward','stand','flank1st','swingoff','basic-seat','swingforward', 'halfMill','swingBack','flank']
   let indcomp = 0;
   let NoOfComp = 0;
   compfields.forEach(element => {
-      const dataelement = dataLookup(element, req);
+      const dataelement = dataLookup(element, inputDatas);
       if(dataelement !== undefined && dataelement !== null && dataelement !== ''){
           NoOfComp += 1;
           const val = parseLocaleNumber(dataelement);
@@ -213,11 +207,9 @@ function indCompcalc(req){
 }
 }
 
-function calcSquadPddComp(req,category){
-  
+function calcSquadPddComp(inputDatas,category){
   if (category.Type === 'Squad' || (category.Type === 'PDD')) {
-
-    const inputs = req.body.inputDatas;
+    const inputs = inputDatas;
     let vaultOn = 0, flag = 0, mill = 0, scissF = 0, scissB = 0, stand = 0, flank = 0, swingOff = 0, basicSeat = 0, swingF = 0, halfM = 0, swingB = 0;
     
     const fieldMappings = {
@@ -274,9 +266,8 @@ function calcSquadPddComp(req,category){
 
 
 
-function artisticScore(req,category){
-
-  const cohInput = dataLookup('coh', req);
+function artisticScore(inputDatas,category){
+  const cohInput = dataLookup('coh', inputDatas);
   const artisticCH = category.Artistic?.CH;
   const artisticC1 = category.Artistic?.C1;
   const artisticC2 = category.Artistic?.C2;
@@ -295,7 +286,7 @@ function artisticScore(req,category){
 
   };
 
-  const c1Input = dataLookup('c1', req);
+  const c1Input = dataLookup('c1', inputDatas);
   if(c1Input !== undefined || c1Input !== null || c1Input !== ''){
     const val = c1Input
     if(!isNaN(parseLocaleNumber(val))){
@@ -310,7 +301,7 @@ function artisticScore(req,category){
 
   };
 
-  const c2Input = dataLookup('c2', req);
+  const c2Input = dataLookup('c2', inputDatas);
   if(c2Input !== undefined || c2Input !== null || c2Input !== ''){
     const val = c2Input
     if(!isNaN(parseLocaleNumber(val))){
@@ -323,7 +314,7 @@ function artisticScore(req,category){
     
 
   };
-    const c3Input = dataLookup('c3', req);
+    const c3Input = dataLookup('c3', inputDatas);
   if(c3Input !== undefined || c3Input !== null || c3Input !== ''){
     const val = c3Input
     if(!isNaN(parseLocaleNumber(val))){
@@ -337,7 +328,7 @@ function artisticScore(req,category){
     
 
   };
-  const c4Input = dataLookup('c4', req);
+  const c4Input = dataLookup('c4', inputDatas);
   if(c4Input !== undefined || c4Input !== null || c4Input !== ''){
     
     const val = c4Input
@@ -357,7 +348,7 @@ function artisticScore(req,category){
     && cohInput !== undefined && cohInput !== null && cohInput !== '' && c1Input !== undefined 
     && c1Input !== null && c1Input !== '' && c2Input !== undefined && c2Input !== null && c2Input !== '' 
     && c3Input !== undefined && c3Input !== null && c3Input !== '' && c4Input !== undefined && c4Input !== null && c4Input !== ''){
-  const deduction = dataLookup('deduction', req);
+  const deduction = dataLookup('deduction', inputDatas);
   const deductionVal = parseLocaleNumber(deduction) || 0;
   const total = nullLimit((CH + C1 + C2 + C3 + C4) - deductionVal);
   return excelRound(total,3);
@@ -368,13 +359,13 @@ function artisticScore(req,category){
 }
 
 
-function techArtisticScore(req,category){
+function techArtisticScore(inputDatas,category){
   const artistictechCH = category.TechArtistic?.CH;
   const artisticT1 = category.TechArtistic?.T1;
   const artisticT2 = category.TechArtistic?.T2;
   const artisticT3 = category.TechArtistic?.T3;
 
-  const tcohInput = dataLookup('tcoh', req);
+  const tcohInput = dataLookup('tcoh', inputDatas);
   let TCH = 0, T1 = 0, T2 = 0, T3 = 0;
   if(tcohInput){
     const val = tcohInput
@@ -388,7 +379,7 @@ function techArtisticScore(req,category){
 
   };
 
-  const t1Input = dataLookup('t1', req);
+  const t1Input = dataLookup('t1', inputDatas);
   if(t1Input){
     const val = t1Input
     if(!isNaN(parseLocaleNumber(val))){
@@ -401,7 +392,7 @@ function techArtisticScore(req,category){
 
   };
 
-  const t2Input = dataLookup('t2', req);
+  const t2Input = dataLookup('t2', inputDatas);
   if(t2Input){
     const val = t2Input
     if(!isNaN(parseLocaleNumber(val))){
@@ -414,7 +405,7 @@ function techArtisticScore(req,category){
   };
   
 
-    const t3Input = dataLookup('t3', req);
+    const t3Input = dataLookup('t3', inputDatas);
   if(t3Input){
     const val = t3Input
     if(!isNaN(parseLocaleNumber(val))){
@@ -427,7 +418,7 @@ function techArtisticScore(req,category){
   };
   
 if(t1Input !== '' && t2Input !== '' && t3Input !== '' && tcohInput !== ''){
-  const deduction = dataLookup('deduction', req);
+  const deduction = dataLookup('deduction', inputDatas);
   const deductionVal = parseLocaleNumber(deduction) || 0;
   const total = nullLimit((TCH + T1 + T2 + T3) - deductionVal);
   return excelRound(total,3);
@@ -438,7 +429,7 @@ if(t1Input !== '' && t2Input !== '' && t3Input !== '' && tcohInput !== ''){
 
 
 
-function techCalc(req,category){
+function techCalc(inputDatas,category){
 
   const Rmultipler = category.Free?.R || 0;
   const Dmultipler = category.Free?.D || 0;
@@ -446,7 +437,7 @@ function techCalc(req,category){
   const Emultipler = category.Free?.E || 0;
   const NumberOfMaxExercises = category.Free?.NumberOfMaxExercises || 10;
   let pointbyElementsinv = 0;
-  const records = dataLookup('records', req);
+  const records = dataLookup('records', inputDatas);
   if(records !== undefined && records !== null && records !== ''){
    let R =0, D =0, M = 0, E=0, sumOfDeductions =0, sumOfFalls=0;
     const value = records.split(' ');
@@ -584,10 +575,10 @@ function techCalc(req,category){
   }
 }
 
-function techtestTechCalc(req,category){
+function techtestTechCalc(inputDatas,category){
   const techDivider = category.TechArtistic?.TechDivider || 1;
 
-  const records = dataLookup('techrecords', req);
+  const records = dataLookup('techrecords', inputDatas);
   if(records !== undefined && records !== null && records !== ''){
    let sumOfDeductions =0, sumOfFalls=0;
     const value = records.split(' ');
@@ -660,7 +651,7 @@ function techtestTechCalc(req,category){
     const TechExercFields = ['standBackward','cartwheel','lowerarmstand','mountreverse', 'standsplit']
     let sum = PerformanceScore;
     TechExercFields.forEach((fieldId) => {
-      const fieldElement = dataLookup(fieldId, req);
+      const fieldElement = dataLookup(fieldId, inputDatas);
       if (fieldElement) {
         const val = parseLocaleNumber(fieldElement);
         if (!isNaN(val) && val >=0 && val <= 10) {

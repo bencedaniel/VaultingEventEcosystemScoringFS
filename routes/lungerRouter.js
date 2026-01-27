@@ -1,14 +1,19 @@
 import express from 'express';
 
 import {logger} from '../logger.js';
-import { Login } from "../controllers/auth.js";
-import { Logout } from "../controllers/auth.js";
 import Validate from "../middleware/Validate.js";
-import { check } from "express-validator";
 import { Verify, VerifyRole } from "../middleware/Verify.js";
-import Lunger from '../models/Lunger.js';
-import Permissions from '../models/Permissions.js';
-import User from '../models/User.js';
+import {
+    getAllLungers,
+    getLungerById,
+    getLungerByIdWithPopulation,
+    createLunger,
+    updateLunger,
+    deleteLungerIncident,
+    addLungerIncident,
+    getAllUsers,
+    getAllPermissions
+} from '../services/lungerData.js';
 const countries = [
   "Afghanistan",
   "Albania",
@@ -223,117 +228,108 @@ lungerRouter.get('/new',Verify, VerifyRole(), (req, res) => {
 
 lungerRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
     try {
-        const newLunger = new Lunger(req.body);
-        await newLunger.save()
+        const newLunger = await createLunger(req.body);
         logger.db(`Lunger ${newLunger.Name} created by user ${req.user.username}.`);
         req.session.successMessage = 'Lunger created successfully!';
         res.redirect('/lunger/dashboard');
     } catch (err) {
-    logger.error(err + " User: "+ req.user.username);
+        logger.error(err + " User: "+ req.user.username);
 
-    const errorMessage = err.errors
-      ? Object.values(err.errors).map(e => e.message).join(' ')
-      : 'Server error';
+        const errorMessage = err.errors
+            ? Object.values(err.errors).map(e => e.message).join(' ')
+            : 'Server error';
 
-    return res.render('lunger/newLunger', {
-        permissionList: await Permissions.find(),
-      formData: req.body,
-      successMessage: null,
-      countries: countries,
-      failMessage: errorMessage,
-      card: { ...req.body, _id: req.params.id },
-        user: req.user
-    });
-    
-  }
+        return res.render('lunger/newLunger', {
+            permissionList: await getAllPermissions(),
+            formData: req.body,
+            successMessage: null,
+            countries: countries,
+            failMessage: errorMessage,
+            card: { ...req.body, _id: req.params.id },
+            user: req.user
+        });
+    }
 });
-  lungerRouter.get('/dashboard',Verify, VerifyRole(), async (req, res) => {
-        const lungers = await Lunger.find().sort({ name: 1 });
+lungerRouter.get('/dashboard',Verify, VerifyRole(), async (req, res) => {
+    try {
+        const lungers = await getAllLungers();
         res.render('lunger/lungerdash', {
             lungers,
             rolePermissons: req.user?.role?.permissions,
             failMessage: req.session.failMessage,
             successMessage: req.session.successMessage,
-        user: req.user
+            user: req.user
         });
-        req.session.failMessage = null; // Clear the fail message after rendering
-        req.session.successMessage = null; // Clear the success message after rendering 
-    });
+        req.session.failMessage = null;
+        req.session.successMessage = null;
+    } catch (err) {
+        logger.error(err + " User: " + req.user.username);
+        req.session.failMessage = err.message || 'Server error';
+        return res.redirect('/dashboard');
+    }
+});
 
 
-    lungerRouter.get('/details/:id',Verify, VerifyRole(), async (req, res) => {
-        try {
-          const lunger = await Lunger.findById(req.params.id).populate('LungerIncident.eventID', 'EventName');
-            if (!lunger) {
-            req.session.failMessage = 'Lunger not found';
-            return res.redirect('/lunger/dashboard');
-          }
-            res.render('lunger/LungerDetail', {
-                users: await User.find(),
-                formData: lunger,
-                rolePermissons: req.user?.role?.permissions,
-                failMessage: req.session.failMessage,
-                successMessage: req.session.successMessage,
-        user: req.user
-            });
-            req.session.failMessage = null; // Clear the fail message after rendering
-            req.session.successMessage = null; // Clear the success message after rendering 
-        } catch (err) {
-            logger.error(err + " User: "+ req.user.username);
-            req.session.failMessage = 'Server error';
-            return res.redirect('/lunger/dashboard');
-        }
-    });
-    lungerRouter.get('/edit/:id',Verify, VerifyRole(), async (req, res) => {
-        try {
-          const lunger = await Lunger.findById(req.params.id);
-          if (!lunger) {
-            req.session.failMessage = 'Lunger not found';
-            return res.redirect('/lunger/dashboard');
-          }
-          res.render('lunger/editLunger', {
-            countries:countries,
+lungerRouter.get('/details/:id',Verify, VerifyRole(), async (req, res) => {
+    try {
+        const lunger = await getLungerByIdWithPopulation(req.params.id);
+        res.render('lunger/LungerDetail', {
+            users: await getAllUsers(),
             formData: lunger,
             rolePermissons: req.user?.role?.permissions,
             failMessage: req.session.failMessage,
             successMessage: req.session.successMessage,
-        user: req.user
-          });
-          req.session.failMessage = null; // Clear the fail message after rendering
-          req.session.successMessage = null; // Clear the success message after rendering
-        } catch (err) {
-          logger.error(err + " User: "+ req.user.username);
-          req.session.failMessage = 'Server error';
-          return res.redirect('/lunger/dashboard');
-        }
-      });
-      lungerRouter.post('/edit/:id',Verify, VerifyRole(), Validate, async (req, res) => {
-        try {
-          const lunger = await Lunger.findByIdAndUpdate(req.params.id, req.body, { runValidators: true });
-          logger.db(`Lunger ${lunger.Name} updated by user ${req.user.username}.`);
-          if (!lunger) {
-            req.session.failMessage = 'Lunger not found';
-            return res.redirect('/lunger/dashboard');
-          }
-          req.session.successMessage = 'Lunger updated successfully!';
-          res.redirect('/lunger/dashboard'
-          );
-        } catch (err) {
-          logger.error(err + " User: "+ req.user.username);
-      
-          const errorMessage = err.errors
+            user: req.user
+        });
+        req.session.failMessage = null;
+        req.session.successMessage = null;
+    } catch (err) {
+        logger.error(err + " User: " + req.user.username);
+        req.session.failMessage = err.message || 'Server error';
+        return res.redirect('/lunger/dashboard');
+    }
+});
+lungerRouter.get('/edit/:id',Verify, VerifyRole(), async (req, res) => {
+    try {
+        const lunger = await getLungerById(req.params.id);
+        res.render('lunger/editLunger', {
+            countries: countries,
+            formData: lunger,
+            rolePermissons: req.user?.role?.permissions,
+            failMessage: req.session.failMessage,
+            successMessage: req.session.successMessage,
+            user: req.user
+        });
+        req.session.failMessage = null;
+        req.session.successMessage = null;
+    } catch (err) {
+        logger.error(err + " User: " + req.user.username);
+        req.session.failMessage = err.message || 'Server error';
+        return res.redirect('/lunger/dashboard');
+    }
+});
+lungerRouter.post('/edit/:id',Verify, VerifyRole(), Validate, async (req, res) => {
+    try {
+        const lunger = await updateLunger(req.params.id, req.body);
+        logger.db(`Lunger ${lunger.Name} updated by user ${req.user.username}.`);
+        req.session.successMessage = 'Lunger updated successfully!';
+        res.redirect('/lunger/dashboard');
+    } catch (err) {
+        logger.error(err + " User: " + req.user.username);
+
+        const errorMessage = err.errors
             ? Object.values(err.errors).map(e => e.message).join(' ')
-            : 'Server error';
-      
-          return res.render('lunger/editLunger', {
-            permissionList: await Permissions.find(),
+            : (err.message || 'Server error');
+
+        return res.render('lunger/editLunger', {
+            permissionList: await getAllPermissions(),
             formData: { ...req.body, _id: req.params.id },
             successMessage: null,
             failMessage: errorMessage,
             user: req.user
-          });
-        }
-      });
+        });
+    }
+});
 
      /* lungerRouter.delete('/delete/:id',Verify, VerifyRole(), async (req, res) => {
         try {
@@ -351,55 +347,38 @@ lungerRouter.post('/new',Verify, VerifyRole(), async (req, res) => {
           res.status(500).json({ message: 'Server error' });
         }
       });*/
-      lungerRouter.delete('/deleteIncident/:id', Verify, VerifyRole(), async (req, res) => {
-        try {
-          const lunger = await Lunger.findById(req.params.id);
-          logger.db(`Lunger ${lunger.Name} incident deleted by user ${req.user.username}.`);
-          if (!lunger) {
-            req.session.failMessage = 'Lunger not found';
-            return res.status(404).json({ message: 'Lunger not found' });
-          }
-          
-
-          
-          lunger.LungerIncident = lunger.LungerIncident.filter(incident =>
-            !(
-              incident.description === req.body.description &&
-              incident.incidentType === req.body.type             )
-          );
-          await Lunger.findByIdAndUpdate(req.params.id, lunger, { runValidators: true });
-          res.status(200).json({ message: 'Incident deleted successfully' });
-        } catch (err) {
-          logger.error(err + " User: "+ req.user.username);
-          req.session.failMessage = 'Server error';
-          res.status(500).json({ message: 'Server error' });
-        }
-      });
-     lungerRouter.post('/newIncident/:id',Verify,VerifyRole(), async (req,res) =>{
-      try{
-        const lunger = await Lunger.findById(req.params.id);
+lungerRouter.delete('/deleteIncident/:id', Verify, VerifyRole(), async (req, res) => {
+    try {
+        const lunger = await deleteLungerIncident(req.params.id, {
+            description: req.body.description,
+            type: req.body.type
+        });
+        logger.db(`Lunger ${lunger.Name} incident deleted by user ${req.user.username}.`);
+        res.status(200).json({ message: 'Incident deleted successfully' });
+    } catch (err) {
+        logger.error(err + " User: " + req.user.username);
+        req.session.failMessage = err.message || 'Server error';
+        res.status(500).json({ message: err.message || 'Server error' });
+    }
+});
+lungerRouter.post('/newIncident/:id',Verify,VerifyRole(), async (req,res) =>{
+    try {
+        const lunger = await addLungerIncident(req.params.id, {
+            description: req.body.description,
+            incidentType: req.body.incidentType,
+            userId: req.user._id,
+            eventId: res.locals.selectedEvent._id
+        });
         logger.db(`Lunger ${lunger.Name} incident created by user ${req.user.username}.`);
-        const newIncident = {
-          description: req.body.description,
-          incidentType: req.body.incidentType,
-          date: Date.now(),
-          User: req.user._id,
-          eventID: res.locals.selectedEvent._id
-
-        }    
-        lunger.LungerIncident.push(newIncident);
-        await Lunger.findByIdAndUpdate(req.params.id, lunger, { runValidators: true })
-        res.status(200).json({ message: 'Incident added successfully!' })
-      } catch (err) {
-        logger.error(err);
+        res.status(200).json({ message: 'Incident added successfully!' });
+    } catch (err) {
+        logger.error(err + " User: " + req.user.username);
         const errorMessage = err.errors
             ? Object.values(err.errors).map(e => e.message).join(' ')
-            : 'Server error';
-          req.session.failMessage = errorMessage;
+            : (err.message || 'Server error');
+        req.session.failMessage = errorMessage;
         res.status(500).json({ message: errorMessage });
-        }
-        
-
-    });
+    }
+});
 
 export default lungerRouter;
