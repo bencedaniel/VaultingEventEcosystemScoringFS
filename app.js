@@ -13,6 +13,7 @@ import Event from './models/Event.js';
 import Alert from './models/Alert.js';
 import { StoreUserWithoutValidation } from './middleware/Verify.js';
 import setupRoutes from './routes/index.js';
+import { errorHandler } from './middleware/errorHandler.js';
 
 // ============================================
 // INITIALIZATION
@@ -135,21 +136,20 @@ app.use((req, res, next) => {
   });
 });
 
-// Global error handler (must be last)
-app.use((err, req, res, next) => {
-  console.error(err);
-  logger.error(`Error: ${err.message} | User: ${req.user?.username || 'Unknown'}`);
-  
-  req.session.failMessage = 'Internal server error. Please try again later.';
-  
-  res.status(500).render('errorpage', {
+// 404 handler - must be before error handler
+app.use((req, res, next) => {
+  req.session.failMessage = 'Page not found';
+  res.status(404).render('errorpage', {
     rolePermissons: req.user?.role?.permissions,
-    errorCode: 500,
+    errorCode: 404,
     failMessage: req.session.failMessage,
     user: req.user,
     successMessage: null
   });
 });
+
+// Error handling - must be last
+app.use(errorHandler);
 
 // ============================================
 // SERVER START
