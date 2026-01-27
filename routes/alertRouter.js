@@ -1,7 +1,7 @@
 import express from 'express';
 
 import { Verify, VerifyRole } from "../middleware/Verify.js";
-import * as alertController from '../controllers/alertController.js';
+import alertController from '../controllers/alertController.js';
 
 const alertRouter = express.Router();
 

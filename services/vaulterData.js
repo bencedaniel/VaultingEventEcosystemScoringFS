@@ -158,3 +158,19 @@ export async function removeIncidentFromVaulter(id, incidentCriteria) {
 export async function getAllEntriesWithVaulters() {
   return await Entries.find().populate('vaulter').exec();
 }
+
+/**
+ * Get all permissions
+ */
+export async function getAllPermissions() {
+  const Permissions = (await import('../models/Permissions.js')).default;
+  return await Permissions.find();
+}
+
+/**
+ * Get all users
+ */
+export async function getAllUsers() {
+  const User = (await import('../models/User.js')).default;
+  return await User.find();
+}

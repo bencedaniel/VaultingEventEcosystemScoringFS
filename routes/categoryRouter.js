@@ -1,7 +1,7 @@
 import express from 'express';
 import { Verify, VerifyRole } from "../middleware/Verify.js";
 import Validate from "../middleware/Validate.js";
-import * as categoryController from '../controllers/categoryController.js';
+import categoryController from '../controllers/categoryController.js';
 
 const categoryRouter = express.Router();
 

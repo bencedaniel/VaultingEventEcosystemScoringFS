@@ -12,7 +12,7 @@ import {
  * @route GET /admin/dashboard/permissions
  * @desc Show permissions dashboard with usage counts
  */
-export const getPermissionsDashboard = async (req, res) => {
+async function getPermissionsDashboard(req, res) {
     try {
         const { permissions, RolePermNumList } = await getAllPermissionsWithUsageCounts();
         res.render("admin/permdash", {
@@ -35,7 +35,7 @@ export const getPermissionsDashboard = async (req, res) => {
  * @route GET /admin/newPermission
  * @desc Show new permission form
  */
-export const getNewPermissionForm = (req, res) => {
+async function getNewPermissionForm(req, res) {
     res.render("admin/newPerm", {
         rolePermissons: req.user.role.permissions,
         failMessage: req.session.failMessage,
@@ -52,7 +52,7 @@ export const getNewPermissionForm = (req, res) => {
  * @route POST /admin/newPermission
  * @desc Create new permission
  */
-export const createNewPermissionHandler = async (req, res) => {
+async function createNewPermissionHandler(req, res) {
     try {
         const newPermission = await createPermission(req.body);
         logger.db(`Permission ${newPermission.name} created by user ${req.user.username}.`);
@@ -78,7 +78,7 @@ export const createNewPermissionHandler = async (req, res) => {
  * @route GET /admin/editPermission/:id
  * @desc Show edit permission form
  */
-export const getEditPermissionForm = async (req, res) => {
+async function getEditPermissionForm(req, res) {
     try {
         const permission = await getPermissionById(req.params.id);
         if (!permission) {
@@ -104,7 +104,7 @@ export const getEditPermissionForm = async (req, res) => {
  * @route POST /admin/editPermission/:id
  * @desc Update permission
  */
-export const updatePermissionHandler = async (req, res) => {
+async function updatePermissionHandler(req, res) {
     try {
         const updatedPermission = await updatePermission(req.params.id, req.body);
         if (!updatedPermission) {
@@ -134,7 +134,7 @@ export const updatePermissionHandler = async (req, res) => {
  * @route DELETE /admin/deletePermission/:permId
  * @desc Delete permission
  */
-export const deletePermissionHandler = async (req, res) => {
+async function deletePermissionHandler(req, res) {
     try {
         const permId = req.params.permId;
         const permission = await deletePermission(permId);
@@ -153,4 +153,13 @@ export const deletePermissionHandler = async (req, res) => {
         }
         res.status(500).send('Server Error');
     }
+};
+
+export default {
+    getPermissionsDashboard,
+    getNewPermissionForm,
+    createNewPermissionHandler,
+    getEditPermissionForm,
+    updatePermissionHandler,
+    deletePermissionHandler
 };

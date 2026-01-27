@@ -13,7 +13,7 @@ import {
  * @route GET /admin/dashboard/roles
  * @desc Show roles dashboard with user counts
  */
-export const getRolesDashboard = async (req, res) => {
+async function getRolesDashboard(req, res) {
     try {
         const { roles, RoleNumList } = await getAllRolesWithUserCounts();
         res.render("admin/roledash", {
@@ -36,7 +36,7 @@ export const getRolesDashboard = async (req, res) => {
  * @route GET /admin/newRole
  * @desc Show new role form
  */
-export const getNewRoleForm = async (req, res) => {
+async function getNewRoleForm(req, res) {
     try {
         const { permissions } = await getRoleFormData();
         res.render("admin/newRole", {
@@ -61,7 +61,7 @@ export const getNewRoleForm = async (req, res) => {
  * @route POST /admin/newRole
  * @desc Create new role
  */
-export const createNewRoleHandler = async (req, res) => {
+async function createNewRoleHandler(req, res) {
     try {
         const newRole = await createRole(req.body);
         logger.db(`Role ${newRole.roleName} created by user ${req.user.username}.`);
@@ -89,7 +89,7 @@ export const createNewRoleHandler = async (req, res) => {
  * @route GET /admin/editRole/:id
  * @desc Show edit role form
  */
-export const getEditRoleForm = async (req, res) => {
+async function getEditRoleForm(req, res) {
     try {
         const role = await getRoleById(req.params.id);
         if (!role) {
@@ -117,7 +117,7 @@ export const getEditRoleForm = async (req, res) => {
  * @route POST /admin/editRole/:id
  * @desc Update role
  */
-export const updateRoleHandler = async (req, res) => {
+async function updateRoleHandler(req, res) {
     try {
         const updatedRole = await updateRole(req.params.id, req.body);
         logger.db(`Role ${req.body.roleName} updated by user ${req.user.username}.`);
@@ -149,7 +149,7 @@ export const updateRoleHandler = async (req, res) => {
  * @route DELETE /admin/deleteRole/:roleId
  * @desc Delete role
  */
-export const deleteRoleHandler = async (req, res) => {
+async function deleteRoleHandler(req, res) {
     try {
         const roleId = req.params.roleId;
         const role = await deleteRole(roleId);
@@ -168,4 +168,13 @@ export const deleteRoleHandler = async (req, res) => {
         }
         res.status(500).send('Server Error');
     }
+};
+
+export default {
+    getRolesDashboard,
+    getNewRoleForm,
+    createNewRoleHandler,
+    getEditRoleForm,
+    updateRoleHandler,
+    deleteRoleHandler
 };

@@ -11,7 +11,7 @@ import {
  * @route GET /category/new
  * @desc Show new category form
  */
-export const getNewCategoryForm = (req, res) => {
+async function getNewCategoryForm(req, res) {
     res.render('category/newCategory', {
         formData: req.session.formData,
         rolePermissons: req.user?.role?.permissions,
@@ -27,7 +27,7 @@ export const getNewCategoryForm = (req, res) => {
  * @route POST /category/new
  * @desc Create new category
  */
-export const createNewCategoryHandler = async (req, res) => {
+async function createNewCategoryHandler(req, res) {
     try {
         const newCategory = await createCategory(req.body);
         logger.db(`Category ${newCategory.name} created by user ${req.user.username}.`);
@@ -52,7 +52,7 @@ export const createNewCategoryHandler = async (req, res) => {
  * @route GET /category/dashboard
  * @desc Show categories dashboard
  */
-export const getCategoriesDashboard = async (req, res) => {
+async function getCategoriesDashboard(req, res) {
     try {
         const categorys = await getAllCategories();
         res.render('category/categorydash', {
@@ -75,7 +75,7 @@ export const getCategoriesDashboard = async (req, res) => {
  * @route GET /category/edit/:id
  * @desc Show edit category form
  */
-export const getEditCategoryForm = async (req, res) => {
+async function getEditCategoryForm(req, res) {
     try {
         const category = await getCategoryById(req.params.id);
         res.render('category/editCategory', {
@@ -98,7 +98,7 @@ export const getEditCategoryForm = async (req, res) => {
  * @route POST /category/edit/:id
  * @desc Update category
  */
-export const updateCategoryHandler = async (req, res) => {
+async function updateCategoryHandler(req, res) {
     try {
         const updated = await updateCategory(req.params.id, req.body);
         logger.db(`Category ${updated.CategoryDispName} updated by user ${req.user.username}.`);
@@ -124,7 +124,7 @@ export const updateCategoryHandler = async (req, res) => {
  * @desc Delete category
  * @note Currently commented out in original code - can be implemented if needed
  */
-export const deleteCategoryHandler = async (req, res) => {
+async function deleteCategoryHandler(req, res) {
     try {
         const category = await deleteCategory(req.params.id);
         logger.db(`Category ${category.name} deleted by user ${req.user.username}.`);
@@ -138,4 +138,13 @@ export const deleteCategoryHandler = async (req, res) => {
         req.session.failMessage = 'Server error';
         res.status(500).json({ message: 'Server error' });
     }
+};
+
+export default {
+    getNewCategoryForm,
+    createNewCategoryHandler,
+    getCategoriesDashboard,
+    getEditCategoryForm,
+    updateCategoryHandler,
+    deleteCategoryHandler
 };

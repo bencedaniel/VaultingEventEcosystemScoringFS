@@ -65,11 +65,18 @@ export const getDailyTimeTableFormData = async () => {
 /**
  * Get all timetable parts for a specific daily timetable
  */
-export const getAllTimetableParts = async (dailyTimeTableId) => {
+export const getTimetablePartsByDailyTimeTable = async (dailyTimeTableId) => {
     return await TimetablePart.find({ dailytimetable: dailyTimeTableId })
         .sort({ StartTimePlanned: 1 })
         .populate('Category')
         .exec();
+};
+
+/**
+ * Get all timetable parts
+ */
+export const getAllTimetableParts = async () => {
+    return await TimetablePart.find();
 };
 
 /**

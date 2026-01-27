@@ -1,12 +1,12 @@
 import express from 'express';
 import { Verify, VerifyRole } from "../middleware/Verify.js";
-import { Register } from "../controllers/auth.js";
+import auth from '../controllers/auth.js';
 import Validate from "../middleware/Validate.js";
-import * as adminUserController from '../controllers/adminUserController.js';
-import * as adminRoleController from '../controllers/adminRoleController.js';
-import * as adminPermissionController from '../controllers/adminPermissionController.js';
-import * as adminCardController from '../controllers/adminCardController.js';
-import * as adminDashboardController from '../controllers/adminDashboardController.js';
+import adminUserController from '../controllers/adminUserController.js';
+import adminRoleController from '../controllers/adminRoleController.js';
+import adminPermissionController from '../controllers/adminPermissionController.js';
+import adminCardController from '../controllers/adminCardController.js';
+import adminDashboardController from '../controllers/adminDashboardController.js';
 
 const adminRouter = express.Router();
 
@@ -21,7 +21,7 @@ adminRouter.get("/dashboard", Verify, VerifyRole(), adminDashboardController.get
 // ===========================
 
 adminRouter.get("/newUser", Verify, VerifyRole(), adminUserController.getNewUserForm);
-adminRouter.post("/newUser", Verify, VerifyRole(), Validate, Register);
+adminRouter.post("/newUser", Verify, VerifyRole(), Validate, auth.Register);
 adminRouter.get("/dashboard/users", Verify, VerifyRole(), adminUserController.getUsersDashboard);
 adminRouter.get('/editUser/:id', Verify, VerifyRole(), adminUserController.getEditUserForm);
 adminRouter.post('/editUser/:id', Verify, VerifyRole(), adminUserController.updateUserHandler);

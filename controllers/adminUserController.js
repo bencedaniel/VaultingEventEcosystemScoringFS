@@ -12,7 +12,7 @@ import User from "../models/User.js";
  * @route GET /admin/newUser
  * @desc Show new user form
  */
-export const getNewUserForm = async (req, res) => {
+async function getNewUserForm(req, res) {
     try {
         const { roles } = await getUserFormData();
         const userrole = req.user?.role.permissions;
@@ -39,7 +39,7 @@ export const getNewUserForm = async (req, res) => {
  * @desc Create new user (handled by Validate middleware and Register controller from auth)
  * @note This is called from auth.js Register function via middleware chain
  */
-export const createNewUser = async (req, res) => {
+async function createNewUser(req, res) {
     // Note: User creation is handled by auth.js Register() function
     // This export is for route definition purposes
 };
@@ -48,7 +48,7 @@ export const createNewUser = async (req, res) => {
  * @route GET /admin/dashboard/users
  * @desc Show users dashboard
  */
-export const getUsersDashboard = async (req, res) => {
+async function getUsersDashboard(req, res) {
     try {
         const users = await getAllUsersWithRoles();
         const rolePermissons = req.user.role.permissions;
@@ -73,7 +73,7 @@ export const getUsersDashboard = async (req, res) => {
  * @route GET /admin/editUser/:id
  * @desc Show edit user form
  */
-export const getEditUserForm = async (req, res) => {
+async function getEditUserForm(req, res) {
     try {
         const user = await getUserById(req.params.id);
         const { roles } = await getUserFormData();
@@ -98,7 +98,7 @@ export const getEditUserForm = async (req, res) => {
  * @route POST /admin/editUser/:id
  * @desc Update user
  */
-export const updateUserHandler = async (req, res) => {
+async function updateUserHandler(req, res) {
     try {
         await updateUser(req.params.id, req.body);
         logger.db(`User ${req.body.username} updated by user ${req.user.username}.`);
@@ -129,7 +129,7 @@ export const updateUserHandler = async (req, res) => {
  * @route DELETE /admin/deleteUser/:userId
  * @desc Inactivate user
  */
-export const deleteUserHandler = async (req, res) => {
+async function deleteUserHandler(req, res) {
     try {
         const userId = req.params.userId;
         await inactivateUser(userId);
@@ -140,4 +140,13 @@ export const deleteUserHandler = async (req, res) => {
         logger.error("Err:" + err.toString());
         res.status(500).send('Server Error');
     }
+};
+
+export default {
+    getNewUserForm,
+    createNewUser,
+    getUsersDashboard,
+    getEditUserForm,
+    updateUserHandler,
+    deleteUserHandler
 };

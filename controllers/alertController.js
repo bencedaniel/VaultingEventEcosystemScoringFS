@@ -12,7 +12,7 @@ import {
  * @route GET /alerts/new
  * @desc Show new alert form
  */
-export const getNewAlertForm = async (req, res) => {
+async function getNewAlertForm(req, res) {
     try {
         const { permissionList } = await getAlertFormData();
         res.render('alert/newAlert', {
@@ -36,7 +36,7 @@ export const getNewAlertForm = async (req, res) => {
  * @route POST /alerts/new
  * @desc Create new alert
  */
-export const createNewAlertHandler = async (req, res) => {
+async function createNewAlertHandler(req, res) {
     try {
         const newAlert = await createAlert(req.body);
         logger.db(`Alert ${newAlert._id} created by user ${req.user.username}.`);
@@ -63,7 +63,7 @@ export const createNewAlertHandler = async (req, res) => {
  * @route GET /alerts/dashboard
  * @desc Show alerts dashboard
  */
-export const getAlertsDashboard = async (req, res) => {
+async function getAlertsDashboard(req, res) {
     try {
         const alerts = await getAllAlerts();
         res.render('alert/alertdash', {
@@ -86,7 +86,7 @@ export const getAlertsDashboard = async (req, res) => {
  * @route GET /alerts/edit/:id
  * @desc Show edit alert form
  */
-export const getEditAlertForm = async (req, res) => {
+async function getEditAlertForm(req, res) {
     try {
         const alert = await getAlertById(req.params.id);
         const { permissionList } = await getAlertFormData();
@@ -111,7 +111,7 @@ export const getEditAlertForm = async (req, res) => {
  * @route POST /alerts/edit/:id
  * @desc Update alert
  */
-export const updateAlertHandler = async (req, res) => {
+async function updateAlertHandler(req, res) {
     try {
         const alert = await updateAlert(req.params.id, req.body);
         logger.db(`Alert ${alert._id} updated by user ${req.user.username}.`);
@@ -138,7 +138,7 @@ export const updateAlertHandler = async (req, res) => {
  * @route DELETE /alerts/delete/:id
  * @desc Delete alert
  */
-export const deleteAlertHandler = async (req, res) => {
+async function deleteAlertHandler(req, res) {
     try {
         const alert = await deleteAlert(req.params.id);
         logger.db(`Alert ${alert._id} deleted by user ${req.user.username}.`);
@@ -154,7 +154,7 @@ export const deleteAlertHandler = async (req, res) => {
  * @route GET /alerts/checkEvent
  * @desc Check and create alerts for event (system-generated)
  */
-export const checkEventAlertsHandler = async (req, res) => {
+async function checkEventAlertsHandler(req, res) {
     try {
         const eventID = res.locals.selectedEvent?._id;
         if (!eventID) {
@@ -177,4 +177,14 @@ export const checkEventAlertsHandler = async (req, res) => {
         req.session.failMessage = err.message || 'Server error';
         return res.redirect('/alerts/dashboard');
     }
+};
+
+export default {
+    getNewAlertForm,
+    createNewAlertHandler,
+    getAlertsDashboard,
+    getEditAlertForm,
+    updateAlertHandler,
+    deleteAlertHandler,
+    checkEventAlertsHandler
 };

@@ -12,7 +12,7 @@ import {
  * @route GET /admin/newCard
  * @desc Show new card form
  */
-export const getNewCardForm = async (req, res) => {
+async function getNewCardForm(req, res) {
     try {
         const { permissionList } = await getCardFormData();
         const userrole = req.user?.role.permissions;
@@ -32,13 +32,13 @@ export const getNewCardForm = async (req, res) => {
         req.session.failMessage = 'Error loading card form';
         res.redirect('/admin/dashboard');
     }
-};
+}
 
 /**
  * @route GET /admin/dashboard/cards
  * @desc Show cards dashboard
  */
-export const getCardsDashboard = async (req, res) => {
+async function getCardsDashboard(req, res) {
     try {
         const cards = await getAllCards();
         const rolePermissons = req.user.role.permissions;
@@ -56,13 +56,13 @@ export const getCardsDashboard = async (req, res) => {
         req.session.failMessage = 'Error loading cards';
         res.redirect('/admin/dashboard');
     }
-};
+}
 
 /**
  * @route GET /admin/editCard/:id
  * @desc Show edit card form
  */
-export const getEditCardForm = async (req, res) => {
+async function getEditCardForm(req, res) {
     try {
         const { permissionList } = await getCardFormData();
         const card = await getCardById(req.params.id);
@@ -80,13 +80,13 @@ export const getEditCardForm = async (req, res) => {
         logger.error(err + " User: " + req.user.username);
         res.status(500).send('Server Error');
     }
-};
+}
 
 /**
  * @route POST /admin/newCard
  * @desc Create new card
  */
-export const createNewCardHandler = async (req, res) => {
+async function createNewCardHandler(req, res) {
     try {
         const newCard = await createCard(req.body);
         logger.db(`Card ${newCard.title} created by user ${req.user.username}.`);
@@ -107,13 +107,13 @@ export const createNewCardHandler = async (req, res) => {
             user: req.user
         });
     }
-};
+}
 
 /**
  * @route POST /admin/editCard/:id
  * @desc Update card
  */
-export const updateCardHandler = async (req, res) => {
+async function updateCardHandler(req, res) {
     try {
         await updateCard(req.params.id, req.body);
         logger.db(`Card ${req.body.title} updated by user ${req.user.username}.`);
@@ -134,13 +134,13 @@ export const updateCardHandler = async (req, res) => {
             user: req.user
         });
     }
-};
+}
 
 /**
  * @route DELETE /admin/deleteCard/:cardId
  * @desc Delete card
  */
-export const deleteCardHandler = async (req, res) => {
+async function deleteCardHandler(req, res) {
     try {
         const cardId = req.params.cardId;
         await deleteCard(cardId);
@@ -151,4 +151,13 @@ export const deleteCardHandler = async (req, res) => {
         logger.error("Err:" + err.toString());
         res.status(500).send('Server Error');
     }
+}
+
+export default {
+    getNewCardForm,
+    getCardsDashboard,
+    getEditCardForm,
+    createNewCardHandler,
+    updateCardHandler,
+    deleteCardHandler
 };
