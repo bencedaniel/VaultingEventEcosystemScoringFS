@@ -4,14 +4,11 @@
     <li class="list-group-item border-0">
         <h3 class="text-center"><%= title %></h3>
     </li>
-    
+
   </ul>
 
   <div class="d-flex justify-content-start align-items-center w-100 shadow-sm p-1 mb-4 bg-secondary bg-opacity-25 rounded border border-1 border-black border-opacity-10 flex-grow-1">
     <% if (pointDetailsLevel === 2) { %>
-
-
-
 
         <a href="/result/detailed/<%= resultGroup._id %>/total" class="btn btn-outline-primary w-100">Upper result level <i class="bi bi-arrow-up"></i></a>
      <% } else if (pointDetailsLevel === 1) { %>
@@ -23,7 +20,6 @@
 
   </div>
 
-
 <table class="table table-striped table-hover table-bordered w-100 m-0" >
         <thead class="table-primary">
             <th scope="col">Name</th>
@@ -32,9 +28,6 @@
             <th scope="col">Point details</th>
             <th scope="col">Total</th>
             <th scope="col">Rank</th>
-
-            
-
 
         </thead>
         <tbody class="align-middle" >
@@ -60,7 +53,7 @@
         <td><% if (pointDetailsLevel === 1) { %>
             <table class="table table-hover w-100 m-0">
         <tbody>
-            
+
         <tr>
             <% let j = 0 %>
             <% result.scoresheets.sort((a, b) => a.table.localeCompare(b.table)).forEach(element => { %>
@@ -70,58 +63,56 @@
                 <% } %>
                 <td class="text-center border border-1 border-end-0 me-0 pe-0"><%= element.table %>:</td>
                 <td class="text-center totalScore border-1 border-start-0 ms-0 ps-0"><%= element.scoreId.totalScoreBE %></td>
-             
+
             <% }) %>
             </tr>
             </tbody>
             </table>
-         
+
         <% } else if(pointDetailsLevel === 2){ %>
                  <table class="table table-hover w-100 m-0">
         <tbody>
-            
+
         <tr>
                 <% if (result.firstTotalScore) { %>
-                <td class="text-center border border-1 border-end-0 me-0 pe-0"> <a class=" link-primary link-underline-opacity-0" href="/result/detailed/<%= resultGroup._id %>/R1F">First:</a></td> 
+                <td class="text-center border border-1 border-end-0 me-0 pe-0"> <a class=" link-primary link-underline-opacity-0" href="/result/detailed/<%= resultGroup._id %>/R1F">First:</a></td>
                 <td class="text-center totalScore border-1 border-start-0 ms-0 ps-0"><%= result.firstTotalScore %></td>
                 <% } %>
                 <% if (result.secondTotalScore) { %>
                      <td class="text-center border border-1 border-end-0 me-0 pe-0"> <a class=" link-primary link-underline-opacity-0" href="/result/detailed/<%= resultGroup._id %>/R1S">Second:</a> </td>
                 <td class="text-center totalScore border-1 border-start-0 ms-0 ps-0"><%= result.secondTotalScore %></td>
                 <% } %>
-             
+
             </tr>
             </tbody>
             </table>
             <% } else if(pointDetailsLevel === 3){ %>
                  <table class="table table-hover w-100 m-0">
         <tbody>
-            
+
         <tr>
                 <% if (result.round1TotalScore) { %>
-                <td class="text-center border border-1 border-end-0 me-0 pe-0"> <a class=" link-primary link-underline-opacity-0" href="/result/detailed/<%= resultGroup._id %>/R1">Round 1:</a></td> 
+                <td class="text-center border border-1 border-end-0 me-0 pe-0"> <a class=" link-primary link-underline-opacity-0" href="/result/detailed/<%= resultGroup._id %>/R1">Round 1:</a></td>
                 <td class="text-center totalScore border-1 border-start-0 ms-0 ps-0"><%= result.round1TotalScore %></td>
                 <% } %>
                 <% if (result.round2TotalScore) { %>
                      <td class="text-center border border-1 border-end-0 me-0 pe-0"> <a class=" link-primary link-underline-opacity-0" href="/result/detailed/<%= resultGroup._id %>/R2">Round 2:</a></td>
                 <td class="text-center totalScore border-1 border-start-0 ms-0 ps-0"><%= result.round2TotalScore %></td>
                 <% } %>
-             
+
             </tr>
             </tbody>
             </table>
         <% } %>
-    
+
     </td>
         <td class="totalScore"><%= result.TotalScore %></td>
         <td><%= i %></td>
 
-        
       </tr>
             <% }); %>
         </tbody>
     </table>
-
 
 <script>
     document.addEventListener('DOMContentLoaded', function(){
@@ -131,5 +122,3 @@
     })
     });
 </script>
-
-

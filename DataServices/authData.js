@@ -1,7 +1,7 @@
 import User from '../models/User.js';
 import Blacklist from '../models/Blacklist.js';
 import bcrypt from 'bcrypt';
-import { logger } from '../logger.js';
+import { logger, logDb } from '../logger.js';
 
 /**
  * Find user by username
@@ -38,6 +38,7 @@ export async function createUser(userData) {
     });
     
     await newUser.save();
+    logDb('CREATE', 'User', `${username}`);
     logger.userManagement(`User ${newUser.username} registered successfully.`);
     return newUser;
 }
@@ -63,6 +64,7 @@ export async function isTokenBlacklisted(token) {
 export async function blacklistToken(token) {
     const newBlacklist = new Blacklist({ token });
     await newBlacklist.save();
+    logDb('CREATE', 'Blacklist', `${token.substring(0, 10)}...`);
     logger.userManagement(`Token blacklisted successfully.`);
     return newBlacklist;
 }

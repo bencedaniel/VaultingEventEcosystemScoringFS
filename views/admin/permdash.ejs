@@ -1,11 +1,10 @@
-
-  <div class="container my-4 border border-black border-1 border-opacity-25 rounded p-2" >
+<div class="container my-4 border border-black border-1 border-opacity-25 rounded p-2" >
   <ul class="list-group">
 
     <li class="list-group-item border-0">
         <h3 class="text-center">Permission Management</h3>
     </li>
-    
+
   </ul>
 <div class="d-flex justify-content-start align-items-center w-100 shadow-sm p-1 mb-4 bg-secondary bg-opacity-25 rounded border border-1 border-black border-opacity-10 flex-grow-1">
     <div class="w-50 d-flex m-1 ">
@@ -17,7 +16,6 @@
               Select column
             </button>
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="dropdownMenu">
-
 
             </div>
 
@@ -36,7 +34,6 @@
             <th scope="col">Attached Cards</th>
             <th scope="col">Attached Alerts</th>
 
-
             <th scope="col">&nbsp;</th>
 
         </thead>
@@ -50,7 +47,6 @@
                   <%= Array.isArray(permission.attachedURL) ? permission.attachedURL.map(urlObj => urlObj.url).join(', ') : permission.attachedURL.url %>
                 </td>
 
-
                                 <td>
                   <%= (rolepermNumList.find(permuser => permuser.permID === permission._id) || {count: 0}).Rolecount %>
                 </td>
@@ -59,7 +55,6 @@
                 </td>
                                 <td>
                   <%= (rolepermNumList.find(permuser => permuser.permID === permission._id) || {count: 0}).Alertcount %>
-
 
                 <td class="text-center" style="width: 15%;">
                     <a href="/admin/editPermission/<%= permission._id %>" class="btn btn-warning btn-sm shadow-none m-1"><i class="bi bi-pen"></i></a>
@@ -70,7 +65,6 @@
             <% }); %>
         </tbody>
     </table>
-
 
 <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel"
     aria-hidden="true" style="backdrop-filter: blur(5px);">
@@ -89,9 +83,7 @@
             </div>
         </div>
     </div>
-</div>  
-
-
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

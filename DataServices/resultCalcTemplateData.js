@@ -23,6 +23,7 @@ export const getCalcTemplateById = async (id) => {
 export const createCalcTemplate = async (data) => {
     const calcTemp = new calcTemplate(data);
     await calcTemp.save();
+    logDb('CREATE', 'CalcTemplate', `${calcTemp._id}`);
     return calcTemp;
 };
 
@@ -31,6 +32,7 @@ export const createCalcTemplate = async (data) => {
  */
 export const updateCalcTemplate = async (id, data) => {
     const calcTemp = await calcTemplate.findByIdAndUpdate(id, data, { new: true });
+    logDb('UPDATE', 'CalcTemplate', `${id}`);
     return calcTemp;
 };
 
@@ -47,7 +49,8 @@ export const deleteCalcTemplate = async (id) => {
         throw new Error("Cannot delete calculation template as it is in use by a result group or generator.");
     }
     
-    return await calcTemplate.findByIdAndDelete(id);
+    await calcTemplate.findByIdAndDelete(id);
+    logDb('DELETE', 'CalcTemplate', `${id}`);
 };
 
 /**

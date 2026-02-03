@@ -1,5 +1,6 @@
 import Alert from '../models/Alert.js';
 import Permissions from '../models/Permissions.js';
+import { logDb } from '../logger.js';
 
 /**
  * Get all alerts sorted by name and populated with permission data
@@ -25,6 +26,7 @@ export const getAlertById = async (id) => {
 export const createAlert = async (data) => {
     const newAlert = new Alert(data);
     await newAlert.save();
+    logDb('CREATE', 'Alert', `${newAlert.title}`);
     return newAlert;
 };
 
@@ -36,6 +38,7 @@ export const updateAlert = async (id, data) => {
     if (!alert) {
         throw new Error('Alert not found');
     }
+    logDb('UPDATE', 'Alert', `${alert.title}`);
     return alert;
 };
 
@@ -47,6 +50,7 @@ export const deleteAlert = async (id) => {
     if (!alert) {
         throw new Error('Alert not found');
     }
+    logDb('DELETE', 'Alert', `${alert.title}`);
     return alert;
 };
 

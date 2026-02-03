@@ -1,5 +1,6 @@
-import { logger } from '../logger.js';
+import { logger, logOperation, logAuth, logError, logValidation, logWarn } from '../logger.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
+import { HTTP_STATUS, MESSAGES } from '../config/index.js';
 import {
     getAllUsersWithRoles,
     getUserById,
@@ -84,8 +85,8 @@ const getEditUserForm = asyncHandler(async (req, res) => {
  */
 const updateUserHandler = asyncHandler(async (req, res) => {
     await updateUser(req.params.id, req.body);
-    logger.db(`User ${req.body.username} updated by user ${req.user.username}.`);
-    req.session.successMessage = 'User modified successfully!';
+    logOperation('USER_UPDATE', `User updated: ${req.body.username}`, req.user.username, HTTP_STATUS.OK);
+    req.session.successMessage = MESSAGES.SUCCESS.USER_MODIFIED;
     res.redirect('/admin/dashboard/users');
 });
 
@@ -96,9 +97,9 @@ const updateUserHandler = asyncHandler(async (req, res) => {
 const deleteUserHandler = asyncHandler(async (req, res) => {
     const userId = req.params.userId;
     await inactivateUser(userId);
-    logger.db(`User ${userId} inactivated by user ${req.user.username}.`);
-    req.session.successMessage = 'User successfully inactivated.';
-    res.status(200).send('User deleted.');
+    logOperation('USER_DELETE', `User deleted: ${userId}`, req.user.username, HTTP_STATUS.OK);
+    req.session.successMessage = MESSAGES.SUCCESS.USER_INACTIVATED;
+    res.status(HTTP_STATUS.OK).send(MESSAGES.SUCCESS.USER_DELETE_RESPONSE);
 });
 
 export default {

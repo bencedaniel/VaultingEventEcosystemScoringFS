@@ -4,7 +4,6 @@
   <form action="/scoring/office/scoresheet/new" method="POST">
     <div class="row justify-content-center g-3 m-auto">
 
-    
         <div class="col-md-12">
             <div class="form-floating">
             <select class="form-select shadow-none" id="TTprogram" name="TTprogram" aria-label="Creation Method">
@@ -12,13 +11,11 @@
                 <% timetableParts.forEach(element => { %>
                                     <option value="<%= element._id %>" ><%= element.dailytimetable.DayName %> -- <%= element.Name %></option>
 
-                 
                 <% }) %>
             </select>
             <label for="TTprogram">Start </label>
             </div>
             </div>
-
 
         <div class="col-md-12">
             <div class="form-floating">
@@ -28,7 +25,6 @@
             <label for="entriesDropdown">Start </label>
             </div>
             </div>
-        
 
         <div class="col-md-12">
             <div class="form-floating">
@@ -39,8 +35,6 @@
             </div>
             </div>
 
-
- 
       <div class="col-md-12 mt-3 d-flex justify-content-between">
         <a href="/dailytimetable/dayparts/" class="btn btn-secondary w-50">Back</a>
         <button type="submit" id="submit" class="btn btn-primary w-50 ms-2" disabled >Next</button>
@@ -73,40 +67,28 @@
         });
     })
 
-
 </script>
-
 
 <script>
     const Timetables = <%- JSON.stringify(timetableParts) %>;
 
     document.addEventListener('DOMContentLoaded', function() {
 
-
         const table = document.getElementById('Table');
-
-
 
         const dropdownMenu = document.getElementById('TTprogram');
         const entriesdropdown = document.getElementById('entriesDropdown');
-        
+
         dropdownMenu.addEventListener('change', function() {
             const submitButton = document.getElementById('submit');
             submitButton.disabled = false;
 
-
-
-
-
-
-
             // Clear previous options (keep only the first disabled option)
             entriesdropdown.innerHTML = '<option value="" selected disabled>Select entry</option>';
-            
+
             const selectedOption = this.options[this.selectedIndex];
             const selectedId = selectedOption.value;
             const selectedTimetable = Timetables.find(tt => tt._id === selectedId);
-
 
             const table = document.getElementById('Table');
             table.innerHTML = '<option value="" selected disabled>Select Table</option>';
@@ -117,32 +99,27 @@
                 option.textContent = 'Table ' + judge.Table;
                 table.appendChild(option);
             });
-            
 
-
-
-            
             if (selectedTimetable && selectedTimetable.StartingOrder) {
                 selectedTimetable.StartingOrder.forEach(element => {
                     if (!element.Entry) return;
-                    
+
                     const option = document.createElement('option');
                     option.value = element.Entry._id;
-                    
+
                     // Check if teamName exists and is not empty
                     if (element.Entry.teamName && element.Entry.teamName !== '') {
                         option.textContent = element.Entry.teamName;
-                    } 
+                    }
                     // Otherwise use vaulter name
                     else if (element.Entry.vaulter) {
                         option.textContent = element.Entry.vaulter.map(v => v.Name).join(', ');
                     }
-                    
+
                     entriesdropdown.appendChild(option);
                 });
             }
         });
     });
-
 
 </script>

@@ -1,5 +1,6 @@
-import { logger } from '../logger.js';
+import { logger, logOperation, logAuth, logError, logValidation, logWarn } from '../logger.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
+import { HTTP_STATUS, MESSAGES } from '../config/index.js';
 import {
     getAllCategories,
     getCategoryById,
@@ -30,8 +31,8 @@ const getNewCategoryForm = asyncHandler(async (req, res) => {
  */
 const createNewCategoryHandler = asyncHandler(async (req, res) => {
     const newCategory = await createCategory(req.body);
-    logger.db(`Category ${newCategory.name} created by user ${req.user.username}.`);
-    req.session.successMessage = 'Category created successfully!';
+    logOperation('CATEGORY_CREATE', `Category created: ${newCategory.name}`, req.user.username, HTTP_STATUS.CREATED);
+    req.session.successMessage = MESSAGES.SUCCESS.CATEGORY_CREATED;
     res.redirect('/category/dashboard');
 });
 
@@ -75,8 +76,8 @@ const getEditCategoryForm = asyncHandler(async (req, res) => {
  */
 const updateCategoryHandler = asyncHandler(async (req, res) => {
     const updated = await updateCategory(req.params.id, req.body);
-    logger.db(`Category ${updated.CategoryDispName} updated by user ${req.user.username}.`);
-    req.session.successMessage = 'Category updated successfully!';
+    logOperation('CATEGORY_UPDATE', `Category updated: ${updated.CategoryDispName}`, req.user.username, HTTP_STATUS.OK);
+    req.session.successMessage = MESSAGES.SUCCESS.CATEGORY_UPDATED;
     res.redirect('/category/dashboard');
 });
 
@@ -87,12 +88,12 @@ const updateCategoryHandler = asyncHandler(async (req, res) => {
  */
 const deleteCategoryHandler = asyncHandler(async (req, res) => {
     const category = await deleteCategory(req.params.id);
-    logger.db(`Category ${category.name} deleted by user ${req.user.username}.`);
+    logOperation('CATEGORY_DELETE', `Category deleted: ${category.name}`, req.user.username, HTTP_STATUS.OK);
     if (!category) {
-        req.session.failMessage = 'Category not found';
-        return res.status(404).json({ message: 'Category not found' });
+        req.session.failMessage = MESSAGES.ERROR.CATEGORY_NOT_FOUND;
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ message: MESSAGES.ERROR.CATEGORY_NOT_FOUND });
     }
-    res.status(200).json({ message: 'Category deleted successfully' });
+    res.status(HTTP_STATUS.OK).json({ message: MESSAGES.SUCCESS.CATEGORY_DELETED });
 });
 
 export default {

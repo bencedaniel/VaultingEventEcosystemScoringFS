@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import Role from '../models/Role.js';
 import bcrypt from 'bcrypt';
+import { logDb } from '../logger.js';
 
 /**
  * Get all users with populated role information
@@ -40,7 +41,9 @@ export async function updateUser(userId, updateData) {
         processedData.password = await bcrypt.hash(updateData.password, 10);
     }
     
-    return await User.findByIdAndUpdate(userId, processedData, { runValidators: true });
+    const user = await User.findByIdAndUpdate(userId, processedData, { runValidators: true });
+    logDb('UPDATE', 'User', `${processedData.username}`);
+    return user;
 }
 
 /**
@@ -54,6 +57,7 @@ export async function inactivateUser(userId) {
     
     user.active = false;
     await User.findByIdAndUpdate(userId, user, { runValidators: true });
+    logDb('UPDATE', 'User', `${user.username}`);
     
     return user;
 }

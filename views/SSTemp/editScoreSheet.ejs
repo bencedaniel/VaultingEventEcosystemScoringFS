@@ -41,8 +41,6 @@
   <form action="/scoresheets/edit/<%= formData._id %>" method="POST" enctype="multipart/form-data">
     <div class="row justify-content-center g-3 m-auto">
 
-
-
       <!-- TestType -->
       <div class="col-md-12 bg-secondary bg-opacity-10 p-3 rounded">
         <label class="form-label mb-2">Test Type</label>
@@ -50,7 +48,7 @@
           <div class="col-md-6 col-lg-4 mb-2">
             <div class="form-check">
               <input class="form-check-input" type="checkbox"
-                     name="TestType[]" 
+                     name="TestType[]"
                      value="compulsory"
                      id="test_compulsory"
                      <%= formData && formData.TestType && (formData.TestType === 'compulsory' || (Array.isArray(formData.TestType) && formData.TestType.includes('compulsory'))) ? 'checked' : '' %>>
@@ -62,7 +60,7 @@
           <div class="col-md-6 col-lg-4 mb-2">
             <div class="form-check">
               <input class="form-check-input" type="checkbox"
-                     name="TestType[]" 
+                     name="TestType[]"
                      value="free test"
                      id="test_freestyle"
                      <%= formData && formData.TestType && (formData.TestType === 'free test' || (Array.isArray(formData.TestType) && formData.TestType.includes('free test'))) ? 'checked' : '' %>>
@@ -74,7 +72,7 @@
           <div class="col-md-6 col-lg-4 mb-2">
             <div class="form-check">
               <input class="form-check-input" type="checkbox"
-                     name="TestType[]" 
+                     name="TestType[]"
                      value="technical test"
                      id="test_technical"
                      <%= formData && formData.TestType && (formData.TestType === 'technical test' || (Array.isArray(formData.TestType) && formData.TestType.includes('technical test'))) ? 'checked' : '' %>>
@@ -98,7 +96,7 @@
             <div class="col-md-6 col-lg-4 mb-2">
               <div class="form-check">
                 <input class="form-check-input" type="checkbox"
-                       name="Category[]" 
+                       name="Category[]"
                        value="<%= category._id %>"
                        id="cat_<%= category._id %>"
                        <%= selected.includes(category._id.toString()) ? 'checked' : '' %>>
@@ -121,7 +119,6 @@
             <option value="4" <%= formData && formData.numberOfJudges === 4 ? 'selected' : '' %>>4</option>
             <option value="6" <%= formData && formData.numberOfJudges === 6 ? 'selected' : '' %>>6</option>
             <option value="8" <%= formData && formData.numberOfJudges === 8 ? 'selected' : '' %>>8</option>
-
 
           </select>
           <label for="numberOfJudges">Number of Judges</label>
@@ -193,30 +190,30 @@
     return new Promise((resolve) => {
       const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
       document.getElementById('confirmMessage').textContent = message;
-      
+
       const okBtn = document.getElementById('confirmOk');
       const cancelBtn = document.getElementById('confirmCancel');
-      
+
       const cleanup = () => {
         okBtn.removeEventListener('click', handleOk);
         cancelBtn.removeEventListener('click', handleCancel);
       };
-      
+
       const handleOk = () => {
         cleanup();
         modal.hide();
         resolve(true);
       };
-      
+
       const handleCancel = () => {
         cleanup();
         modal.hide();
         resolve(false);
       };
-      
+
       okBtn.addEventListener('click', handleOk);
       cancelBtn.addEventListener('click', handleCancel);
-      
+
       modal.show();
     });
   }
@@ -226,38 +223,38 @@
       const modal = new bootstrap.Modal(document.getElementById('promptModal'));
       document.getElementById('promptMessage').textContent = message;
       document.getElementById('promptInput').value = defaultValue;
-      
+
       const inputEl = document.getElementById('promptInput');
       const okBtn = document.getElementById('promptOk');
       const cancelBtn = document.getElementById('promptCancel');
-      
+
       const cleanup = () => {
         okBtn.removeEventListener('click', handleOk);
         cancelBtn.removeEventListener('click', handleCancel);
         inputEl.removeEventListener('keypress', handleEnter);
       };
-      
+
       const handleOk = () => {
         const result = inputEl.value;
         cleanup();
         modal.hide();
         resolve(result);
       };
-      
+
       const handleCancel = () => {
         cleanup();
         modal.hide();
         resolve(null);
       };
-      
+
       const handleEnter = (e) => {
         if (e.key === 'Enter') handleOk();
       };
-      
+
       okBtn.addEventListener('click', handleOk);
       cancelBtn.addEventListener('click', handleCancel);
       inputEl.addEventListener('keypress', handleEnter);
-      
+
       modal.show();
       inputEl.focus();
       inputEl.select();
@@ -290,7 +287,6 @@
   const inputJsonInp  = document.getElementById('inputFieldListJson');
     const currentImageLabel = document.getElementById('currentImageLabel');
 
-
   // Image upload: preview + URL handling
   bgImageFile.addEventListener('change', async (e) => {
     const file = e.target.files?.[0];
@@ -311,7 +307,7 @@
           currentImageLabel.textContent = bgImageUrl.value;
 
   }
-  
+
     renderAllFields();
     syncHiddenJson();
   });
@@ -435,7 +431,7 @@
       const currentWidth = field.width || 100;
       const newWidth = await showPrompt(`Új szélesség (%): [jelenlegi: ${currentWidth}%]`, currentWidth);
       if (newWidth === null) return;
-      
+
       const widthVal = Math.max(1, parseFloat(newWidth) || currentWidth);
       field.width = widthVal;
       el.style.width = `${widthVal}%`;
@@ -523,5 +519,3 @@
     opacity: 0.9;
   }
 </style>
-
-

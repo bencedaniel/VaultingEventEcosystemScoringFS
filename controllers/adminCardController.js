@@ -1,5 +1,6 @@
-import { logger } from '../logger.js';
-import { asyncHandler } from '../middleware/asyncHandler.js';  // ← ADD!
+import { logger, logOperation } from '../logger.js';
+import { asyncHandler } from '../middleware/asyncHandler.js';
+import { HTTP_STATUS, MESSAGES } from '../config/index.js';
 import {
     getAllCards,
     getCardById,
@@ -72,8 +73,8 @@ const getEditCardForm = asyncHandler(async (req, res) => {
  */
 const createNewCardHandler = asyncHandler(async (req, res) => {
     const newCard = await createCard(req.body);
-    logger.db(`Card ${newCard.title} created by user ${req.user.username}.`);
-    req.session.successMessage = 'Card added successfully!';
+    logOperation('CARD_CREATE', `Card created: ${newCard.title}`, req.user.username, HTTP_STATUS.CREATED);
+    req.session.successMessage = MESSAGES.SUCCESS.CARD_ADDED;
     res.redirect('/admin/dashboard/cards');
 });
 
@@ -83,8 +84,8 @@ const createNewCardHandler = asyncHandler(async (req, res) => {
  */
 const updateCardHandler = asyncHandler(async (req, res) => {
     await updateCard(req.params.id, req.body);
-    logger.db(`Card ${req.body.title} updated by user ${req.user.username}.`);
-    req.session.successMessage = 'Card modified successfully!';
+    logOperation('CARD_UPDATE', `Card updated: ${req.body.title}`, req.user.username, HTTP_STATUS.OK);
+    req.session.successMessage = MESSAGES.SUCCESS.CARD_MODIFIED;
     res.redirect('/admin/dashboard/cards');
 });
 
@@ -95,9 +96,9 @@ const updateCardHandler = asyncHandler(async (req, res) => {
 const deleteCardHandler = asyncHandler(async (req, res) => {
     const cardId = req.params.cardId;
     await deleteCard(cardId);
-    logger.db(`Card ${cardId} deleted by user ${req.user.username}.`);
-    req.session.successMessage = 'Card successfully deleted.';
-    res.status(200).send('Card deleted.');
+    logOperation('CARD_DELETE', `Card deleted: ${cardId}`, req.user.username, HTTP_STATUS.OK);
+    req.session.successMessage = MESSAGES.SUCCESS.CARD_DELETED;
+    res.status(HTTP_STATUS.OK).send(MESSAGES.SUCCESS.CARD_DELETE_RESPONSE);
 });
 
 export default {

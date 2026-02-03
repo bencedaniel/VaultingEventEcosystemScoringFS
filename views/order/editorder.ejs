@@ -1,13 +1,10 @@
-
-
-
 <div class="container my-4 border border-black border-1 border-opacity-25 rounded p-2" >
   <ul class="list-group">
 
     <li class="list-group-item border-0">
         <h3 class="text-center">Order editor : <%= formData.dailytimetable.DayName %> » <%= formData.Name %></h3>
     </li>
-    
+
   </ul>
 <div class="d-flex justify-content-start align-items-center w-100 shadow-sm p-1 mb-4 bg-secondary bg-opacity-25 rounded border border-1 border-black border-opacity-10 flex-grow-1">
     <div class="w-50 d-flex m-1 ">
@@ -20,7 +17,6 @@
             </button>
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="dropdownMenu">
 
-
             </div>
 
         </div>
@@ -29,7 +25,6 @@
                         <button onclick="forceRefresh()" class="btn btn-outline-primary w-50">Restart session</button>
 
   </div>
-
 
 <table class="table table-striped table-hover table-bordered w-100 m-0" id="TableBody">
         <thead class="table-primary">
@@ -68,14 +63,13 @@
         <td class="text-center" style="width: 15%;">
             <div class="d-flex">
            <input type="text" class="form-control OrderInput m-2" onchange="markFormAsChanged('<%= entry._id %>')" onclick="markFormAsChanged('<%= entry._id %>')" id="input_<%= entry._id %>" value="<%= OrderNr %>">
-           <button class="btn btn-secondary m-2 w-75 SaveButtons" id="button_<%= entry._id %>" onclick="ElementSaved('<%= entry._id %>')" disabled>Saved</button>   
-           </div>    
+           <button class="btn btn-secondary m-2 w-75 SaveButtons" id="button_<%= entry._id %>" onclick="ElementSaved('<%= entry._id %>')" disabled>Saved</button>
+           </div>
         </td>
       </tr>
             <% }); %>
         </tbody>
     </table>
-
 
 <div class="modal fade" id="deleteModal" tabindex="-1" horse="dialog" aria-labelledby="deleteModalLabel"
     aria-hidden="true" style="backdrop-filter: blur(5px);">
@@ -94,9 +88,7 @@
             </div>
         </div>
     </div>
-</div>  
-
-
+</div>
 
 <script>
     function updateVetStatus(horseId, newStatus) {
@@ -119,7 +111,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const button = event.relatedTarget;
         IdToDelete = button.getAttribute('data-horseid');
     });
-
 
     confirmDeleteButton?.addEventListener('click', () => {
         fetch('/horse/delete/' + IdToDelete, {
@@ -150,23 +141,22 @@ document.addEventListener('DOMContentLoaded', function() {
         button.classList.remove('btn-secondary')
         button.classList.add('btn-success')
 
-
         const SaveButtons = document.getElementsByClassName('SaveButtons')
-        formChanged++;   
-        const otherInputs = document.getElementsByClassName('OrderInput')     
-        
+        formChanged++;
+        const otherInputs = document.getElementsByClassName('OrderInput')
+
         Array.from(otherInputs).forEach(element => {
             if(element.id !== 'input_'+id){
                 element.disabled = true;
             }
-        
+
         });
         Array.from(SaveButtons).forEach(element => {
             if(element.id !== 'button_'+id){
                 element.innerHTML='Disabled';
                 element.disabled = true;
             }
-        
+
         });
 
     }
@@ -174,8 +164,6 @@ document.addEventListener('DOMContentLoaded', function() {
         formChanged = 0;
         window.location.reload();
     }
-
-
 
     function ElementSaved(id) {
         console.log('lefut')
@@ -191,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if(element.innerHTML === 'Save'){
                 formChanged++;
             }
-        
+
         });
          fetch('/order/overwrite/<%= formData._id %>', {
             method: 'POST',
@@ -208,11 +196,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.location.reload();
             }
         });
-       
-
-        
-
-
 
     }
 
@@ -236,10 +219,5 @@ document.addEventListener('DOMContentLoaded', function() {
             toastContainer.innerHTML = '';
         }, 3000);
     }
-
-
-
-
-
 
 </script>

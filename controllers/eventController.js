@@ -1,5 +1,6 @@
-import { logger } from '../logger.js';
+import { logger, logOperation, logAuth, logError, logValidation, logWarn, logDebug } from '../logger.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
+import { HTTP_STATUS, MESSAGES } from '../config/index.js';
 import {
   getAllEvents,
   getEventById,
@@ -26,14 +27,14 @@ const renderNew = (req, res) => {
 
 const createNew = asyncHandler(async (req, res) => {
   const newEvent = await createEvent(req.body);
-  logger.db(`Event ${newEvent.name} created by user ${req.user.username}.`);
-  req.session.successMessage = 'Event created successfully!';
+  logOperation('EVENT_CREATE', `Event created: ${newEvent.name}`, req.user.username, HTTP_STATUS.CREATED);
+  req.session.successMessage = MESSAGES.SUCCESS.EVENT_CREATED;
   res.redirect('/admin/event/dashboard');
 });
 
 const dashboard = asyncHandler(async (req, res) => {
   const events = await getAllEvents();
-  logger.debug(req.session.successMessage);
+  logDebug('Session', req.session.successMessage);
   res.render('event/eventdash', {
     events,
     rolePermissons: req.user?.role?.permissions,
@@ -60,8 +61,8 @@ const editGet = asyncHandler(async (req, res) => {
 
 const editPost = asyncHandler(async (req, res) => {
   const event = await updateEvent(req.params.id, req.body);
-  logger.db(`Event ${event.name} updated by user ${req.user.username}.`);
-  req.session.successMessage = 'Event updated successfully!';
+  logOperation('EVENT_UPDATE', `Event updated: ${event.name}`, req.user.username, HTTP_STATUS.OK);
+  req.session.successMessage = MESSAGES.SUCCESS.EVENT_UPDATED;
   res.redirect('/admin/event/dashboard');
 });
 
@@ -82,22 +83,22 @@ const details = asyncHandler(async (req, res) => {
 
 const deleteResponsiblePersonHandler = asyncHandler(async (req, res) => {
   const event = await deleteResponsiblePerson(req.params.id, req.body);
-  logger.db(`Responsible person ${req.body.name} from event ${event.EventName} deleted by user ${req.user.username}.`);
-  res.status(200).json({ message: `${req.body.name} responsible person deleted successfully by ${req.user.username}` });
+  logOperation('EVENT_UPDATE', `Event updated: ${event.EventName}`, req.user.username, HTTP_STATUS.OK);
+  res.status(HTTP_STATUS.OK).json({ message: req.body.name + ' ' + MESSAGES.SUCCESS.RESPONSIBLE_PERSON_DELETED + req.user.username });
 });
 
 const addResponsiblePersonHandler = asyncHandler(async (req, res) => {
   const event = await addResponsiblePerson(req.params.id, req.body);
-  logger.db(`Responsible person added to event ${event.EventName} by user ${req.user.username}.`);
-  res.status(200).json({ message: 'Responsible person added successfully!' });
+  logOperation('EVENT_UPDATE', `Event updated: ${event.EventName}`, req.user.username, HTTP_STATUS.OK);
+  res.status(HTTP_STATUS.OK).json({ message: MESSAGES.SUCCESS.RESPONSIBLE_PERSON_ADDED });
 });
 
 const selectEventHandler = asyncHandler(async (req, res) => {
   const event = await selectEvent(req.params.eventId);
-  logger.db(`Event ${event.EventName} selected by user ${req.user.username}.`);
+  logOperation('EVENT_UPDATE', `Event updated: ${event.EventName}`, req.user.username, HTTP_STATUS.OK);
   req.session.selectedEvent = event._id;
-  req.session.successMessage = 'Event selected successfully! ' + event.EventName;
-  res.status(200).json({ message: 'Event selected successfully! ' + event.EventName });
+  req.session.successMessage = MESSAGES.SUCCESS.EVENT_SELECTED + ' ' + event.EventName;
+  res.status(HTTP_STATUS.OK).json({ message: MESSAGES.SUCCESS.EVENT_SELECTED + ' ' + event.EventName });
 });
 
 export default {

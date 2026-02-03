@@ -26,8 +26,6 @@
         </div>
       </div>
 
-
-
       <!-- Sex -->
       <div class="col-md-12">
         <div class="form-floating">
@@ -88,7 +86,7 @@
       <div class="col-md-12 bg-secondary bg-opacity-10 rounded p-3" style="max-width: 97%;" id="mainBlock">
         <label class="form-label mb-1">Score Types</label>
 
-        <% 
+        <%
           const scoreTypeDefs = [
             { display: 'Horse score', type: 'Horse', fields: ['A1', 'A2','A3'], text: 'Percentage' },
             { display: 'Free test', type: 'Free', fields: ['R', 'D', 'M', 'E', 'NumberOfMaxExercises'], text: '(R,D,M,E: A Multipler value  )' },
@@ -106,7 +104,6 @@
                 <label for="<%= def.type %>_<%= field %>"><%= field %> (<%= def.text %>)</label>
               </div>
             <% }); %>
-
 
           </div>
         <% }); %>
@@ -141,7 +138,7 @@
 
         block.style.display = 'none';
         block.querySelectorAll('input').forEach(input => input.disabled = true);
-      
+
     }
     }
 
@@ -155,9 +152,7 @@
       }
     }
 
-
     typeSelect.addEventListener('change', toggleTypeSex);
-
 
     reqFreeTestCheckbox.addEventListener('change', function() {
       toggleBlock(reqFreeTestCheckbox, freeTestBlock,true);
@@ -168,8 +163,6 @@
       toggleBlock(reqTechnicalTestCheckbox, techArtisticBlockElement,true);
 
     });
-
-
 
     toggleBlock(reqFreeTestCheckbox, freeTestBlock);
     toggleBlock(reqFreeTestCheckbox, artisticBlockElement);

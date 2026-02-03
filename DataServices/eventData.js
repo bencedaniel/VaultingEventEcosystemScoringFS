@@ -1,6 +1,7 @@
 import Event from '../models/Event.js';
 import Permissions from '../models/Permissions.js';
 import User from '../models/User.js';
+import { logDb } from '../logger.js';
 
 /**
  * Get all events sorted by name
@@ -26,6 +27,7 @@ export async function getEventById(id) {
 export async function createEvent(data) {
     const newEvent = new Event(data);
     await newEvent.save();
+    logDb('CREATE', 'Event', `${newEvent._id}`);
     return newEvent;
 }
 
@@ -37,6 +39,7 @@ export async function updateEvent(id, data) {
     if (!event) {
         throw new Error('Event not found');
     }
+    logDb('UPDATE', 'Event', `${id}`);
     return event;
 }
 
@@ -57,6 +60,7 @@ export async function deleteResponsiblePerson(id, personData) {
         )
     );
     
+    logDb('UPDATE', 'Event', `${id}`);
     await Event.findByIdAndUpdate(id, event, { runValidators: true });
     return event;
 }
@@ -78,6 +82,7 @@ export async function addResponsiblePerson(id, personData) {
     };
     
     event.AssignedOfficials.push(newResponsiblePerson);
+    logDb('UPDATE', 'Event', `${id}`);
     await Event.findByIdAndUpdate(id, event, { runValidators: true });
     return event;
 }

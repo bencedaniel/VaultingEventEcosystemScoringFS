@@ -1,5 +1,6 @@
-import { logger } from '../logger.js';
+import { logger, logOperation, logAuth, logError, logValidation, logWarn } from '../logger.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
+import { HTTP_STATUS, MESSAGES } from '../config/index.js';
 import {
     getUserById,
     updateUserProfile,
@@ -32,8 +33,8 @@ const getProfileEditForm = asyncHandler(async (req, res) => {
  */
 const updateProfile = asyncHandler(async (req, res) => {
     await updateUserProfile(req.params.id, req.body);
-    logger.db(`User ${req.user.username} updated their profile.`);
-    req.session.successMessage = 'Profile updated successfully!';
+    logOperation('USER_UPDATE', `User updated: ${req.user.username}`, req.user.username, HTTP_STATUS.OK);
+    req.session.successMessage = MESSAGES.SUCCESS.PROFILE_UPDATED;
     res.redirect(`/profile/${req.params.id}`);
 });
 

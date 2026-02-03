@@ -5,10 +5,12 @@ import { fileURLToPath } from 'url';
 import connectDB from './database/db.js';
 import expressLayouts from 'express-ejs-layouts';
 import session from 'express-session';
-import { logger } from './logger.js';
+import { logger, logInfo, logWarn, logError, logDebug } from './logger.js';
+import { HTTP_STATUS, MESSAGES } from './config/index.js';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
+import { JWT_CONFIG, COOKIE_CONFIG } from './config/index.js';
 import Event from './models/Event.js';
 import Alert from './models/Alert.js';
 import { StoreUserWithoutValidation } from './middleware/Verify.js';
@@ -31,10 +33,10 @@ export { MONGODB_URI, PORT, SECRET_ACCESS_TOKEN, SECURE_MODE, SECRET_API_KEY, TE
 
 // Validate environment variables
 if (!MONGODB_URI || !PORT || !SECRET_ACCESS_TOKEN || !SECRET_API_KEY) {
-  logger.error('Missing required environment variables');
+  logError('ENV_VALIDATION', 'Missing required environment variables');
   process.exit(1);
 } else {
-  logger.info('All required environment variables are set');
+  logInfo('All required environment variables are set');
 }
 
 connectDB(); // Database connection
@@ -71,10 +73,9 @@ app.use(session({
   resave: false,                // csak ha változott a session, mentsük
   saveUninitialized: false,     // üres session-t ne mentsünk
   cookie: { 
-    maxAge: 24 * 60 * 60 * 1000, // opcionális, pl. 1 nap
-    httpOnly: true,
-    secure: SECURE_MODE !== 'true',             // élesben: true
-    sameSite: 'lax'
+    ...COOKIE_CONFIG.OPTIONS,
+    maxAge: JWT_CONFIG.SESSION_MAX_AGE, // 1 nap
+    secure: SECURE_MODE !== 'true'             // élesben: true
   }
 }));
 
@@ -82,7 +83,7 @@ app.use(session({
 app.use((req, res, next) => {
   res.on('finish', () => {
     const userInfo = req.user ? req.user.username || req.user._id : 'Anonymous';
-    logger.info(
+    logInfo(
       `${req.method} ${req.originalUrl} - ${req.ip} - User-Agent: ${req.get('User-Agent')} - User: ${userInfo}`
     );
   });
@@ -99,7 +100,7 @@ app.use(async (req, res, next) => {
     res.locals.version = version;
     next();
   } catch (err) {
-    logger.error(`Error in global middleware: ${err}`);
+    logError('GLOBAL_MIDDLEWARE', `Error in global middleware: ${err}`);
     res.locals.alerts = [];
     res.locals.test = false;
     res.locals.parent = '/dashboard';
@@ -127,10 +128,10 @@ setupRoutes(app);
 // 404 Not Found handler
 app.use(StoreUserWithoutValidation);
 app.use((req, res, next) => {
-  res.status(404).render('errorpage', {
+  res.status(HTTP_STATUS.NOT_FOUND).render('errorpage', {
     rolePermissons: req.user?.role?.permissions,
-    errorCode: 404,
-    failMessage: req.session?.failMessage || 'Page not found',
+    errorCode: HTTP_STATUS.NOT_FOUND,
+    failMessage: req.session?.failMessage || MESSAGES.ERROR.PAGE_NOT_FOUND,
     user: req.user,
     successMessage: req.session?.successMessage
   });
@@ -138,10 +139,10 @@ app.use((req, res, next) => {
 
 // 404 handler - must be before error handler
 app.use((req, res, next) => {
-  req.session.failMessage = 'Page not found';
-  res.status(404).render('errorpage', {
+  req.session.failMessage = MESSAGES.ERROR.PAGE_NOT_FOUND;
+  res.status(HTTP_STATUS.NOT_FOUND).render('errorpage', {
     rolePermissons: req.user?.role?.permissions,
-    errorCode: 404,
+    errorCode: HTTP_STATUS.NOT_FOUND,
     failMessage: req.session.failMessage,
     user: req.user,
     successMessage: null
@@ -156,18 +157,18 @@ app.use(errorHandler);
 // ============================================
 
 app.listen(PORT, () => {
-  logger.info('---------------------------------------------');
-  logger.info('VaultingEventEcosystemScoring server startup');
-  logger.info(`Start time: ${new Date().toISOString()}`);
-  logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  logger.warn(`Version: ${version}`);
-  logger.info(`Port: ${PORT}`);
-  logger.info(`Node.js version: ${process.version}`);
-  logger.info(`MongoDB: ${MONGODB_URI ? 'connected' : 'NOT SET'}`);
-  logger.warn(`Secure mode: ${SECURE_MODE}`);
-  logger.warn(`Test DB: ${TESTDB === 'true' ? 'ACTIVE' : 'inactive'}`);
-  logger.info('---------------------------------------------');
-  logger.info(
+  logInfo('---------------------------------------------');
+  logInfo('VaultingEventEcosystemScoring server startup');
+  logInfo(`Start time: ${new Date().toISOString()}`);
+  logInfo(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  logWarn('VERSION', `Version: ${version}`);
+  logInfo(`Port: ${PORT}`);
+  logInfo(`Node.js version: ${process.version}`);
+  logInfo(`MongoDB: ${MONGODB_URI ? 'connected' : 'NOT SET'}`);
+  logWarn('SECURE_MODE', `Secure mode: ${SECURE_MODE}`);
+  logWarn('TEST_DB', `Test DB: ${TESTDB === 'true' ? 'ACTIVE' : 'inactive'}`);
+  logInfo('---------------------------------------------');
+  logInfo(
     `Server running at ${process.env.NODE_ENV === 'development'
       ? `http://localhost:${PORT}`
       : 'https://vaultx.bencedaniel.hu'}`

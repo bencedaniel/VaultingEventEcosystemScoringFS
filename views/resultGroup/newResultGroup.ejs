@@ -3,18 +3,13 @@
 
   <form action="/result/groups/new" method="POST">
     <div class="row justify-content-center g-3 m-auto">
-      
-
-
-
-
 
       <div class="col-md-12">
         <div class="form-floating position-relative searchable-dropdown">
           <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
           <input type="text" class="form-control shadow-none searchable-input"
                  placeholder="Search category"
-                 autocomplete="off" 
+                 autocomplete="off"
                  <% if (formData) { %>
                  <% categories.forEach(element => { %>
                     <% if (String(element._id) === String(formData?.category?._id)) { %>
@@ -29,7 +24,7 @@
                  value="<%= formData ? formData.category || '' : '' %>">
 
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
               <% categories.forEach(element => { %>
               <li class="list-group-item list-group-item-action searchable-item" val="<%= element._id %>" ><%= element.CategoryDispName %></li>
@@ -39,15 +34,12 @@
         </div>
       </div>
 
-
-
-      
       <div class="col-md-12">
         <div class="form-floating position-relative searchable-dropdown">
           <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
           <input type="text" class="form-control shadow-none searchable-input"
                  placeholder="Search calc template"
-                 autocomplete="off" 
+                 autocomplete="off"
                  <% if (formData) { %>
                  <% resultCalcs.forEach(element => { %>
                     <% if (String(element._id) === String(formData?.calcTemplate?._id)) { %>
@@ -62,7 +54,7 @@
                  value="<%= formData ? (formData?.calcTemplate?._id || formData?.calcTemplate || '') : '' %>">
 
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
 
               <% resultCalcs.forEach(element => { %>
@@ -73,14 +65,12 @@
         </div>
       </div>
 
-      
-      
       <div class="col-md-12">
         <div class="form-floating position-relative searchable-dropdown">
           <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
           <input type="text" class="form-control shadow-none searchable-input"
                  placeholder="Search round 1 first part program"
-                 autocomplete="off" 
+                 autocomplete="off"
                  <% if (formData) { %>
                  <% timetablePartsRound1.forEach(element => { %>
                     <% if (String(element._id) === String(formData?.round1First?._id)) { %>
@@ -94,7 +84,7 @@
           <input type="hidden" class="searchable-hidden" name="round1First"
                  value="<%= formData ? (formData?.round1First?._id || formData?.round1First || '') : '' %>">
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
               <li class="list-group-item list-group-item-action searchable-item" val="" >Empty</li>
               <% timetablePartsRound1.forEach(element => { %>
@@ -110,7 +100,7 @@
           <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
           <input type="text" class="form-control shadow-none searchable-input"
                  placeholder="Search round 1 second part program"
-                 autocomplete="off" 
+                 autocomplete="off"
                  <% if (formData) { %>
                  <% timetablePartsRound1.forEach(element => { %>
                     <% if (String(element._id) === String(formData?.round1Second?._id)) { %>
@@ -124,7 +114,7 @@
           <input type="hidden" class="searchable-hidden" name="round1Second"
                  value="<%= formData ? (formData?.round1Second?._id || formData?.round1Second || '') : '' %>">
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
               <li class="list-group-item list-group-item-action searchable-item" val="" >Empty</li>
 
@@ -136,13 +126,12 @@
         </div>
       </div>
 
-
        <div class="col-md-12">
         <div class="form-floating position-relative searchable-dropdown">
           <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
           <input type="text" class="form-control shadow-none searchable-input"
                  placeholder="Search round 2 First part program"
-                 autocomplete="off" 
+                 autocomplete="off"
                  <% if (formData) { %>
                  <% timetablePartsRound2.forEach(element => { %>
                     <% if (String(element._id) === String(formData?.round2First?._id)) { %>
@@ -156,7 +145,7 @@
           <input type="hidden" class="searchable-hidden" name="round2First"
                  value="<%= formData ? (formData?.round2First?._id || formData?.round2First || '') : '' %>">
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
               <li class="list-group-item list-group-item-action searchable-item" val="" >Empty</li>
               <% timetablePartsRound2.forEach(element => { %>
@@ -166,18 +155,6 @@
           </ul>
         </div>
       </div>
-
-
-
-
-
-         
-
-          
-      
-
-
-
 
       <div class="col-md-12 mt-3">
         <button type="submit" class="btn btn-primary w-100">Create</button>

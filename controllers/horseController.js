@@ -1,5 +1,6 @@
-import { logger } from '../logger.js';
+import { logger, logOperation, logAuth, logError, logValidation, logWarn } from '../logger.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
+import { HTTP_STATUS, MESSAGES } from '../config/index.js';
 import {
   getAllHorses,
   getHorseById,
@@ -235,8 +236,8 @@ const createNew = asyncHandler(async (req, res) => {
   delete req.body.HeadNr;
   delete req.body.BoxNr;
   const newHorse = await createHorse(req.body, headNr, boxNr, res.locals.selectedEvent._id);
-  logger.db(`Horse ${newHorse.Horsename} created by user ${req.user.username}.`);
-  req.session.successMessage = 'Horse created successfully!';
+  logOperation('HORSE_CREATE', `Horse created: ${newHorse.Horsename}`, req.user.username, HTTP_STATUS.CREATED);
+  req.session.successMessage = MESSAGES.SUCCESS.HORSE_CREATED;
   res.redirect('/horse/dashboard');
 });
 
@@ -300,15 +301,15 @@ const editPost = asyncHandler(async (req, res) => {
   delete req.body.HeadNr;
 
   const horse = await updateHorse(req.params.id, req.body, headNr, boxNr, res.locals.selectedEvent._id);
-  logger.db(`Horse ${horse.Horsename} updated by user ${req.user.username}.`);
-  req.session.successMessage = 'Horse updated successfully!';
+  logOperation('HORSE_UPDATE', `Horse updated: ${horse.Horsename}`, req.user.username, HTTP_STATUS.OK);
+  req.session.successMessage = MESSAGES.SUCCESS.HORSE_UPDATED;
   res.redirect('/horse/dashboard');
 });
 
 const deleteNote = asyncHandler(async (req, res) => {
   const horse = await deleteHorseNote(req.params.id, req.body.note);
-  logger.db(`Horse ${horse.name} note deleted by user ${req.user.username}.`);
-  res.status(200).json({ message: 'Note deleted successfully' });
+  logOperation('HORSE_UPDATE', `Horse updated: ${horse.name}`, req.user.username, HTTP_STATUS.OK);
+  res.status(HTTP_STATUS.OK).json({ message: MESSAGES.SUCCESS.NOTE_DELETED });
 });
 
 const newNotePost = asyncHandler(async (req, res) => {
@@ -318,9 +319,9 @@ const newNotePost = asyncHandler(async (req, res) => {
     eventID: res.locals.selectedEvent._id
   };
   const horse = await addHorseNote(req.params.id, noteData);
-  logger.db(`Horse ${horse.HorseName} note created by user ${req.user.username}.`);
+  logOperation('HORSE_UPDATE', `Horse note created: ${horse.HorseName}`, req.user.username, HTTP_STATUS.CREATED);
 
-  res.status(200).json({ message: 'Note added successfully!' });
+  res.status(HTTP_STATUS.OK).json({ message: MESSAGES.SUCCESS.NOTE_ADDED });
 });
 
 const numbersGet = asyncHandler(async (req, res) => {
@@ -343,9 +344,8 @@ const numbersGet = asyncHandler(async (req, res) => {
 
 const updateNums = asyncHandler(async (req, res) => {
   const horse = await updateHorseNumbers(req.params.id, req.body.headNumber, req.body.boxNumber, res.locals.selectedEvent._id);
-  logger.db(`Horse ${horse.HorseName} numbers updated by user ${req.user.username}.`);
-
-  res.status(200).json({ message: 'Numbers updated successfully!' });
+  logOperation('HORSE_UPDATE', `Horse updated: ${horse.HorseName}`, req.user.username, HTTP_STATUS.OK);
+  res.status(HTTP_STATUS.OK).json({ message: MESSAGES.SUCCESS.NUMBERS_UPDATED });
 });
 
 export default {

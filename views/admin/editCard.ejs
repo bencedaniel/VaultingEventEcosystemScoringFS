@@ -4,7 +4,7 @@
 
   <form action="/admin/editCard/<%= formData?._id %>" method="POST">
     <div class="row justify-content-center g-3 m-auto">
-      
+
                   <!-- Status -->
       <div class="col-md-12">
         <div class="form-floating position-relative searchable-dropdown">
@@ -20,7 +20,7 @@
                  value="<%= formData ? formData.dashtype : '' %>">
 
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
 
               <li class="list-group-item list-group-item-action searchable-item" val="user">User</li>
@@ -37,10 +37,7 @@
         </div>
       </div>
 
-
-
-
-      <% 
+      <%
   const styleDisplayMap = {
     primary: 'Primary',
     secondary: 'Secondary',
@@ -66,7 +63,7 @@
                  value="<%= formData ? formData.style : '' %>">
 
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
 
             <li class="list-group-item list-group-item-action searchable-item" val="primary">Primary</li>
@@ -79,15 +76,13 @@
           </ul>
         </div>
       </div>
-     
 
-     
       <div class="col-md-12">
         <div class="form-floating position-relative searchable-dropdown">
           <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
           <input type="text" class="form-control shadow-none searchable-input"
                  placeholder="Search permission"
-                 autocomplete="off" 
+                 autocomplete="off"
                  <% if (formData) { %>
                  <% permissionList.forEach(element => { %>
                     <% if (String(element.name) === String(formData.perm)) { %>
@@ -103,7 +98,7 @@
                  value="<%= formData ? formData.perm : '' %>">
 
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
               <% permissionList.forEach(element => { %>
               <li class="list-group-item list-group-item-action searchable-item" val="<%= element.name %>" ><%= element.displayName %></li>
@@ -112,8 +107,6 @@
           </ul>
         </div>
       </div>
-
-
 
       <!-- Title -->
       <div class="col-md-12">
@@ -146,8 +139,6 @@
         <button type="submit" class="btn btn-primary mt-3 w-50 m-1">Edit Card</button>
       </div>
 
-
-
               <div class="modal fade" id="CardViewModal" tabindex="-1" aria-labelledby="CardViewModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
           <div class="modal-content border-0 shadow">
@@ -156,7 +147,7 @@
               <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
             </div>
             <div id="CardDiv" class="modal-body d-flex justify-content-center text-center g-4">
-              
+
              </div>
 
           <div class="modal-footer">
@@ -165,10 +156,6 @@
         </div>
       </div>
     </div>
-
-
-
-
 
     </div>
   </form>
@@ -214,7 +201,7 @@ function addLinkInput(href = '', label = '') {
         addLinkInput("<%= formData.href[index] %>", "<%= formData.label[index] %>");
 
 <% } %>
-  
+
 <% } %>
 </script>
 
@@ -239,8 +226,6 @@ function addLinkInput(href = '', label = '') {
 `);
       });
 
-
-
       cardDiv.innerHTML = ` <div class="col-md-4 w-100" style="max-width: 310px;">
                 <div class="p-4 bg-${style} bg-opacity-10 border border-1 border-black border-opacity-10 rounded h-100 d-flex flex-column justify-content-between">
                   <h5 id="CardTitle">${title}</h5>
@@ -248,13 +233,11 @@ function addLinkInput(href = '', label = '') {
                   <div id="ButtonDiv">
                     ${buttonsHtml.join('\n')}
                   </div>
-                  
+
                 </div>
               </div>
 
-
             </div>
-
 
       `;
     modal.show();

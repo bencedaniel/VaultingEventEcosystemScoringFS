@@ -22,7 +22,6 @@
         </div>
       </div>
 
-
       <!-- Gender -->
       <div class="col-md-12">
         <div class="form-floating position-relative searchable-dropdown">
@@ -37,7 +36,7 @@
                  value="<%= formData ? formData.Gender : '' %>">
 
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
 
               <li class="list-group-item list-group-item-action searchable-item" >Male</li>
@@ -61,7 +60,7 @@
                  value="<%= formData ? formData.Nationality : '' %>">
 
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
 
             <% countries.forEach(country => { %>
@@ -71,8 +70,6 @@
         </div>
       </div>
 
-
- 
       <!-- Submit Button -->
       <div class="col-md-12 mt-3">
         <button type="submit" class="btn btn-primary w-100">Edit Lunger</button>
@@ -81,5 +78,3 @@
     </div>
   </form>
 </div>
-
-

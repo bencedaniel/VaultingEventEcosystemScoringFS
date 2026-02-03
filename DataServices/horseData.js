@@ -1,6 +1,7 @@
 import Horse from '../models/Horse.js';
 import Permissions from '../models/Permissions.js';
 import Entries from '../models/Entries.js';
+import { logDb } from '../logger.js';
 
 /**
  * Get all horses sorted by name
@@ -49,6 +50,7 @@ export async function createHorse(data, headNr, boxNr, eventId) {
         eventID: eventId
     });
     await newHorse.save();
+    logDb('CREATE', 'Horse', `${newHorse._id}`);
     return newHorse;
 }
 
@@ -93,6 +95,7 @@ export async function updateHorse(id, data, headNr, boxNr, eventId) {
         });
     }
 
+    logDb('UPDATE', 'Horse', `${id}`);
     await horseToUpdate.save();
     return horse;
 }
@@ -106,6 +109,7 @@ export async function deleteHorseNote(id, noteText) {
         throw new Error('Horse not found');
     }
     horse.Notes = horse.Notes.filter(note => note.note !== noteText);
+    logDb('UPDATE', 'Horse', `${id}`);
     await Horse.findByIdAndUpdate(id, horse, { runValidators: true });
     return horse;
 }
@@ -124,8 +128,10 @@ export async function addHorseNote(id, noteData) {
         user: noteData.user,
         eventID: noteData.eventID
     };
+    logDb('UPDATE', 'Horse', `${id}`);
     horse.Notes.push(newNote);
     await Horse.findByIdAndUpdate(id, horse, { runValidators: true });
+    logDb('UPDATE', 'Horse', `${id}`);
     return horse;
 }
 
@@ -169,6 +175,7 @@ export async function updateHorseNumbers(id, headNumber, boxNumber, eventId) {
     }
 
     await Horse.findByIdAndUpdate(id, horse, { runValidators: true });
+    logDb('UPDATE', 'Horse', `${id}`);
     return horse;
 }
 

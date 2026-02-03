@@ -1,6 +1,7 @@
 import resultGenerator from '../models/resultGenerator.js';
 import Category from '../models/Category.js';
 import calcTemplate from '../models/calcTemplate.js';
+import { logDb } from '../logger.js';
 
 /**
  * Retrieves all result generators with populated category and calculation schema template
@@ -43,7 +44,9 @@ export async function createGenerator(data) {
     }
 
     const newGenerator = new resultGenerator(data);
-    return await newGenerator.save();
+    await newGenerator.save();
+    logDb('CREATE', 'ResultGenerator', `${newGenerator._id}`);
+    return newGenerator;
 }
 
 /**
@@ -59,8 +62,9 @@ export async function updateGenerator(id, data) {
     if (existingGenerator) {
         throw new Error("A result generator for the selected category already exists.");
     }
-
-    return await resultGenerator.findByIdAndUpdate(id, data, { new: true });
+    const updated = await resultGenerator.findByIdAndUpdate(id, data, { new: true });
+    logDb('UPDATE', 'ResultGenerator', `${id}`);
+    return updated;
 }
 
 /**
@@ -76,7 +80,9 @@ export async function updateGeneratorStatus(id, status) {
         throw new Error("Result generator not found.");
     }
     generator.active = status;
-    return await generator.save();
+    await generator.save();
+    logDb('UPDATE', 'ResultGenerator', `${id}`);
+    return generator;
 }
 
 /**
@@ -85,5 +91,6 @@ export async function updateGeneratorStatus(id, status) {
  * @returns {Promise<Object>} Deleted generator document
  */
 export async function deleteGenerator(id) {
-    return await resultGenerator.findByIdAndDelete(id);
+    await resultGenerator.findByIdAndDelete(id);
+    logDb('DELETE', 'ResultGenerator', `${id}`);
 }

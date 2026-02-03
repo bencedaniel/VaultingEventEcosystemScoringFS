@@ -15,7 +15,7 @@
         <h6 class="text-center px-3 m-1 border-1 border rounded">Judge name: <%= judgeName %></h6>
         </div>
     </li>
-    
+
   </ul>
 <div class="d-flex justify-content-start align-items-center w-100 shadow-sm p-1 mb-4 bg-secondary bg-opacity-25 rounded border border-1 border-black border-opacity-10 flex-grow-1">
     <div class="w-50 d-flex m-1 ">
@@ -28,14 +28,12 @@
             </button>
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="dropdownMenu">
 
-
             </div>
 
         </div>
   </div>
 
   </div>
-
 
 <table class="table table-striped table-hover table-bordered w-100 m-0" id="TableBody">
         <thead class="table-primary">
@@ -63,15 +61,12 @@
 
         <% const scoreSheetSubmittedForEntry = ScoreSheetsSubmitted.some(sheet => sheet.EntryId.toString() === order.Entry._id.toString()); %>
 
-        
         <td class="text-center">
             <button type="button" class="btn btn-info btn-sm shadow-none m-1"onclick="location.href='/scoring/newscoresheet/<%= order.Entry._id%>/<%= timetablePart._id%>'" <%= judgeName === "Not authorized judge" || scoreSheetSubmittedForEntry ? 'disabled': '' %> ><i class="bi bi-list"></i>Add Score sheet</button>
       </tr>
             <% }); %>
         </tbody>
     </table>
-
-
 
 <div class="modal fade" id="saveModal" tabindex="-1" role="dialog" aria-labelledby="saveModalLabel"
     aria-hidden="true" style="backdrop-filter: blur(5px);">
@@ -90,9 +85,7 @@
             </div>
         </div>
     </div>
-</div>  
-
-
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -116,7 +109,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-
 
     let IdToSave = null;
     const saveModal = document.getElementById('saveModal');

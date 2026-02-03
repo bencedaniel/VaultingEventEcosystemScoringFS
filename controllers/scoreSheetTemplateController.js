@@ -1,5 +1,6 @@
-import { logger } from '../logger.js';
+import { logger, logOperation, logAuth, logError, logValidation, logWarn, logDebug } from '../logger.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
+import { HTTP_STATUS, MESSAGES } from '../config/index.js';
 import { 
     getAllScoreSheetTemplates, 
     getScoreSheetTemplateById, 
@@ -17,58 +18,46 @@ import {
  * @route GET /scoresheets/dashboard
  * @desc Show score sheet templates dashboard
  */
-async function getScoreSheetTemplatesDashboard(req, res) {
-    try {
-        const sheets = await getAllScoreSheetTemplates();
+const getScoreSheetTemplatesDashboard = asyncHandler(async function (req, res) {
+    const sheets = await getAllScoreSheetTemplates();
 
-        res.render('ssTemp/dashboard', {
-            ssTemps: sheets,
-            rolePermissons: req.user?.role?.permissions,
-            failMessage: req.session.failMessage,
-            successMessage: req.session.successMessage,
-            user: req.user
-        });
-        req.session.failMessage = null;
-        req.session.successMessage = null;
-    } catch (err) {
-        logger.error(err + ' User: ' + req.user.username);
-        req.session.failMessage = 'Server error';
-        return res.redirect('/admin/dashboard');
-    }
-};
+    res.render('ssTemp/dashboard', {
+        ssTemps: sheets,
+        rolePermissons: req.user?.role?.permissions,
+        failMessage: req.session.failMessage,
+        successMessage: req.session.successMessage,
+        user: req.user
+    });
+    req.session.failMessage = null;
+    req.session.successMessage = null;
+});
 
 /**
  * @route GET /scoresheets/create
  * @desc Show create score sheet template form
  */
-async function getCreateScoreSheetTemplateForm(req, res) {
-    try {
-        const categorys = await getAllCategories();
+const getCreateScoreSheetTemplateForm = asyncHandler(async function (req, res) {
+    const categorys = await getAllCategories();
 
-        res.render('ssTemp/newScoreSheet', {
-            categorys: categorys,
-            formData: req.session.formData,
-            rolePermissons: req.user?.role?.permissions,
-            failMessage: req.session.failMessage,
-            successMessage: req.session.successMessage,
-            user: req.user
-        });
-        req.session.failMessage = null;
-        req.session.successMessage = null;
-    } catch (err) {
-        logger.error(err + ' User: ' + req.user.username);
-        req.session.failMessage = 'Server error';
-        return res.redirect('/scoresheets/dashboard');
-    }
-};
+    res.render('ssTemp/newScoreSheet', {
+        categorys: categorys,
+        formData: req.session.formData,
+        rolePermissons: req.user?.role?.permissions,
+        failMessage: req.session.failMessage,
+        successMessage: req.session.successMessage,
+        user: req.user
+    });
+    req.session.failMessage = null;
+    req.session.successMessage = null;
+});
 
 /**
  * @route POST /scoresheets/create
  * @desc Create new score sheet template
  */
-async function createNewScoreSheetTemplate(req, res) {
+const createNewScoreSheetTemplate = async function (req, res) {
     const forerr = req.body;
-    logger.debug('POST /create body: ' + JSON.stringify(req.body));
+    logDebug('POST /create body', JSON.stringify(req.body));
     try {
         const outputFieldList = parseJSONArrayField(req.body.outputFieldList, 'outputFieldList');
         const inputFieldList = parseJSONArrayField(req.body.inputFieldList, 'inputFieldList');
@@ -87,10 +76,10 @@ async function createNewScoreSheetTemplate(req, res) {
         };
 
         const sheet = await createScoreSheetTemplate(payload);
-        req.session.successMessage = 'Template created successfully!';
+        req.session.successMessage = MESSAGES.SUCCESS.SCORE_SHEET_TEMPLATE_CREATED;
         return res.redirect('/scoresheets/dashboard');
     } catch (err) {
-        logger.error(err + ' User: ' + req.user.username);
+        logError('SHEET_CREATION_ERROR', err?.message || String(err), `User: ${req.user.username}`);
         const errorMessage = err?.code === 11000
             ? 'Duplicate template combination (TestType, typeOfScores, numberOfJudges, CategoryId).'
             : (err?.message || 'Server error');
@@ -110,46 +99,37 @@ async function createNewScoreSheetTemplate(req, res) {
  * @route GET /scoresheets/edit/:id
  * @desc Show edit score sheet template form
  */
-async function getEditScoreSheetTemplateForm(req, res) {
-    try {
-        const sheet = await getScoreSheetTemplateById(req.params.id);
-        if (!sheet) {
-            req.session.failMessage = 'Template not found';
-            return res.redirect('/scoresheets/dashboard');
-        }
-
-        const categorys = await getAllCategories();
-        res.render('ssTemp/editScoreSheet', {
-            categorys: categorys,
-            formData: sheet,
-            rolePermissons: req.user?.role?.permissions,
-            failMessage: req.session.failMessage,
-            successMessage: req.session.successMessage,
-            user: req.user
-        });
-        req.session.failMessage = null;
-        req.session.successMessage = null;
-    } catch (err) {
-        logger.error(err + ' User: ' + req.user.username);
-        req.session.failMessage = 'Server error';
+const getEditScoreSheetTemplateForm = asyncHandler(async function (req, res) {
+    const sheet = await getScoreSheetTemplateById(req.params.id);
+    if (!sheet) {
+        req.session.failMessage = MESSAGES.ERROR.TEMPLATE_NOT_FOUND;
         return res.redirect('/scoresheets/dashboard');
     }
-};
+
+    const categorys = await getAllCategories();
+    res.render('ssTemp/editScoreSheet', {
+        categorys: categorys,
+        formData: sheet,
+        rolePermissons: req.user?.role?.permissions,
+        failMessage: req.session.failMessage,
+        successMessage: req.session.successMessage,
+        user: req.user
+    });
+    req.session.failMessage = null;
+    req.session.successMessage = null;
+});
 
 /**
  * @route POST /scoresheets/edit/:id
  * @desc Update score sheet template
  */
-async function updateScoreSheetTemplateById(req, res) {
-    const forerr = { ...req.body, _id: req.params.id, CategoryId: req.body.Category };
-
-    try {
+const updateScoreSheetTemplateById = asyncHandler(async function (req, res) {
         const categories = await getCategoriesByIds(req.body.Category);
         validateCategoriesAgegroup(categories);
 
         const old = await getScoreSheetTemplateById(req.params.id);
         if (!old) {
-            req.session.failMessage = 'Template not found';
+            req.session.failMessage = MESSAGES.ERROR.TEMPLATE_NOT_FOUND;
             return res.redirect('/scoresheets/dashboard');
         }
 
@@ -175,37 +155,20 @@ async function updateScoreSheetTemplateById(req, res) {
             await deleteImageFile(old.bgImage);
         }
 
-        req.session.successMessage = 'Template updated successfully!';
+        req.session.successMessage = MESSAGES.SUCCESS.SCORE_SHEET_TEMPLATE_UPDATED;
         return res.redirect('/scoresheets/dashboard');
-    } catch (err) {
-        logger.error(err + ' User: ' + req.user.username);
-        const errorMessage = err?.code === 11000 ? 'Duplicate template combination.' : (err?.message || 'Server error');
-        const categorys = await getAllCategories();
-        return res.render('ssTemp/editScoreSheet', {
-            categorys: categorys,
-            formData: forerr,
-            rolePermissons: req.user?.role?.permissions,
-            failMessage: errorMessage,
-            successMessage: null,
-            user: req.user
-        });
-    }
-};
+    
+} );
 
 /**
  * @route DELETE /scoresheets/delete/:id
  * @desc Delete score sheet template
  */
-async function deleteScoreSheetTemplateById(req, res) {
-    try {
-        const sheet = await deleteScoreSheetTemplate(req.params.id);
-        if (!sheet) return res.status(404).json({ message: 'Template not found' });
-        return res.status(200).json({ message: 'Template deleted successfully' });
-    } catch (err) {
-        logger.error(err + ' User: ' + req.user.username);
-        return res.status(500).json({ message: 'Server error' });
-    }
-};
+const deleteScoreSheetTemplateById = asyncHandler(async function (req, res) {
+    const sheet = await deleteScoreSheetTemplate(req.params.id);
+    if (!sheet) return res.status(HTTP_STATUS.NOT_FOUND).json({ message: MESSAGES.ERROR.TEMPLATE_NOT_FOUND });
+    return res.status(HTTP_STATUS.OK).json({ message: MESSAGES.SUCCESS.SCORE_SHEET_TEMPLATE_UPDATED });
+});
 
 export default {
     getScoreSheetTemplatesDashboard,

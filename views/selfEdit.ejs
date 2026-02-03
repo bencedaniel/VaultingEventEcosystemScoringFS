@@ -1,8 +1,6 @@
 <div class="container my-4 border border-black border-1 border-opacity-10 rounded p-3  shadow bg-primary bg-opacity-10 " style="max-width: 80vh;">
 
-
 <h1 class="text-center mb-3">Edit profile</h1>
-
 
 <form action="/profile/<%= formID ? formID : 'noID' %>" method="POST">
     <div class="row justify-content-center g-3 m-auto">
@@ -45,14 +43,12 @@
                     autocomplete="off" value="<%= formData ? formData.feiid : "" %>">
                 <label for="feiid" class="form-label">FEI ID</label>
             </div>
-            
+
                             <button type="submit" class="btn btn-primary mt-3 w-100">Update</button>
 
         </div>
 
         </div>
-
-
 
 </form>
 <script>

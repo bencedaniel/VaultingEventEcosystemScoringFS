@@ -3,7 +3,7 @@
 
   <form action="/entry/new" method="POST">
     <div class="row justify-content-center g-3 m-auto">
-      
+
       <!-- Selected Event -->
       <div class="col-md-12 d-none">
         <div class="form-floating">
@@ -17,7 +17,7 @@
           <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
           <input type="text" class="form-control shadow-none searchable-input"
                  placeholder="Search Horse"
-                 autocomplete="off" 
+                 autocomplete="off"
                  <% if (formData) { %>
                  <% horses.forEach(element => { %>
                     <% if (String(element._id) === String(formData.horse._id)) { %>
@@ -33,7 +33,7 @@
                  value="<%= formData ? formData.horse._id : '' %>">
 
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
               <% horses.forEach(element => { %>
               <li class="list-group-item list-group-item-action searchable-item" val="<%= element._id %>" ><%= element.Horsename %></li>
@@ -48,7 +48,7 @@
           <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
           <input type="text" class="form-control shadow-none searchable-input"
                  placeholder="Search Lunger"
-                 autocomplete="off" 
+                 autocomplete="off"
                  <% if (formData) { %>
                  <% lungers.forEach(element => { %>
                     <% if (String(element._id) === String(formData.lunger._id)) { %>
@@ -64,7 +64,7 @@
                  value="<%= formData ? formData.lunger._id : '' %>">
 
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
               <% lungers.forEach(element => { %>
               <li class="list-group-item list-group-item-action searchable-item" val="<%= element._id %>" ><%= element.Name %></li>
@@ -77,9 +77,9 @@
         <div class="col-md-12">
         <div class="form-floating position-relative searchable-dropdown">
           <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
-          <input type="text" class="form-control shadow-none searchable-input" 
+          <input type="text" class="form-control shadow-none searchable-input"
                  placeholder="Search Category"
-                 autocomplete="off" 
+                 autocomplete="off"
                  <% if (formData) { %>
                  <% categorys.forEach(element => { %>
                     <% if (String(element._id) === String(formData.category._id)) { %>
@@ -95,7 +95,7 @@
                  value="<%= formData ? formData.category._id : '' %>">
 
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
               <% categorys.forEach(element => { %>
               <li class="list-group-item list-group-item-action searchable-item" val="<%= element._id %>" ><%= element.CategoryDispName %></li>
@@ -105,7 +105,7 @@
         </div>
       </div>
 
-      <% 
+      <%
   const statusDisplayMap = {
     registered: 'Registered',
     withdrawn: 'Withdrawn',
@@ -128,7 +128,7 @@
                  value="<%= formData ? formData.status : '' %>">
 
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
 
               <li class="list-group-item list-group-item-action searchable-item" val="registered" >Registered</li>
@@ -147,11 +147,10 @@
         </div>
       </div>
 
-      
       <!-- Vaulters felirat mindig látszik -->
       <div class="col-md-12 mt-5">
         <div class="position-relative border border-1 border-secondary rounded border-opacity-25 pt-3">
-          <div 
+          <div
             class="position-absolute border-secondary border-opacity-25 px-3"
             style="top: -25px; left: 24px; font-weight: bold; border-radius: 0.35rem 0.35rem 0 0; border: 1px solid #6c757d; border-bottom: none;">
             Vaulters
@@ -201,16 +200,14 @@
       options += `<li class="list-group-item list-group-item-action searchable-item" val="${element._id}" >${element.Name}</li>`;
     });
 
-      
     return `
-    
-    
+
       <div class="form-floating mb-2">
         <div class="form-floating position-relative searchable-dropdown">
           <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
           <input type="text" class="form-control shadow-none searchable-input"
                  placeholder="Search Lunger"
-                 autocomplete="off" 
+                 autocomplete="off"
                       value="${selected.name}">
           <label class="form-label">Select Vaulter ${index + 1}</label>
           <!-- Hidden input for form submission -->
@@ -218,7 +215,7 @@
                  value="${selected.id}">
 
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
               ${options}
           </ul>
@@ -227,7 +224,6 @@
 
       `;
   }
-  
 
   function renderVaulterInputs(count, formVaulters) {
     const vaulterContainer = document.getElementById('vaulterContainer');
@@ -288,7 +284,7 @@
          list = wrapper.querySelector('.searchable-list');
          items = list ? list.querySelectorAll('.searchable-item') : null;
          icon = wrapper.querySelector('.bi-chevron-down');
-        
+
         if (input && hidden && list && items && typeof listCreator === 'function') {
           listCreator(input, hidden, list, items, icon);
         }

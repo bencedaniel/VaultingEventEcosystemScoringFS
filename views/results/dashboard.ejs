@@ -4,13 +4,10 @@
     <li class="list-group-item border-0">
         <h3 class="text-center">Result Group Management</h3>
     </li>
-    
+
   </ul>
 
-
-
 <table class="table table-bordered w-100 m-0" id="TableBody">
-
 
         <tbody class="align-middle text-center"  >
 
@@ -21,8 +18,8 @@
             <table class="table table-bordered table-hover m-0 p-0 w-100">
                 <tbody class="align-middle text-center">
             <tr>
-                <td colspan="3"><a  class="btn btn-outline-primary" href="/result/detailed/<%= resultGroup._id %>/total">Category: <%= resultGroup.category.CategoryDispName %></a></td> 
-               
+                <td colspan="3"><a  class="btn btn-outline-primary" href="/result/detailed/<%= resultGroup._id %>/total">Category: <%= resultGroup.category.CategoryDispName %></a></td>
+
             </tr>
             <tr>
                 <td colspan="2" ><a class="btn btn-outline-secondary" href="/result/detailed/<%= resultGroup._id %>/R1"> Round 1 -- <%= Number(resultGroup.calcTemplate.round1FirstP) + Number(resultGroup.calcTemplate.round1SecondP) %>%</a></td>
@@ -45,9 +42,6 @@
                                         <tr><td colspan="4" class="bg-primary bg-opacity-10" height="50px"></td></tr>
 
             <% }) %>
-            
+
         </tbody>
     </table>
-
-
-

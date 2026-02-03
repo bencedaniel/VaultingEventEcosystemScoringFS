@@ -51,7 +51,7 @@
     <title>VaultX</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    
+
     <link rel="icon" type="image/x-icon" href="/static/VaultXLogo.png">
 
 </head>
@@ -60,7 +60,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container">
     <!-- Logo -->
-     
+
     <a class="navbar-brand" href="/">
       <img src="/static/VaultXLogo.png" alt="VaultX Logo" class="img-fluid" style="max-height: 80px;">
     </a>
@@ -74,10 +74,9 @@
 <div class="collapse navbar-collapse  " id="navbarNav">
   <ul class="navbar-nav ms-auto bg-secondary rounded bg-opacity-25  mt-2">
 
-
-        <% 
+        <%
           // Ha nincs definiálva, legyen üres tömb
-          const permissons = typeof rolePermissons !== "undefined" ? rolePermissons : []; 
+          const permissons = typeof rolePermissons !== "undefined" ? rolePermissons : [];
         %>
 
         <% if (Array.isArray(permissons) && permissons.includes("admin_dashboard")) { %>
@@ -96,9 +95,8 @@
 
         <% if (Array.isArray(permissons) && permissons.length !== 0) { %>
 
-
           <li class="nav-item">
-          <a href="/profile/<%= typeof user !== 'undefined' ? user._id : '' %>" 
+          <a href="/profile/<%= typeof user !== 'undefined' ? user._id : '' %>"
             class="nav-link btn btn-secondary m-1 px-3 d-flex align-items-center">
             <i class="bi bi-person fs-5 pe-2"></i>
             <%= typeof user !== 'undefined' ? user.username : '' %>
@@ -117,7 +115,7 @@
                </a>
           </li>
         <% } %>
-        <% 
+        <%
           const safeFormData = (typeof formData !== 'undefined' && formData) ? formData : null;
           const pid = safeFormData && safeFormData.parent ? String(safeFormData.parent) : '';
           const dtId = safeFormData && safeFormData.dailytimetable ? String(safeFormData.dailytimetable._id || safeFormData.dailytimetable) : '';
@@ -140,12 +138,10 @@
           </li>
         <% } %>
 
-
       </ul>
     </div>
   </div>
 </nav>
-  
 
 <main class="container mb-5 my-5"  style="padding-bottom: 80px;">
   <div id="toastContainer"></div>
@@ -177,7 +173,6 @@
 
     <%- body %>
 
-
 <!-- Alert modal (KÜLÖN, nem beágyazva) -->
 <div class="modal fade" id="AlertViewModal" tabindex="-1" aria-labelledby="AlertViewModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
@@ -189,7 +184,7 @@
       <div class="modal-body">
           <% let numberofalerts=0 %>
           <% alerts.forEach(element => { %>
-          
+
           <% if (element.active && Array.isArray(permissons) && permissons.includes(element.permission)) { %>
 
                 <div class="w-100 bg-<%=element.style%> bg-opacity-25 border border-<%=element.style%> rounded p-3 mt-2 mb-2">
@@ -197,14 +192,14 @@
                     <hr>
                     <p><%= element.description %></p>
                     <% numberofalerts++ %>
-                </div>  
+                </div>
           <% } %>
           <% }) %>
           <% if (numberofalerts == 0) { %>
             <div class="w-100 bg-success bg-opacity-25 border border-success rounded p-3 mt-2 mb-2">
                     <h5>No alerts found</h5>
-                </div>  
-           
+                </div>
+
           <% } %>
 
       </div>
@@ -215,8 +210,6 @@
   </div>
 </div>
 
-
-
 <!-- Event modal (teljesen lezárva) -->
 <div class="modal fade" id="EventViewModal" tabindex="-1" aria-labelledby="EventViewModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
@@ -226,7 +219,7 @@
         <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        
+
         <div class="mb-4 border rounded p-3 bg-primary bg-opacity-10 border-primary">
           <h5 class="h5 text-center border-bottom pb-2 border-primary">Basic informations</h5>
         <p class="mt-3"><strong>Event Name:</strong> <%= selectedEvent?.EventName || 'N/A' %> </p>
@@ -250,7 +243,6 @@
 </div>
         <% }) %>
 
-
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -258,9 +250,6 @@
     </div>
   </div>
 </div>
-
-
-
 
 </main>
 
@@ -281,19 +270,17 @@
   </div>
   <% } %>
 
-
     </footer>
 
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>   
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
     <script src="/static/main.js"></script>
 
 </body>
- 
-<script>
 
+<script>
 
 <% if (test) { %>
 
@@ -305,10 +292,7 @@
         testDbIndicator.style.display = 'none';
       }
 
-
-
   }
-
 
   <% } %>
 
@@ -319,7 +303,6 @@
   }
     const alertmodal = new bootstrap.Modal(document.getElementById('AlertViewModal'));
 
-
     function getCookie(name) {
     const cookie = document.cookie
         .split("; ")
@@ -328,7 +311,6 @@
     return cookie ? cookie.split("=")[1] : null;
 }
     const alertCounter = <%= numberofalerts %>;
-
 
   if(alertCounter != 0){
     let alertList = [];
@@ -340,7 +322,6 @@
 
     <% }) %>
 
-
     if (alertList.length > 0) {
       const minimum = Math.min(...alertList)
 
@@ -349,7 +330,7 @@
           const value= minimum;
           const time = value * 60;
           document.cookie = `Reappear=${value}; max-age=${time}; path=/`;
-          
+
       }else{
         cookiedata = parseInt(getCookie("Reappear"))
         if(minimum<cookiedata){
@@ -363,15 +344,13 @@
     }
   }
     const alertCounterSpan = document.getElementById("alertCounter")
-  
+
     if(alertCounter != 0){
               alertCounterSpan.innerHTML = alertCounter
               alertCounterSpan.classList.remove("d-none");
 
     }
 
-
-    
     function openAlertBox(){
       alertmodal.show()
     }
@@ -392,7 +371,4 @@ window.addEventListener("popstate", function () {
 });
 </script>
 
-
 </html>
-
-

@@ -33,7 +33,7 @@
             <h2 class="h5 mb-2 text-center">Judges</h2>
             <p class="text-center mb-0">Add all judges.</p>
             <div class="input-group mt-2 mb-2" id="JudgeInputs">
-               
+
             </div>
             <button class="btn btn-success mt-2" type="button" id="addJudgeBtn">
               <i class="bi bi-plus-lg"></i> Add Judge
@@ -74,7 +74,7 @@
       <div class="modal-body">
         <input type="hidden" id="modalCategoryId">
         <input type="hidden" id="modalDayNumber">
-        
+
         <div class="mb-3">
           <label for="modalCategoryName" class="form-label">Category Name</label>
           <input type="text" class="form-control" id="modalCategoryName" placeholder="Enter category name">
@@ -158,16 +158,16 @@
                 <i class="bi bi-plus-lg"></i> Add Category
               </button>
             `;
-            
+
             catPane.appendChild(dayDiv);
             addCategoryRow(i);
-        }  
+        }
     }
 
     function addCategoryRow(dayNumber) {
         const container = document.getElementById(`categoriesDay${dayNumber}`);
         const categoryId = `cat_${dayNumber}_${categoryCounter++}`;
-        
+
         // Initialize category data
         categories[categoryId] = {
             name: '',
@@ -189,7 +189,7 @@
             <i class="bi bi-trash"></i>
           </button>
         `;
-        
+
         categoryDiv.querySelector('.btn-danger').addEventListener('click', function() {
           delete categories[categoryId];
           container.removeChild(categoryDiv);
@@ -198,27 +198,27 @@
         categoryDiv.querySelector('.category-name').addEventListener('input', function(e) {
           categories[categoryId].name = e.target.value;
         });
-        
+
         container.appendChild(categoryDiv);
     }
 
     function openEditModal(categoryId, dayNumber) {
         const modal = new bootstrap.Modal(document.getElementById('editCategoryModal'));
         const categoryData = categories[categoryId];
-        
+
         document.getElementById('modalCategoryId').value = categoryId;
         document.getElementById('modalDayNumber').value = dayNumber;
         document.getElementById('modalCategoryName').value = categoryData.name;
         document.getElementById('modalCategoryTime').value = categoryData.time;
-        
+
         updateConflictedJudgesInModal();
-        
+
         // Set conflicted judges checkboxes
         const checkboxes = document.querySelectorAll('#modalConflictedJudges input[type="checkbox"]');
         checkboxes.forEach(cb => {
           cb.checked = categoryData.conflictedJudges.includes(cb.value);
         });
-        
+
         modal.show();
     }
 
@@ -227,9 +227,9 @@
         const container = document.getElementById('modalConflictedJudges');
         const currentCategoryId = document.getElementById('modalCategoryId').value;
         const currentConflicts = currentCategoryId ? categories[currentCategoryId].conflictedJudges : [];
-        
+
         container.innerHTML = '';
-        
+
         judgeInputs.forEach((input, index) => {
             if (input.value.trim()) {
                 const checkDiv = document.createElement('div');
@@ -255,14 +255,14 @@
         const name = document.getElementById('modalCategoryName').value;
         const time = document.getElementById('modalCategoryTime').value;
         const conflictedJudges = Array.from(document.querySelectorAll('#modalConflictedJudges input:checked')).map(cb => cb.value);
-        
+
         // Update category data
         categories[categoryId] = {
             name: name,
             time: time,
             conflictedJudges: conflictedJudges
         };
-        
+
         // Update the visible input field
         const categoryNameInput = document.querySelector(`.category-name[data-category-id="${categoryId}"]`);
         if (categoryNameInput) {
@@ -279,7 +279,7 @@
         if (categoryConflictsInput) {
           categoryConflictsInput.value = JSON.stringify(conflictedJudges);
         }
-        
+
         bootstrap.Modal.getInstance(document.getElementById('editCategoryModal')).hide();
     });
 

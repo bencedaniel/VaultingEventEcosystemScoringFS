@@ -1,25 +1,30 @@
-import Blacklist from "../models/Blacklist.js"; // import the Blacklist model
-import jwt from "jsonwebtoken"; // import jsonwebtoken to verify the access token
-import User from "../models/User.js"; // import the User model
-import { SECRET_ACCESS_TOKEN, SECURE_MODE } from "../app.js"; // import the secret access token from the app.js file
-import {logger} from "../logger.js";
-import RoleModel from "../models/Role.js"; // import the Role model if needed
-import PermissionModel from "../models/Permissions.js"; // import the Permission model if needed
+import jwt from "jsonwebtoken";
+import { SECRET_ACCESS_TOKEN, SECURE_MODE } from "../app.js";
+import { logger, logAuth, logError, logWarn } from "../logger.js";
 import { asyncHandler } from "./asyncHandler.js";
+import { JWT_CONFIG, COOKIE_CONFIG, HTTP_STATUS, MESSAGES } from "../config/index.js";
+import { 
+  isTokenBlacklisted, 
+  blacklistToken, 
+  findUserByIdWithRole,
+  getRoleWithPermissions 
+} from "../DataServices/authMiddlewareData.js";
 
 export const Verify = asyncHandler(async (req, res, next) => {
   // 1️⃣ Token lekérése cookie-ból vagy Authorization headerből
   const token = req.cookies.token || req.headers["authorization"]?.split(" ")[1];
   if (!token) {
-    req.session.failMessage = "Your session has expired or you are not authorized. Please log in to continue.";
+    logAuth('VERIFY_TOKEN', 'unknown', false, 'TOKEN_MISSING');
+    req.session.failMessage = MESSAGES.AUTH.SESSION_EXPIRED;
     return res.redirect("/login");
   }
   
   // 2️⃣ Blacklist ellenőrzés
-  const blacklisted = await Blacklist.findOne({ token });
+  const blacklisted = await isTokenBlacklisted(token);
 
   if (blacklisted) {
-    req.session.failMessage = "This session has been logged out.";
+    logAuth('VERIFY_TOKEN', 'unknown', false, 'TOKEN_BLACKLISTED');
+    req.session.failMessage = MESSAGES.AUTH.SESSION_LOGGED_OUT;
     return res.redirect("/login");
   }
 
@@ -28,57 +33,54 @@ export const Verify = asyncHandler(async (req, res, next) => {
   try {
     decoded = jwt.verify(token, SECRET_ACCESS_TOKEN);
   } catch (err) {
-    req.session.failMessage = "Invalid or expired token.";
+    logError('TOKEN_VERIFICATION_FAILED', err.message, 'Token validation');
+    req.session.failMessage = MESSAGES.AUTH.INVALID_TOKEN;
     return res.redirect("/login");
   }
 
   // 4️⃣ Felhasználó lekérése az adatbázisból
-  const user = await User.findById(decoded.id).populate("role");
+  const user = await findUserByIdWithRole(decoded.id);
 
   if (!user) {
-    req.session.failMessage = "User not found.";
+    logAuth('VERIFY_TOKEN', decoded.id, false, 'USER_NOT_FOUND');
+    req.session.failMessage = MESSAGES.AUTH.USER_NOT_FOUND;
     return res.redirect("/login");
   }
   
   if(!user.active){
-    req.session.failMessage = "Your account has been deactivated. Please contact a system administrator."
+    logAuth('VERIFY_TOKEN', user.username, false, 'ACCOUNT_DEACTIVATED');
+    req.session.failMessage = MESSAGES.AUTH.ACCOUNT_DEACTIVATED;
     const authHeader = req.headers['cookie']; // get the session cookie from request header
     if (!authHeader) {
-      req.session.failMessage = "Your account has been deactivated. Please contact a system administrator."
-      return res.sendStatus(204);
+      req.session.failMessage = MESSAGES.AUTH.ACCOUNT_DEACTIVATED;
+      return res.sendStatus(HTTP_STATUS.NO_CONTENT);
     } 
     const cookie = authHeader.split('=')[1]; // If there is, split the cookie string to get the actual jwt token
     const accessToken = cookie.split(';')[0];
-    const checkIfBlacklisted = await Blacklist.findOne({ token: accessToken }); // Check if that token is blacklisted
+    const checkIfBlacklisted = await isTokenBlacklisted(accessToken); // Check if that token is blacklisted
     // if true, send a no content response.
     if (checkIfBlacklisted){
-      req.session.failMessage = "Your account has been deactivated. Please contact a system administrator."
-      return res.sendStatus(204);
+      req.session.failMessage = MESSAGES.AUTH.ACCOUNT_DEACTIVATED;
+      return res.sendStatus(HTTP_STATUS.NO_CONTENT);
     } 
     // otherwise blacklist token
-    const newBlacklist = new Blacklist({
-      token: accessToken,
+    await blacklistToken(accessToken);
+    res.clearCookie(COOKIE_CONFIG.TOKEN_NAME, {
+      ...COOKIE_CONFIG.OPTIONS,
+      secure: process.env.SECURE_MODE === 'true'
     });
-
-    await newBlacklist.save();
-    res.clearCookie('token', {
-      httpOnly: true,
-      secure: process.env.SECURE_MODE === 'true',
-      sameSite: 'lax',
-    });
-    req.session.failMessage = "Your account has been deactivated. Please contact a system administrator."
+    req.session.failMessage = MESSAGES.AUTH.ACCOUNT_DEACTIVATED;
     return res.redirect('/login'); // redirect to home page
   }
 
   // 5️⃣ Rolling JWT generálása
-  const newToken = jwt.sign({ id: user._id }, SECRET_ACCESS_TOKEN, { expiresIn: "90m" });
+  const newToken = jwt.sign({ id: user._id }, SECRET_ACCESS_TOKEN, { expiresIn: JWT_CONFIG.ACCESS_TOKEN_EXPIRY });
 
   // 6️⃣ Cookie-ba írás
-  res.cookie("token", newToken, {
-    httpOnly: true,
+  res.cookie(COOKIE_CONFIG.TOKEN_NAME, newToken, {
+    ...COOKIE_CONFIG.OPTIONS,
     secure: SECURE_MODE === 'true', // élesben: true
-    sameSite: "lax",
-    maxAge: 20 * 60 * 1000
+    maxAge: JWT_CONFIG.COOKIE_MAX_AGE
   });
 
   // 7️⃣ User adatok a requesthez
@@ -113,15 +115,17 @@ export function VerifyRole() {
         const user = req.user;
         const { role } = user;
         if (!role) {
-            req.session.failMessage = "User role not found.";
+            req.session.failMessage = MESSAGES.AUTH.USER_ROLE_NOT_FOUND;
             return res.redirect("/login");
         }
 
-        const roleFromDB = await RoleModel.findById(role);
+        const roleData = await getRoleWithPermissions(role);
+        if (!roleData) {
+            req.session.failMessage = MESSAGES.AUTH.ROLE_NOT_FOUND;
+            return res.redirect("/login");
+        }
 
-        const permissionsDocs = await PermissionModel.find({
-        name: { $in: roleFromDB.permissions } // keresés az összes permission név alapján
-        });
+        const { role: roleFromDB, permissions: permissionsDocs } = roleData;
 
         // Most minden permission dokumentum elérhető a permissionsDocs tömbben
         const allAttachedURLs = permissionsDocs.flatMap(p => p.attachedURL);
@@ -139,8 +143,8 @@ export function VerifyRole() {
               : '/dashboard';
         }
         if (!roleFromDB || !hasPermission)  {
-            logger.warn(`User ${user.username} with role ${roleFromDB ? roleFromDB.roleName : 'unknown'} tried to access ${req.originalUrl} without permission.`);
-            req.session.failMessage = "You do not have permission to access this resource.";
+            logWarn('PERMISSION_DENIED', `User ${user.username} with role ${roleFromDB ? roleFromDB.roleName : 'unknown'} tried to access ${req.originalUrl} without permission.`);
+            req.session.failMessage = MESSAGES.AUTH.PERMISSION_DENIED;
             return res.redirect(req.get('Referer') || '/dashboard'); // vissza az előző oldalra, vagy login ha nincs
           }
         next();
@@ -149,11 +153,11 @@ export function VerifyRole() {
 export const UserIDValidator = asyncHandler(async (req, res, next) => {
     const userId = req.params.id;
     if (!userId) {
-        req.session.failMessage = "User ID is required.";
+        req.session.failMessage = MESSAGES.AUTH.USER_ID_REQUIRED;
         return res.redirect("/login");
     }
     if (userId !== req.user._id.toString()) {
-        req.session.failMessage = "You do not have permission to access this resource.";
+        req.session.failMessage = MESSAGES.AUTH.PERMISSION_DENIED;
         return res.redirect(req.get('Referer') || '/login');
     }
     next();
@@ -167,7 +171,7 @@ export const StoreUserWithoutValidation = asyncHandler(async (req, res, next) =>
   }
 
   // 2️⃣ Blacklist ellenőrzés
-  const blacklisted = await Blacklist.findOne({ token });
+  const blacklisted = await isTokenBlacklisted(token);
 
   if (blacklisted) {
     return next();
@@ -182,21 +186,20 @@ export const StoreUserWithoutValidation = asyncHandler(async (req, res, next) =>
   }
 
   // 4️⃣ Felhasználó lekérése az adatbázisból
-  const user = await User.findById(decoded.id).populate("role");
+  const user = await findUserByIdWithRole(decoded.id);
 
   if (!user) {
     return next();
   }
 
   // 5️⃣ Rolling JWT generálása
-  const newToken = jwt.sign({ id: user._id }, SECRET_ACCESS_TOKEN, { expiresIn: "90m" });
+  const newToken = jwt.sign({ id: user._id }, SECRET_ACCESS_TOKEN, { expiresIn: JWT_CONFIG.ACCESS_TOKEN_EXPIRY });
 
   // 6️⃣ Cookie-ba írás
-  res.cookie("token", newToken, {
-    httpOnly: true,
+  res.cookie(COOKIE_CONFIG.TOKEN_NAME, newToken, {
+    ...COOKIE_CONFIG.OPTIONS,
     secure: SECURE_MODE === 'true', // élesben: true
-    sameSite: "lax",
-    maxAge: 20 * 60 * 1000
+    maxAge: JWT_CONFIG.COOKIE_MAX_AGE
   });
 
   // 7️⃣ User adatok a requesthez
@@ -217,7 +220,7 @@ export const CheckLoggedIn = asyncHandler(async (req, res, next) => {
   }
 
   // 2️⃣ Blacklist ellenőrzés
-  const blacklisted = await Blacklist.findOne({ token });
+  const blacklisted = await isTokenBlacklisted(token);
 
   if (blacklisted) {
     return next();
@@ -232,7 +235,7 @@ export const CheckLoggedIn = asyncHandler(async (req, res, next) => {
   }
 
   // 4️⃣ Felhasználó lekérése
-  const user = await User.findById(decoded.id).populate("role");
+  const user = await findUserByIdWithRole(decoded.id);
   if (!user) {
     return next(); // nincs felhasználó → tovább
   }

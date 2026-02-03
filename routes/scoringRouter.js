@@ -25,9 +25,12 @@ scoringRouter.get('/office/dashboard', Verify, VerifyRole(), scoringOfficeContro
 
 scoringRouter.get('/office/scoresheet/edit/:id', Verify, VerifyRole(), scoringOfficeController.getEditScoresheetForm);
 
-scoringRouter.post('/office/scoresheet/edit/:id', Verify, VerifyRole(), Validate, scoringOfficeController.updateScoresheetById);
+scoringRouter.get('/office/scoresheet/edit1/:id', Verify, VerifyRole(), scoringOfficeController.getEditScoresheetForm);
 
-scoringRouter.post('/office/scoresheet/edit1/:id', Verify, VerifyRole(), Validate, scoringOfficeController.updateScoresheetById);
+
+scoringRouter.post('/office/scoresheet/edit/:id', Verify, VerifyRole(), Validate, (req, res) => scoringOfficeController.updateScoresheetById(req, res, '/scoring/office/dashboard'));
+
+scoringRouter.post('/office/scoresheet/edit1/:id', Verify, VerifyRole(), Validate, (req, res) => scoringOfficeController.updateScoresheetById(req, res, '/scoring/office/scores'));
 
 scoringRouter.get('/office/scoresheet/new', Verify, VerifyRole(), scoringOfficeController.getNewScoresheetSelectionForm);
 

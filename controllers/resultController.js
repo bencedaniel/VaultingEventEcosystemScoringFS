@@ -1,5 +1,6 @@
-import { logger } from '../logger.js';
+import { logger, logOperation, logAuth, logError, logValidation, logWarn } from '../logger.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
+import { MESSAGES } from '../config/index.js';
 import { FirstLevel, SecondLevel, TotalLevel } from '../LogicServices/resultCalculations.js';
 import {
     getResultGroupsForResults,
@@ -31,13 +32,13 @@ const getDetailedResults = asyncHandler(async (req, res) => {
     const resultGroupDoc = await getResultGroupWithDetails(req.params.id);
 
     if (!resultGroupDoc) {
-        req.session.failMessage = "Result group not found.";
+        req.session.failMessage = MESSAGES.ERROR.RESULT_GROUP_NOT_FOUND;
         return res.redirect("/result");
     }
     if((req.params.part === 'R1F' && !resultGroupDoc.round1First) ||
        (req.params.part === 'R1S' && !resultGroupDoc.round1Second) ||
        (req.params.part === 'R2F' && !resultGroupDoc.round2First)){
-        req.session.failMessage = "Selected timetable part is not defined for this result group.";
+        req.session.failMessage = MESSAGES.ERROR.TIMETABLE_PART_NOT_DEFINED;
         return res.redirect("/result");
     }
     if(['R1F', 'R1S', 'R2F'].includes(req.params.part)){
@@ -86,7 +87,7 @@ const getDetailedResults = asyncHandler(async (req, res) => {
         });
     }
      else {
-        req.session.failMessage = "Invalid timetable part specified.";
+        req.session.failMessage = MESSAGES.ERROR.INVALID_TIMETABLE_PART;
         return res.redirect("/result");
     }
     req.session.failMessage = null;

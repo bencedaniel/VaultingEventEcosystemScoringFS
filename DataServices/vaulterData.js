@@ -1,6 +1,6 @@
 import Vaulter from '../models/Vaulter.js';
 import Entries from '../models/Entries.js';
-import { logger } from '../logger.js';
+import { logDb } from '../logger.js';
 
 /**
  * Get all vaulters sorted by name
@@ -29,7 +29,7 @@ export async function getVaulterByIdLean(id) {
 export async function createVaulter(vaulterData) {
   const newVaulter = new Vaulter(vaulterData);
   await newVaulter.save();
-  logger.db(`Vaulter ${vaulterData.name} created.`);
+  logDb('CREATE', 'Vaulter', `${newVaulter.Name}`);
   return newVaulter;
 }
 
@@ -38,7 +38,7 @@ export async function createVaulter(vaulterData) {
  */
 export async function updateVaulter(id, vaulterData) {
   const vaulter = await Vaulter.findByIdAndUpdate(id, vaulterData, { runValidators: true }).exec();
-  logger.db(`Vaulter ${vaulter.name} updated.`);
+  logDb('UPDATE', 'Vaulter', `${vaulter.Name}`);
   return vaulter;
 }
 
@@ -67,7 +67,7 @@ export async function updateVaulterArmNumber(id, eventId, armNumber) {
   }
 
   await vaulter.save();
-  logger.db(`Vaulter ${vaulter.name} arm number updated.`);
+  logDb('UPDATE', 'Vaulter', `${vaulter.Name}`);
   return vaulter;
 }
 
@@ -82,7 +82,7 @@ export async function addIncidentToVaulter(id, incidentData) {
 
   vaulter.VaulterIncident.push(incidentData);
   await Vaulter.findByIdAndUpdate(id, vaulter, { runValidators: true }).exec();
-  logger.db(`Incident added to vaulter ${vaulter.name}.`);
+  logDb('UPDATE', 'Vaulter', `${vaulter.Name}`);
   return vaulter;
 }
 
@@ -148,7 +148,7 @@ export async function removeIncidentFromVaulter(id, incidentCriteria) {
   });
 
   await Vaulter.findByIdAndUpdate(id, vaulter, { runValidators: true }).exec();
-  logger.db(`Incident removed from vaulter.`);
+  logDb('UPDATE', 'Vaulter', `${vaulter.Name}`);
   return vaulter;
 }
 

@@ -1,10 +1,8 @@
-<div class="container my-4 border border-black border-1 border-opacity-10 rounded p-3  shadow bg-primary bg-opacity-10 " style="max-width: 80vh;">
-
+<div class="container my-4 border border-black border-1 border-opacity-10 rounded p-3 shadow bg-primary bg-opacity-10" style="max-width: 80vh;">
   <h1 class="text-center mb-3">Add new Dashboard Card</h1>
 
   <form action="/admin/newCard" method="POST">
     <div class="row justify-content-center g-3 m-auto">
-      
       <!-- Dashboard type -->
       <div class="col-md-12">
         <div class="form-floating position-relative searchable-dropdown">
@@ -20,38 +18,36 @@
                  value="<%= formData ? formData.dashtype : '' %>">
 
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
-
-              <li class="list-group-item list-group-item-action searchable-item" val="user">User</li>
-              <li class="list-group-item list-group-item-action searchable-item" val="admin">Admin</li>
+            <li class="list-group-item list-group-item-action searchable-item" val="user">User</li>
+            <li class="list-group-item list-group-item-action searchable-item" val="admin">Admin</li>
           </ul>
         </div>
       </div>
 
-            <!-- Priority -->
+      <!-- Priority -->
       <div class="col-md-12">
         <div class="form-floating">
           <input type="number" class="form-control shadow-none" id="priority" name="priority" placeholder="priority" max="100" min="1"
-            value="<%= formData?.priority || '' %>">
+                 value="<%= formData?.priority || '' %>">
           <label for="priority">Priority</label>
         </div>
       </div>
-      
 
-    <% 
-  const styleDisplayMap = {
-    primary: 'Primary',
-    secondary: 'Secondary',
-    success: 'Success',
-    danger: 'Danger',
-    warning: 'Warning',
-    info: 'Info',
-    dark: 'Dark'
-  };
-  const selectedStyleDisplay = formData && formData.style ? (styleDisplayMap[formData.style] || formData.style) : '';
-%>
-            <!-- Style -->
+      <%
+        const styleDisplayMap = {
+          primary: 'Primary',
+          secondary: 'Secondary',
+          success: 'Success',
+          danger: 'Danger',
+          warning: 'Warning',
+          info: 'Info',
+          dark: 'Dark'
+        };
+        const selectedStyleDisplay = formData && formData.style ? (styleDisplayMap[formData.style] || formData.style) : '';
+      %>
+      <!-- Style -->
       <div class="col-md-12">
         <div class="form-floating position-relative searchable-dropdown">
           <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
@@ -65,9 +61,8 @@
                  value="<%= formData ? formData.style : '' %>">
 
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
-
             <li class="list-group-item list-group-item-action searchable-item" val="primary">Primary</li>
             <li class="list-group-item list-group-item-action searchable-item" val="secondary">Secondary</li>
             <li class="list-group-item list-group-item-action searchable-item" val="success">Success</li>
@@ -84,7 +79,7 @@
           <i class="bi bi-chevron-down position-absolute top-50 end-0 pe-3 translate-middle-y"></i>
           <input type="text" class="form-control shadow-none searchable-input"
                  placeholder="Search permission"
-                 autocomplete="off" 
+                 autocomplete="off"
                  <% if (formData) { %>
                  <% permissionList.forEach(element => { %>
                     <% if (String(element.name) === String(formData.perm)) { %>
@@ -100,7 +95,7 @@
                  value="<%= formData ? formData.perm : '' %>">
 
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
               <% permissionList.forEach(element => { %>
               <li class="list-group-item list-group-item-action searchable-item" val="<%= element.name %>" ><%= element.displayName %></li>
@@ -109,9 +104,6 @@
           </ul>
         </div>
       </div>
-
-
-
 
       <!-- Title -->
       <div class="col-md-12">
@@ -149,16 +141,6 @@
 </div>
 
 <script>
-
-
-
-
-
-
-
-
-
-
 
         function addLinkInput(href = '', label = '') {
           const linkList = document.getElementById('linkList');
@@ -199,6 +181,6 @@
                 addLinkInput("<%= formData.href[index] %>", "<%= formData.label[index] %>");
 
         <% } %>
-          
+
         <% } %>
         </script>

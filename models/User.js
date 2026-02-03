@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { SECRET_ACCESS_TOKEN } from '../app.js';
+import { JWT_CONFIG } from '../config/index.js';
 import RoleSchema from './Role.js';
 const userSchema = new mongoose.Schema({
       username:{
@@ -59,7 +60,7 @@ userSchema.methods.generateAccessJWT = function () {
     id: this._id,
   };
   return jwt.sign(payload, SECRET_ACCESS_TOKEN, {
-    expiresIn: '20m',
+    expiresIn: JWT_CONFIG.REFRESH_TOKEN_EXPIRY,
   });
 };
 const User = mongoose.model('users', userSchema);

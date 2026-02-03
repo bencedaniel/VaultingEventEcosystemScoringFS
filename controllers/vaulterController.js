@@ -1,5 +1,6 @@
-import { logger } from '../logger.js';
+import { logger, logOperation, logAuth, logError, logValidation, logWarn } from '../logger.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
+import { HTTP_STATUS, MESSAGES } from '../config/index.js';
 import {
     getAllVaulters,
     getVaulterById,
@@ -74,7 +75,8 @@ const createNewVaulter = asyncHandler(async (req, res) => {
     newVaulter.ArmNr = [armNr];
 
     await createVaulter(newVaulter);
-    req.session.successMessage = 'Vaulter created successfully!';
+    logOperation('VAULTER_CREATE', `Vaulter created: ${newVaulter.Name}`, req.user.username, HTTP_STATUS.CREATED);
+    req.session.successMessage = MESSAGES.SUCCESS.VAULTER_CREATED;
     res.redirect('/vaulter/dashboard');
 });
 
@@ -99,7 +101,7 @@ const getVaulterDetails = asyncHandler(async (req, res) => {
     const vaulter = await getVaulterById(req.params.id);
     vaulter.ArmNr = vaulter.ArmNr.filter(a => String(a.eventID) === String(eventID));
     if (!vaulter) {
-        req.session.failMessage = 'Vaulter not found';
+        req.session.failMessage = MESSAGES.ERROR.VAULTER_NOT_FOUND;
         return res.redirect('/vaulter/dashboard');
     }
     res.render('vaulter/vaulterDetail', {
@@ -118,7 +120,7 @@ const getEditVaulterForm = asyncHandler(async (req, res) => {
     const vaulter = await getVaulterByIdLean(req.params.id);
     vaulter.ArmNr = vaulter.ArmNr.filter(a => String(a.eventID) === String(res.locals.selectedEvent._id));
     if (!vaulter) {
-        req.session.failMessage = 'Vaulter not found';
+        req.session.failMessage = MESSAGES.ERROR.VAULTER_NOT_FOUND;
         return res.redirect('/vaulter/dashboard');
     }
     res.render('vaulter/editVaulter', {
@@ -141,19 +143,20 @@ const updateVaulterById = asyncHandler(async (req, res) => {
     await updateVaulterArmNumber(req.params.id, res.locals.selectedEvent._id, ArmNr);
 
     if (!vaulter) {
-        req.session.failMessage = 'Vaulter not found';
+        req.session.failMessage = MESSAGES.ERROR.VAULTER_NOT_FOUND;
         return res.redirect('/vaulter/dashboard');
     }
-    req.session.successMessage = 'Vaulter updated successfully!';
+    logOperation('VAULTER_UPDATE', `Vaulter updated: ${vaulter.Name}`, req.user.username, HTTP_STATUS.OK);
+    req.session.successMessage = MESSAGES.SUCCESS.VAULTER_UPDATED;
     res.redirect('/vaulter/dashboard');
 });
 
 const deleteVaulterIncident = asyncHandler(async (req, res) => {
     const vaulter = await getVaulterById(req.params.id);
-    logger.db(`Vaulter ${vaulter.Name} incident delete requested by user ${req.user.username}.`);
+    logOperation('VAULTER_UPDATE', `Vaulter updated: ${vaulter.Name}`, req.user.username, HTTP_STATUS.OK);
     if (!vaulter) {
-        req.session.failMessage = 'Vaulter not found';
-        return res.status(404).json({ message: 'Vaulter not found' });
+        req.session.failMessage = MESSAGES.ERROR.VAULTER_NOT_FOUND;
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ message: MESSAGES.ERROR.VAULTER_NOT_FOUND });
     }
 
     const incidentCriteria = {
@@ -164,12 +167,12 @@ const deleteVaulterIncident = asyncHandler(async (req, res) => {
     };
 
     await removeIncidentFromVaulter(req.params.id, incidentCriteria);
-    res.status(200).json({ message: 'Incident deleted successfully' });
+    res.status(HTTP_STATUS.OK).json({ message: MESSAGES.SUCCESS.INCIDENT_DELETED });
 });
 
 const createVaulterIncident = asyncHandler(async (req, res) => {
     const vaulter = await getVaulterById(req.params.id);
-    logger.db(`Vaulter ${vaulter.Name} incident created by user ${req.user.username}.`);
+    logOperation('VAULTER_UPDATE', `Vaulter incident created: ${vaulter.Name}`, req.user.username, HTTP_STATUS.CREATED);
     const newIncident = {
         description: req.body.description,
         incidentType: req.body.incidentType,
@@ -178,8 +181,8 @@ const createVaulterIncident = asyncHandler(async (req, res) => {
         eventID: res.locals.selectedEvent._id
     };
     await addIncidentToVaulter(req.params.id, newIncident);
-    req.session.successMessage = 'Incident added successfully!';
-    res.status(200).json({ message: 'Incident added successfully!' });
+    req.session.successMessage = MESSAGES.SUCCESS.INCIDENT_ADDED;
+    res.status(HTTP_STATUS.OK).json({ message: MESSAGES.SUCCESS.INCIDENT_ADDED });
 });
 
 const getArmNumbersEditPage = asyncHandler(async (req, res) => {
@@ -204,7 +207,8 @@ const getArmNumbersEditPage = asyncHandler(async (req, res) => {
 
 const updateArmNumber = asyncHandler(async (req, res) => {
     await updateVaulterArmNumber(req.params.id, res.locals.selectedEvent._id, req.body.armNumber);
-    res.status(200).json({ message: 'Arm number updated successfully!' });
+    logOperation('VAULTER_UPDATE', `Vaulter updated: ${req.params.id}`, req.user.username, HTTP_STATUS.OK);
+    res.status(HTTP_STATUS.OK).json({ message: MESSAGES.SUCCESS.ARM_NUMBER_UPDATED });
 });
 
 export default {

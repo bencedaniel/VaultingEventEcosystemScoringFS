@@ -3,7 +3,7 @@
 
   <form action="" method="POST">
     <div class="row justify-content-center g-3 m-auto">
-      
+
       <!-- Vaulter Name -->
       <div class="col-md-12">
         <div class="form-floating">
@@ -80,7 +80,6 @@
         <div id="IncidentList"></div>
 
                   <a type="button" class="btn btn-sm btn-danger mt-2" id="addIncident">+ Add Incident</a>
-                  
 
       </div>
 
@@ -92,7 +91,6 @@
     </div>
   </form>
 </div>
-
 
 <!-- Incident Modal -->
 <div class="modal fade" id="IncidentModal" tabindex="-1" role="dialog" aria-labelledby="IncidentModalLabel"
@@ -134,7 +132,7 @@
             </div>
         </div>
     </div>
-</div> 
+</div>
 
 <!-- View Incident Modal -->
 <div class="modal fade" id="IncidentViewModal" tabindex="-1" aria-labelledby="IncidentViewModalLabel" aria-hidden="true">
@@ -159,7 +157,6 @@
     </div>
   </div>
 </div>
-
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -225,7 +222,6 @@ function addIncidentInput(type = '', description = '', date = '', user = '', eve
     inputDate.classList.add('form-control');
     inputDate.value = date;
     inputDate.disabled = true;
-    
 
     const viewBtn = document.createElement('button');
     viewBtn.type = 'button';
@@ -275,7 +271,6 @@ function showIncidentPopup(type, description, date, user, event) {
     modal.show();
 }
 
-
 function loadFilteredData(datalist) {
   const checker = document.getElementById('filterCheck')
   const incidentList = document.getElementById('IncidentList')
@@ -293,7 +288,6 @@ function loadFilteredData(datalist) {
       addIncidentInput(element.type,element.desc,element.date,element.user, element.eventName)
     });
   }
-  
 
 }
 
@@ -301,7 +295,7 @@ let dataList =[]
 let eventId = "<%= selectedEvent._id %>"
 <% if (formData && formData.VaulterIncident) { %>
   <% formData.VaulterIncident.forEach(function(incident) { %>
-    
+
     dataList.push({
       type: "<%= incident.incidentType %>",
       desc: "<%= incident.description %>",
@@ -309,7 +303,7 @@ let eventId = "<%= selectedEvent._id %>"
       user: "<%= users.find(user => user._id.toString() === incident.User.toString())?.username %>",
       eventId: "<%= incident.eventID._id %>",
       eventName: "<%= incident.eventID.EventName %>" })
-    
+
   <% }) %>
 <% } %>
 loadFilteredData()

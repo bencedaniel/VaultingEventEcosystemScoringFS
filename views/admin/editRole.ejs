@@ -1,8 +1,6 @@
 <div class="container my-4 border border-black border-1 border-opacity-10 rounded p-3  shadow bg-primary bg-opacity-10 " style="max-width: 80vh;">
 
-
 <h1 class="text-center mb-3">Update Role</h1>
-
 
 <form action="/admin/editRole/<%= formData._id %>" method="POST">
     <div class="row justify-content-center g-3  m-auto">
@@ -16,9 +14,6 @@
                 <label for="roleName" class="form-label">Rolename</label>
             </div>
         </div>
-       
-
-
 
         <div class="col-md-12">
             <div class="form-floating">
@@ -27,7 +22,7 @@
                 <label for="description" class="form-label">Description</label>
             </div>
         </div>
-        
+
        <div class="col-md- bg-secondary bg-opacity-10 p-3 rounded">
             <label class="form-label mb-2">Permissions</label>
             <div class="row">
@@ -35,9 +30,9 @@
                 <% permissions.forEach(permission => { %>
                 <div class="col-md-6 col-lg-4 mb-2">
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" 
-                               name="permissions" 
-                               value="<%= permission.name %>" 
+                        <input class="form-check-input" type="checkbox"
+                               name="permissions"
+                               value="<%= permission.name %>"
                                id="perm_<%= permission.name %>"
                                <%= selected.includes(permission.name) ? "checked" : "" %>>
                         <label class="form-check-label" for="perm_<%= permission.name %>">
@@ -47,14 +42,12 @@
                 </div>
                 <% }); %>
             </div>
-        
+
         </div>
                             <button type="submit" class="btn btn-primary mt-3 w-100">Update</button>
 
         </div>
 
-
     </div>
-
 
 </form>

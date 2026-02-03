@@ -1,5 +1,5 @@
 <div class="container my-4 border border-black border-1 border-opacity-10 rounded p-3 shadow bg-primary bg-opacity-10" style="max-width: 80vh;">
-  <h1 class="text-center mb-3">Add New Vaulter</h1>
+  <h1 class="text-center mb-3">New Vaulter</h1>
 
   <form action="/vaulter/new" method="POST">
     <div class="row justify-content-center g-3 m-auto">
@@ -29,15 +29,15 @@
           <input type="text" class="form-control shadow-none searchable-input"
                  placeholder="Search Gender"
                  autocomplete="off"
-                 value="<%= formData ? formData.Gender : '' %>">
+                 value="<%= formData ? formData.gender : '' %>">
           <label class="form-label">Gender</label>
 
           <!-- Hidden input for form submission -->
-          <input type="hidden" class="searchable-hidden" name="Gender"
-                 value="<%= formData ? formData.Gender : '' %>">
+          <input type="hidden" class="searchable-hidden" name="gender"
+                 value="<%= formData ? formData.gender : '' %>">
 
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
 
               <li class="list-group-item list-group-item-action searchable-item" >Male</li>
@@ -70,7 +70,7 @@
                  value="<%= formData ? formData.Nationality : '' %>">
 
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
             <% countries.forEach(country => { %>
               <li class="list-group-item list-group-item-action searchable-item"><%= country %></li>
@@ -79,16 +79,6 @@
         </div>
       </div>
 
-      <!-- Vaulter Status -->
-      <div class="col-md-12">
-        <div class="form-floating">
-          <select class="form-select shadow-none" id="Status" name="Status">
-            <option value="active" <%= formData && formData.Status === 'active' ? 'selected' : '' %>>Active</option>
-            <option value="inactive" <%= formData && formData.Status === 'inactive' ? 'selected' : '' %>>Inactive</option>
-          </select>
-          <label for="Status">Vaulter Status</label>
-        </div>
-      </div>
             <!-- Status -->
       <div class="col-md-12">
         <div class="form-floating position-relative searchable-dropdown">
@@ -104,22 +94,21 @@
                  value="<%= formData ? formData.Status : '' %>">
 
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
 
-              <li class="list-group-item list-group-item-action searchable-item" >Male</li>
-              <li class="list-group-item list-group-item-action searchable-item" >Female</li>
+              <li class="list-group-item list-group-item-action searchable-item" val="active">Active</li>
+              <li class="list-group-item list-group-item-action searchable-item" val="inactive">Inactive</li>
           </ul>
         </div>
       </div>
 
-      <!-- Arm Number -->
       <div class="col-md-12">
         <div class="form-floating">
           <input type="text" class="form-control shadow-none" id="ArmNr" name="ArmNr" placeholder="Arm Number"
-                  value="<%   
-                  let armValue = '';
-              
+                value="<%
+                let armValue = '';
+
                  if (formData) {
 
                   if (Array.isArray(formData.ArmNr) && formData.ArmNr.length > 0){
@@ -128,14 +117,14 @@
                       armValue =   formData.arm ? formData.arm : '';
 
                   }}
-                 %><%= armValue %>"> 
+                 %><%= armValue %>">
           <label for="ArmNr">Arm Number</label>
         </div>
       </div>
 
       <!-- Submit Button -->
       <div class="col-md-12 mt-3">
-        <button type="submit" class="btn btn-primary w-100">Add Vaulter</button>
+        <button type="submit" class="btn btn-primary w-100">Edit Vaulter</button>
       </div>
 
     </div>

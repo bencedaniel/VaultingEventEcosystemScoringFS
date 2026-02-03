@@ -1,5 +1,5 @@
 import express from 'express';
-
+import { MESSAGES } from '../config/index.js';
 import {logger} from '../logger.js';
 import auth from '../controllers/auth.js';
 import Validate from "../middleware/Validate.js";
@@ -24,7 +24,7 @@ JudgesRouter.get('/', async (req, res) => {
 JudgesRouter.post('/', async (req, res) => {
     console.log("Received judge input:", JSON.stringify(req.body, null, 2));
     // Here you can process the input data as needed
-    req.session.successMessage = 'Judge input received successfully!';
+    req.session.successMessage = MESSAGES.SUCCESS.JUDGE_INPUT_RECEIVED;
     res.redirect('/judges');
 });
 

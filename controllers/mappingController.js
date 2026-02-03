@@ -1,5 +1,6 @@
-import { logger } from '../logger.js';
+import { logger, logOperation, logAuth, logError, logValidation, logWarn } from '../logger.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
+import { HTTP_STATUS, MESSAGES } from '../config/index.js';
 import {
   getAllMappings,
   getMappingById,
@@ -24,8 +25,8 @@ const renderNew = (req, res) => {
 
 const createNew = asyncHandler(async (req, res) => {
   const newMapping = await createMapping(req.body);
-  logger.db(`Mapping ${newMapping._id} created by user ${req.user.username}.`);
-  req.session.successMessage = 'Mapping created successfully!';
+  logOperation('MAPPING_CREATE', `Mapping created: ${newMapping._id}`, req.user.username, HTTP_STATUS.CREATED);
+  req.session.successMessage = MESSAGES.SUCCESS.MAPPING_CREATED;
   res.redirect('/mapping/dashboard');
 });
 
@@ -57,16 +58,16 @@ const editGet = asyncHandler(async (req, res) => {
 
 const editPost = asyncHandler(async (req, res) => {
   const mapping = await updateMapping(req.params.id, req.body);
-  logger.db(`Mapping ${mapping._id} updated by user ${req.user.username}.`);
-  req.session.successMessage = 'Mapping updated successfully!';
+  logOperation('MAPPING_UPDATE', `Mapping updated: ${mapping._id}`, req.user.username, HTTP_STATUS.OK);
+  req.session.successMessage = MESSAGES.SUCCESS.MAPPING_UPDATED;
   res.redirect('/mapping/dashboard');
 });
 
 const delete_ = asyncHandler(async (req, res) => {
   const mapping = await deleteMapping(req.params.id);
-  logger.db(`Mapping ${mapping._id} deleted by user ${req.user.username}.`);
-  req.session.successMessage = 'Mapping deleted successfully!';
-  res.status(200).json({ message: 'Mapping deleted successfully' });
+  logOperation('MAPPING_DELETE', `Mapping deleted: ${mapping._id}`, req.user.username, HTTP_STATUS.OK);
+  req.session.successMessage = MESSAGES.SUCCESS.MAPPING_DELETED;
+  res.status(HTTP_STATUS.OK).json({ message: MESSAGES.SUCCESS.MAPPING_DELETED });
 });
 
 export default {

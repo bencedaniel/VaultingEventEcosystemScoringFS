@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import Role from '../models/Role.js';
 import bcrypt from 'bcrypt';
+import { logDb } from '../logger.js';
 
 /**
  * Get user by ID
@@ -45,6 +46,7 @@ export const updateUserProfile = async (id, data) => {
     if (!updatedUser) {
         throw new Error('User not found');
     }
+    logDb('UPDATE', 'User', `${id}`);
     return updatedUser;
 };
 

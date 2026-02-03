@@ -1,5 +1,6 @@
-import { logger } from '../logger.js';
+import { logger, logOperation, logAuth, logError, logValidation, logWarn } from '../logger.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
+import { HTTP_STATUS, MESSAGES } from '../config/index.js';
 import {
     getAllRoles,
     getRoleById,
@@ -53,8 +54,8 @@ const getNewRoleForm = asyncHandler(async (req, res) => {
  */
 const createNewRoleHandler = asyncHandler(async (req, res) => {
     const newRole = await createRole(req.body);
-    logger.db(`Role ${newRole.roleName} created by user ${req.user.username}.`);
-    req.session.successMessage = 'Role created successfully.';
+    logOperation('ROLE_CREATE', `Role created: ${newRole.roleName}`, req.user.username, HTTP_STATUS.CREATED);
+    req.session.successMessage = MESSAGES.SUCCESS.ROLE_CREATED;
     res.redirect('/admin/dashboard/roles');
 });
 
@@ -65,7 +66,7 @@ const createNewRoleHandler = asyncHandler(async (req, res) => {
 const getEditRoleForm = asyncHandler(async (req, res) => {
     const role = await getRoleById(req.params.id);
     if (!role) {
-        req.session.failMessage = 'Role not found.';
+        req.session.failMessage = MESSAGES.ERROR.ROLE_NOT_FOUND;
         return res.redirect('/admin/dashboard/roles');
     }
     const { permissions } = await getRoleFormData();
@@ -87,12 +88,12 @@ const getEditRoleForm = asyncHandler(async (req, res) => {
  */
 const updateRoleHandler = asyncHandler(async (req, res) => {
     const updatedRole = await updateRole(req.params.id, req.body);
-    logger.db(`Role ${req.body.roleName} updated by user ${req.user.username}.`);
+    logOperation('ROLE_UPDATE', `Role updated: ${req.body.roleName}`, req.user.username, HTTP_STATUS.OK);
     if (!updatedRole) {
-        req.session.failMessage = 'Role not found.';
+        req.session.failMessage = MESSAGES.ERROR.ROLE_NOT_FOUND;
         return res.redirect('/admin/dashboard/roles');
     }
-    req.session.successMessage = 'Role updated successfully.';
+    req.session.successMessage = MESSAGES.SUCCESS.ROLE_UPDATED;
     res.redirect('/admin/dashboard/roles');
 });
 
@@ -103,9 +104,9 @@ const updateRoleHandler = asyncHandler(async (req, res) => {
 const deleteRoleHandler = asyncHandler(async (req, res) => {
     const roleId = req.params.roleId;
     const role = await deleteRole(roleId);
-    logger.db(`Role ${role.roleName} deleted by user ${req.user.username}.`);
-    req.session.successMessage = 'Role successfully deleted.';
-    res.status(200).send('Role deleted.');
+    logOperation('ROLE_DELETE', `Role deleted: ${role.roleName}`, req.user.username, HTTP_STATUS.OK);
+    req.session.successMessage = MESSAGES.SUCCESS.ROLE_DELETED;
+    res.status(HTTP_STATUS.OK).send(MESSAGES.SUCCESS.ROLE_DELETE_RESPONSE);
 });
 
 export default {

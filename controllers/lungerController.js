@@ -1,5 +1,6 @@
-import { logger } from '../logger.js';
+import { logger, logOperation, logAuth, logError, logValidation, logWarn } from '../logger.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
+import { HTTP_STATUS, MESSAGES } from '../config/index.js';
 import {
   getAllLungers,
   getLungerById,
@@ -227,8 +228,8 @@ const renderNew = (req, res) => {
 
 const createNew = asyncHandler(async (req, res) => {
   const newLunger = await createLunger(req.body);
-  logger.db(`Lunger ${newLunger.Name} created by user ${req.user.username}.`);
-  req.session.successMessage = 'Lunger created successfully!';
+  logOperation('LUNGER_CREATE', `Lunger created: ${newLunger.Name}`, req.user.username, HTTP_STATUS.CREATED);
+  req.session.successMessage = MESSAGES.SUCCESS.LUNGER_CREATED;
   res.redirect('/lunger/dashboard');
 });
 
@@ -275,8 +276,8 @@ const editGet = asyncHandler(async (req, res) => {
 
 const editPost = asyncHandler(async (req, res) => {
   const lunger = await updateLunger(req.params.id, req.body);
-  logger.db(`Lunger ${lunger.Name} updated by user ${req.user.username}.`);
-  req.session.successMessage = 'Lunger updated successfully!';
+  logOperation('LUNGER_UPDATE', `Lunger updated: ${lunger.Name}`, req.user.username, HTTP_STATUS.OK);
+  req.session.successMessage = MESSAGES.SUCCESS.LUNGER_UPDATED;
   res.redirect('/lunger/dashboard');
 });
 
@@ -285,8 +286,8 @@ const deleteIncident = asyncHandler(async (req, res) => {
     description: req.body.description,
     type: req.body.type
   });
-  logger.db(`Lunger ${lunger.Name} incident deleted by user ${req.user.username}.`);
-  res.status(200).json({ message: 'Incident deleted successfully' });
+  logOperation('LUNGER_UPDATE', `Lunger updated: ${lunger.Name}`, req.user.username, HTTP_STATUS.OK);
+  res.status(HTTP_STATUS.OK).json({ message: MESSAGES.SUCCESS.INCIDENT_DELETED });
 });
 
 const newIncidentPost = asyncHandler(async (req, res) => {
@@ -296,8 +297,8 @@ const newIncidentPost = asyncHandler(async (req, res) => {
     userId: req.user._id,
     eventId: res.locals.selectedEvent._id
   });
-  logger.db(`Lunger ${lunger.Name} incident created by user ${req.user.username}.`);
-  res.status(200).json({ message: 'Incident added successfully!' });
+  logOperation('LUNGER_UPDATE', `Lunger incident created: ${lunger.Name}`, req.user.username, HTTP_STATUS.CREATED);
+  res.status(HTTP_STATUS.OK).json({ message: MESSAGES.SUCCESS.INCIDENT_ADDED });
 });
 
 export default {

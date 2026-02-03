@@ -1,6 +1,7 @@
 import Role from '../models/Role.js';
 import User from '../models/User.js';
 import Permissions from '../models/Permissions.js';
+import { logDb } from '../logger.js';
 
 /**
  * Get all roles
@@ -50,6 +51,7 @@ export async function createRole(roleData) {
         permissions
     });
     await newRole.save();
+    logDb('CREATE', 'Role', `${roleName}`);
     return newRole;
 }
 
@@ -64,6 +66,7 @@ export async function updateRole(roleId, roleData) {
         description,
         permissions
     }, { runValidators: true });
+    logDb('UPDATE', 'Role', `${roleName}`);
     
     return updatedRole;
 }
@@ -84,5 +87,6 @@ export async function deleteRole(roleId) {
     }
 
     await Role.findByIdAndDelete(roleId);
+    logDb('DELETE', 'Role', `${role.roleName}`);
     return role;
 }

@@ -1,5 +1,6 @@
-import { logger } from '../logger.js';
+import { logger, logOperation, logAuth, logError, logValidation, logWarn } from '../logger.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
+import { HTTP_STATUS, MESSAGES } from '../config/index.js';
 import {
     getAllGenerators,
     getGeneratorFormData,
@@ -52,8 +53,8 @@ const getNewGeneratorForm = asyncHandler(async (req, res) => {
  */
 const createNewGenerator = asyncHandler(async (req, res) => {
     const newGenerator = await createGenerator(req.body);
-    logger.db(`Result generator ${newGenerator._id} created by user ${req.user.username}.`);
-    req.session.successMessage = "Result generator created successfully.";
+    logOperation('RESULT_GENERATOR_CREATE', `Result generator created: ${newGenerator._id}`, req.user.username, HTTP_STATUS.CREATED);
+    req.session.successMessage = MESSAGES.SUCCESS.RESULT_GENERATOR_CREATED;
     res.redirect("/result/generator/dashboard");
 });
 
@@ -63,8 +64,8 @@ const createNewGenerator = asyncHandler(async (req, res) => {
  */
 const updateGeneratorStatusById = asyncHandler(async (req, res) => {
     const generator = await updateGeneratorStatus(req.params.id, req.body.status);
-    logger.db(`Result generator ${generator._id} status updated to ${req.body.status} by user ${req.user.username}.`);
-    res.status(200).send("Result generator status updated successfully.");
+    logOperation('RESULT_GENERATOR_UPDATE', `Result generator status updated: ${generator._id}`, req.user.username, HTTP_STATUS.OK);
+    res.status(HTTP_STATUS.OK).send(MESSAGES.SUCCESS.RESULT_GENERATOR_STATUS_UPDATED);
 });
 
 /**
@@ -93,8 +94,8 @@ const getEditGeneratorForm = asyncHandler(async (req, res) => {
  */
 const updateGeneratorById = asyncHandler(async (req, res) => {
     const generator = await updateGenerator(req.params.id, req.body);
-    logger.db(`Result generator ${generator._id} edited by user ${req.user.username}.`);
-    req.session.successMessage = "Result generator edited successfully.";
+    logOperation('RESULT_GENERATOR_UPDATE', `Result generator updated: ${generator._id}`, req.user.username, HTTP_STATUS.OK);
+    req.session.successMessage = MESSAGES.SUCCESS.RESULT_GENERATOR_EDITED;
     res.redirect("/result/generator/dashboard");
 });
 
@@ -104,8 +105,8 @@ const updateGeneratorById = asyncHandler(async (req, res) => {
  */
 const deleteGeneratorById = asyncHandler(async (req, res) => {
     const generator = await deleteGenerator(req.params.id);
-    logger.db(`Result generator ${generator._id} deleted by user ${req.user.username}.`);
-    res.status(200).send("Result generator deleted successfully.");
+    logOperation('RESULT_GENERATOR_DELETE', `Result generator deleted: ${generator._id}`, req.user.username, HTTP_STATUS.OK);
+    res.status(HTTP_STATUS.OK).send(MESSAGES.SUCCESS.RESULT_GENERATOR_DELETED);
 });
 
 export default {

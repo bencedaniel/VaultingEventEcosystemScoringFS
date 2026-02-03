@@ -3,7 +3,7 @@
 
   <form action="/horse/edit/<%= formData ? formData._id : '' %>" method="POST">
     <div class="row justify-content-center g-3 m-auto">
-      
+
       <!-- Horse Name -->
       <div class="col-md-12">
         <div class="form-floating">
@@ -37,7 +37,7 @@
                  value="<%= formData ? formData.sex : '' %>">
 
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
 
               <li class="list-group-item list-group-item-action searchable-item" >Mare</li>
@@ -72,7 +72,7 @@
                  value="<%= formData ? formData.Nationality : '' %>">
 
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
             <% countries.forEach(country => { %>
               <li class="list-group-item list-group-item-action searchable-item"><%= country %></li>
@@ -80,8 +80,6 @@
           </ul>
         </div>
       </div>
-
-
 
       <!-- Status -->
       <div class="col-md-12">
@@ -97,7 +95,7 @@
                  value="<%= formData ? formData.HorseStatus : '' %>">
 
           <!-- Dropdown list -->
-          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list" 
+          <ul class="list-group position-absolute w-100 mt-1 shadow-sm d-none searchable-list"
               style="max-height: 200px; overflow-y: auto; z-index: 1000;">
 
               <li class="list-group-item list-group-item-action searchable-item" val="active" >Active</li>
@@ -106,15 +104,12 @@
         </div>
       </div>
 
-
-
-      
       <!-- Box Number -->
       <div class="col-md-12">
         <div class="form-floating">
           <input type="text" class="form-control shadow-none" id="BoxNr" name="BoxNr" placeholder="Box Number"
-                 value="<%                 
-                 
+                 value="<%
+
                  let boxValue = '';
                  if (Array.isArray(formData.BoxNr) && formData.BoxNr.length > 0){
                     boxValue = formData.BoxNr[0].boxNumber ? formData.BoxNr[0].boxNumber : 'No Box Nr'
@@ -122,7 +117,7 @@
                     boxValue =   formData.box ? formData.box : 'No Box Nr';
 
                  }
-                 %><%= boxValue %>"> 
+                 %><%= boxValue %>">
           <label for="BoxNr">Box Number</label>
         </div>
       </div>
@@ -130,8 +125,8 @@
       <div class="col-md-12">
         <div class="form-floating">
           <input type="text" class="form-control shadow-none" id="HeadNr" name="HeadNr" placeholder="Head Number"
-                 value="<% 
-                 
+                 value="<%
+
                  let headValue = '';
                  if (Array.isArray(formData.HeadNr) && formData.HeadNr.length > 0){
                     headValue = formData.HeadNr[0].headNumber ? formData.HeadNr[0].headNumber : 'No Head Nr'
@@ -161,7 +156,6 @@
           <label for="ResponsiblePersonContact">Responsible Person Contact</label>
         </div>
       </div>
-
 
       <div class="col-md-12 mt-3">
         <button type="submit" class="btn btn-primary w-100">Edit Horse</button>

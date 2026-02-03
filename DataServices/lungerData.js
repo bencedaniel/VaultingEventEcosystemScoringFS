@@ -1,6 +1,7 @@
 import Lunger from '../models/Lunger.js';
 import Permissions from '../models/Permissions.js';
 import User from '../models/User.js';
+import { logDb } from '../logger.js';
 
 /**
  * Retrieves all lungers sorted by name
@@ -47,6 +48,7 @@ export async function getLungerByIdWithPopulation(id) {
 export async function createLunger(data) {
     const newLunger = new Lunger(data);
     await newLunger.save();
+    logDb('CREATE', 'Lunger', `${newLunger._id}`);
     return newLunger;
 }
 
@@ -62,6 +64,7 @@ export async function updateLunger(id, data) {
     if (!lunger) {
         throw new Error("Lunger not found");
     }
+    logDb('UPDATE', 'Lunger', `${id}`);
     return lunger;
 }
 
@@ -85,6 +88,7 @@ export async function deleteLungerIncident(id, incidentData) {
         )
     );
 
+    logDb('UPDATE', 'Lunger', `${id}`);
     await Lunger.findByIdAndUpdate(id, lunger, { runValidators: true });
     return lunger;
 }
@@ -111,6 +115,7 @@ export async function addLungerIncident(id, incidentData) {
     };
 
     lunger.LungerIncident.push(newIncident);
+    logDb('UPDATE', 'Lunger', `${id}`);
     await Lunger.findByIdAndUpdate(id, lunger, { runValidators: true });
     return lunger;
 }

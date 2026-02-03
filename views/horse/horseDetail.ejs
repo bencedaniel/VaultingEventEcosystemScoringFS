@@ -3,7 +3,7 @@
 
   <form action="/horse/new" method="POST">
     <div class="row justify-content-center g-3 m-auto">
-      
+
       <!-- Horse Name -->
       <div class="col-md-12">
         <div class="form-floating">
@@ -60,7 +60,7 @@
         </div>
         <div id="VetCheckActions"></div>
       </div>
-     
+
       <!-- Horse Status -->
       <div class="col-md-12">
         <div class="form-floating">
@@ -69,8 +69,6 @@
           <label for="HorseStatus">Horse Status</label>
         </div>
       </div>
-
-
 
       <!-- Box Number -->
       <div class="col-md-12">
@@ -131,7 +129,6 @@
   </form>
 </div>
 
-
 <!-- Note Modal -->
 <div class="modal fade" id="NoteModal" tabindex="-1" role="dialog" aria-labelledby="NoteModalLabel"
     aria-hidden="true" style="backdrop-filter: blur(5px);">
@@ -145,7 +142,7 @@
               <form action="/horse/newNote/<%= formData ? formData._id : '' %>" id="NoteModalForm" method="POST">
               <div class="col-md-12">
                   <div class="form-floating">
-                    <input type="text" class="form-control shadow-none" id="note" name="note" placeholder="note" required>                    
+                    <input type="text" class="form-control shadow-none" id="note" name="note" placeholder="note" required>
                     <label for="note">Note</label>
                   </div>
               </div>
@@ -157,7 +154,7 @@
             </div>
         </div>
     </div>
-</div> 
+</div>
 
 <!-- View Note Modal -->
 <div class="modal fade" id="NoteViewModal" tabindex="-1" aria-labelledby="NoteViewModalLabel" aria-hidden="true">
@@ -180,10 +177,8 @@
   </div>
 </div>
 
-
-
 <script>
-  
+
 document.addEventListener('DOMContentLoaded', function() {
     const confirmNoteModalButton = document.getElementById('confirmNoteModalButton');
     const addNoteButton = document.getElementById('addNote');
@@ -196,7 +191,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     });
 
-
     Noteform?.addEventListener('submit', event => {
         event.preventDefault();
         fetch(Noteform?.getAttribute('action'), {
@@ -208,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 note: document.getElementById('note').value
             })
         }).then(() => window.location.reload());
-    
+
     });
 
     confirmNoteModalButton?.addEventListener('click', () => {
@@ -255,12 +249,10 @@ document.addEventListener('DOMContentLoaded', function() {
     timestampInput.placeholder = 'Timestamp';
     timestampInput.value = timestamp;
     timestampInput.disabled = true;
-    
 
     wrapper.appendChild(input);
     wrapper.appendChild(eventName);
     wrapper.appendChild(timestampInput);
-
 
     urlList.appendChild(wrapper);
   }
@@ -328,7 +320,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.location.reload();
             }
         });
-    
+
   }
 
   function showNotePopup(noteText, timestamp,user) {
@@ -356,7 +348,6 @@ document.addEventListener('DOMContentLoaded', function() {
         addUrlInput(element.note,element.date,element.user, element.eventName)
       });
     }
-    
 
 }
   function loadFilteredVetData() {
@@ -376,7 +367,6 @@ document.addEventListener('DOMContentLoaded', function() {
         addVetCheckInput(element.status, element.eventName, element.timestamp)
       });
     }
-    
 
 }
 
@@ -385,15 +375,13 @@ let eventId = "<%= selectedEvent._id %>"
 console.log(dataList)
 let vetCheckList = []
 
-
-
   <% if (formData && formData.VetCheckStatus) { %>
     <% // VetCheckStatus rendezése dátum szerint (legújabb elöl)
        const sortedVet = (formData?.VetCheckStatus || [])
          .slice()
          .sort((a,b) => new Date(b.date || b.timestamp || 0) - new Date(a.date || a.timestamp || 0));
     %>
-    <% sortedVet.forEach(function(v) { 
+    <% sortedVet.forEach(function(v) {
          const eventID = v?.eventID._id || {};
          const eventName = v?.eventID?.EventName || '';
          const rawTs = v?.date || v?.timestamp || null;
@@ -410,21 +398,15 @@ let vetCheckList = []
       });
     <% }) %>
 
-
-
-
-
-
-
     <% // Notes rendezése timestamp szerint (legújabb elöl)
        const sortedNotes = (formData?.Notes || [])
          .slice()
          .sort((a,b) => new Date(b.timestamp || b.date || 0) - new Date(a.timestamp || a.date || 0));
     %>
     <% sortedNotes.forEach(function(note) { %>
-      
+
       dataList.push({
-        note: <%- JSON.stringify(note?.note || '') %>, 
+        note: <%- JSON.stringify(note?.note || '') %>,
         date: <%- JSON.stringify(new Date(note?.timestamp || note?.date).toLocaleString('hu-HU', { timeZone: 'Europe/Budapest' })) %>,
         user: <%- JSON.stringify((note?.user && note.user.username) ? note.user.username : '') %>,
         eventId: <%- JSON.stringify(note?.eventID._id || '') %>,

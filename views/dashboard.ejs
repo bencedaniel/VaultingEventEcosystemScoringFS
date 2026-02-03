@@ -1,11 +1,7 @@
-<div class="container my-4 ">
+<div class="container my-4">
   <div class="p-3 mb-4 bg-primary bg-opacity-10 border border-1 border-black border-opacity-10 rounded text-center">
-    <h2 class="m-0">VaultX  Dashboard</h2>
+    <h2 class="m-0">VaultX Dashboard</h2>
   </div>
-
-
-
-
 
   <div class="row g-4 text-center justify-content-center">
     <%
@@ -21,11 +17,10 @@
         <div class="col-md-3" style="min-width: 300px;">
           <div class="p-4 bg-<%= card.style %> bg-opacity-10 border border-1 border-black border-opacity-10 rounded h-100 d-flex flex-column justify-content-start">
             <div class="mb-3 h-50">
-            <h5><%= card.title %></h5>
-            <p class=""><%= card.text %></p>
+              <h5><%= card.title %></h5>
+              <p class=""><%= card.text %></p>
             </div>
-            <% for( let index = 0; index < card.label.length; index++ ) { %>
-            
+            <% for (let index = 0; index < card.label.length; index++) { %>
               <a href="<%= card.href[index] %>" class="btn btn-outline-<%= card.style %> w-100 mb-3"><%= card.label[index] %></a>
             <% } %>
           </div>

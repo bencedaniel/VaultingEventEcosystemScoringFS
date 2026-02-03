@@ -1,28 +1,18 @@
-import Event from '../models/Event.js';
-import Entries from '../models/Entries.js';
-import Score from '../models/Score.js';
+import {
+    getSelectedEvent,
+    getEntriesByEventAndCategory,
+    getScoresForTimetablePart,
+    getEntryWithPopulation
+} from '../DataServices/resultCalculationsData.js';
 
 export async function FirstLevel(resultGroupDoc, part) {
-    const event = await Event.findOne({ selected: true });
-    const entries = await Entries.find({ event: event?._id, category: resultGroupDoc.category });
+    const event = await getSelectedEvent();
+    const entries = await getEntriesByEventAndCategory(event?._id, resultGroupDoc.category);
     const timetablePartID = part === 'R1F' ? resultGroupDoc.round1First :
                           part === 'R1S' ? resultGroupDoc.round1Second :
                           part === 'R2F' ? resultGroupDoc.round2First : null;
 
-    const results = await Score.find({
-        entry: { $in: entries.map(e => e._id) },
-        timetablepart: timetablePartID
-    }).populate({
-        path: 'entry',
-        populate: [
-            { path: 'horse' },
-            { path: 'vaulter' },
-            { path: 'lunger' }
-        ]
-    }).populate({
-        path: 'scoresheets.scoreId',
-        select: 'totalScoreBE'
-    });
+    const results = await getScoresForTimetablePart(entries.map(e => e._id), timetablePartID);
 
     const title = part === 'R1F' ? 'Round 1 - First Part Results' :
                   part === 'R1S' ? 'Round 1 - Second Part Results' :
@@ -32,8 +22,8 @@ export async function FirstLevel(resultGroupDoc, part) {
 }
 
 export async function SecondLevel(resultGroupDoc, part) {
-    const event = await Event.findOne({ selected: true });
-    const entries = await Entries.find({ event: event?._id, category: resultGroupDoc.category });
+    const event = await getSelectedEvent();
+    const entries = await getEntriesByEventAndCategory(event?._id, resultGroupDoc.category);
 
     if (part === 'R1') {
         let combinedResults = [];
@@ -80,7 +70,7 @@ export async function SecondLevel(resultGroupDoc, part) {
                 continue;
             }
 
-            const entryData = await Entries.findById(entry._id).populate('horse').populate('vaulter').populate('lunger');
+            const entryData = await getEntryWithPopulation(entry._id);
             const combinedresult = {
                 entry: entryData,
                 firstTotalScore: firstResult.TotalScore,
@@ -112,8 +102,8 @@ export async function SecondLevel(resultGroupDoc, part) {
 }
 
 export async function TotalLevel(resultGroupDoc) {
-    const event = await Event.findOne({ selected: true });
-    const entries = await Entries.find({ event: event?._id, category: resultGroupDoc.category });
+    const event = await getSelectedEvent();
+    const entries = await getEntriesByEventAndCategory(event?._id, resultGroupDoc.category);
     let combinedResults = [];
     const round1 = await SecondLevel(resultGroupDoc, 'R1');
     const round2 = await SecondLevel(resultGroupDoc, 'R2');
@@ -146,7 +136,7 @@ export async function TotalLevel(resultGroupDoc) {
             continue;
         }
 
-        const entryData = await Entries.findById(entry._id).populate('horse').populate('vaulter').populate('lunger');
+        const entryData = await getEntryWithPopulation(entry._id);
         const combinedresult = {
             entry: entryData,
             round1TotalScore: round1Result.TotalScore,

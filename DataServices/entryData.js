@@ -5,6 +5,7 @@ import Horse from '../models/Horse.js';
 import Category from '../models/Category.js';
 import Event from '../models/Event.js';
 import TimetablePart from '../models/Timetablepart.js';
+import { logDb } from '../logger.js';
 
 /**
  * Get all vaulters
@@ -47,6 +48,7 @@ export async function getAllEvents() {
 export async function createEntry(data) {
     const newEntry = new Entries(data);
     await newEntry.save();
+    logDb('CREATE', 'Entry', `${newEntry._id}`);
     return newEntry;
 }
 
@@ -89,10 +91,12 @@ export async function updateEntry(id, updateData, eventId) {
     if (!entry) {
         throw new Error('Entry not found');
     }
+    logDb('DELETE', 'Entry', `${id}`);
     
     // Create new entry with updated data
     const updated = new Entries(updateData);
     await updated.save();
+    logDb('CREATE', 'Entry', `${updated._id}`);
     
     // If status is not confirmed, remove from timetable parts
     if (updated.status !== 'confirmed') {
@@ -110,6 +114,7 @@ export async function updateEntry(id, updateData, eventId) {
             // Only save if something was removed
             if (tp.StartingOrder.length !== originalLength) {
                 await tp.save();
+                logDb('UPDATE', 'TimetablePart', `${tp._id}`);
             }
         }
     }
@@ -134,6 +139,7 @@ export async function deleteEntryIncident(id, incidentData) {
     );
     
     await Entries.findByIdAndUpdate(id, entry, { runValidators: true });
+    logDb('UPDATE', 'Entry', `${id}`);
     return entry;
 }
 
@@ -155,6 +161,7 @@ export async function addEntryIncident(id, incidentData) {
     
     entry.EntryIncident.push(newIncident);
     await Entries.findByIdAndUpdate(id, entry, { runValidators: true });
+    logDb('UPDATE', 'Entry', `${id}`);
     return entry;
 }
 
@@ -192,6 +199,7 @@ export async function updateHorseVetStatus(horseId, statusData) {
     });
     
     await Horse.findByIdAndUpdate(horseId, horse, { runValidators: true });
+    logDb('UPDATE', 'Horse', `${horseId}`);
     return horse;
 }
 

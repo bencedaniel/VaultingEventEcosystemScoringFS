@@ -1,8 +1,6 @@
 <div class="container my-4 border border-black border-1 border-opacity-10 rounded p-3  shadow bg-primary bg-opacity-10 " style="max-width: 80vh;">
 
-
 <h1 class="text-center mb-3">Edit Permission</h1>
-
 
 <form action="/admin/editPermission/<%= formData._id %>" method="POST">
     <div class="row justify-content-center g-3 m-auto">
@@ -16,8 +14,6 @@
                 <label for="name" class="form-label">Name</label>
             </div>
         </div>
-       
-
 
          <div class="col-md-12">
             <div class="form-floating">
@@ -26,12 +22,6 @@
                 <label for="displayName" class="form-label">Display Name</label>
             </div>
         </div>
-
-
-
-
-
-
 
         <div class="col-md-12 bg-secondary bg-opacity-10 p-3 rounded mt-3">
   <label class="form-label mb-2">Attached URLs</label>
@@ -45,17 +35,13 @@
   <button type="button" class="btn btn-sm btn-success mt-2" onclick="addUrlInput()">+ Add URL</button>
 </div>
 
-
                             <button type="submit" class="btn btn-primary mt-3 w-100">Edit</button>
 
         </div>
 
         </div>
 
-
-
 </form>
-
 
 <script>
   const urlList = document.getElementById('urlList');

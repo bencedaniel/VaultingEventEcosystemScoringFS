@@ -14,3 +14,5 @@ yarn-error.log
 *.swp
 *.pid
 *.orig
+logs/
+cookies.txt

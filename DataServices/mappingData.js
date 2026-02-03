@@ -32,6 +32,7 @@ export async function getMappingById(id) {
 export async function createMapping(data) {
     const newMapping = new TableMapping(data);
     await newMapping.save();
+    logDb('CREATE', 'TableMapping', `${newMapping._id}`);
     return newMapping;
 }
 
@@ -47,6 +48,7 @@ export async function updateMapping(id, data) {
     if (!mapping) {
         throw new Error("Mapping not found");
     }
+    logDb('UPDATE', 'TableMapping', `${id}`);
     return mapping;
 }
 
@@ -61,6 +63,7 @@ export async function deleteMapping(id) {
     if (!mapping) {
         throw new Error("Mapping not found");
     }
+    logDb('DELETE', 'TableMapping', `${id}`);
     return mapping;
 }
 

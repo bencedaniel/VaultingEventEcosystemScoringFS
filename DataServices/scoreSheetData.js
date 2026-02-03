@@ -2,6 +2,7 @@ import ScoreSheet from '../models/ScoreSheet.js';
 import Score from '../models/Score.js';
 import TimetablePart from '../models/Timetablepart.js';
 import { logger } from '../logger.js';
+import { logDb } from '../logger.js';
 
 /**
  * Fetch submitted score sheets for a judge in a timetable part
@@ -70,6 +71,7 @@ export async function getScoreSheetById(scoresheetId) {
 export async function saveScoreSheet(scoreSheetData, timetablePartId, entryId) {
   const newScoreSheet = new ScoreSheet(scoreSheetData);
   await newScoreSheet.save();
+  logDb('CREATE', 'ScoreSheet', `${newScoreSheet._id}`);
 
   // Update timetable part's starting order
   const timetablePart = await TimetablePart.findById(timetablePartId);
@@ -82,6 +84,7 @@ export async function saveScoreSheet(scoreSheetData, timetablePartId, entryId) {
     }
   });
   await timetablePart.save();
+  logDb('UPDATE', 'TimetablePart', `${timetablePartId}`);
 
   return newScoreSheet;
 }
@@ -94,6 +97,7 @@ export async function updateScoreSheet(scoresheetId, scoreSheetData, timetablePa
     runValidators: true
   });
   await scoreSheet.save();
+  logDb('UPDATE', 'ScoreSheet', `${scoresheetId}`);
 
   // Update timetable part's starting order
   const timetablePart = await TimetablePart.findById(timetablePartId);
@@ -114,6 +118,7 @@ export async function updateScoreSheet(scoresheetId, scoreSheetData, timetablePa
     }
   });
   await timetablePart.save();
+  logDb('UPDATE', 'TimetablePart', `${timetablePartId}`);
 
   return scoreSheet;
 }

@@ -1,7 +1,6 @@
 <div class="container my-4 border border-black border-1 border-opacity-10 rounded p-3 shadow bg-primary bg-opacity-10" style="max-width: 80vh;">
   <h1 class="text-center mb-3">Edit program element</h1>
 
-
   <form action="/dailytimetable/editTTelement/<%= formData ? formData._id : '' %>" method="POST">
     <div class="row justify-content-center g-3 m-auto">
 
@@ -28,11 +27,10 @@
         </div>
       </div>
 
-
       <!-- starttime -->
       <div class="col-md-12">
         <div class="form-floating">
-          <% 
+          <%
             let timeValue = '';
             if (formData && formData.StartTimePlanned) {
               const hh = String(formData.StartTimePlanned.split(':')[0]).padStart(2,'0');     // helyi óra
@@ -55,7 +53,7 @@
             <div class="col-md-6 col-lg-4 mb-2">
               <div class="form-check">
                 <input class="form-check-input" type="checkbox"
-                       name="Category[]" 
+                       name="Category[]"
                        value="<%= category._id %>"
                        id="cat_<%= category._id %>"
                        <%= selected.includes(category._id.toString()) ? 'checked' : '' %>>
@@ -102,20 +100,16 @@
             <option value="6" <%= formData && formData.NumberOfJudges === 6 ? 'selected' : '' %>>6</option>
             <option value="8" <%= formData && formData.NumberOfJudges === 8 ? 'selected' : '' %>>8</option>
 
-
           </select>
           <label for="NumberOfJudges">Number of Judges</label>
         </div>
       </div>
 
-
       <div class="col-md-12 bg-secondary bg-opacity-10 p-3 rounded mt-3">
           <label class="form-label mb-2">Judge Tables:</label>
           <div id="judgeInputs">
-      
+
       </div>
-
-
 
       <!-- Submit Button -->
       <div class="col-md-12 mt-3">
@@ -125,7 +119,6 @@
     </div>
   </form>
 </div>
-
 
 <script>
   const judgesList = <%- JSON.stringify(judges) %>;

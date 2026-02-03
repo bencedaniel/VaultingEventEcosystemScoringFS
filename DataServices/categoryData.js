@@ -1,4 +1,5 @@
 import Category from '../models/Category.js';
+import { logDb } from '../logger.js';
 
 /**
  * Get all categories sorted by name
@@ -31,6 +32,7 @@ export const getCategoryById = async (id) => {
 export const createCategory = async (data) => {
     const newCategory = new Category(data);
     await newCategory.save();
+    logDb('CREATE', 'Category', `${newCategory.CategoryDispName}`);
     return newCategory;
 };
 
@@ -51,6 +53,7 @@ export const updateCategory = async (id, data) => {
     const updateData = { ...data, _id: id };
     const updated = new Category(updateData);
     await updated.save();
+    logDb('UPDATE', 'Category', `${updated.CategoryDispName}`);
     
     return updated;
 };
@@ -63,6 +66,7 @@ export const deleteCategory = async (id) => {
     if (!category) {
         throw new Error('Category not found');
     }
+    logDb('DELETE', 'Category', `${category.CategoryDispName}`);
     return category;
 };
 

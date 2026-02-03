@@ -2,6 +2,7 @@ import Permissions from '../models/Permissions.js';
 import Role from '../models/Role.js';
 import DashCards from '../models/DashCards.js';
 import Alert from '../models/Alert.js';
+import { logDb } from '../logger.js';
 
 /**
  * Get all permissions
@@ -48,6 +49,7 @@ export async function createPermission(permData) {
         requestType
     });
     await newPermission.save();
+    logDb('CREATE', 'Permission', `${name}`);
     return newPermission;
 }
 
@@ -61,6 +63,7 @@ export async function updatePermission(permId, permData) {
         displayName: displayName,
         attachedURL: attachedURL
     }, { runValidators: true });
+    logDb('UPDATE', 'Permission', `${updatedPermission.name}`);
     
     return updatedPermission;
 }
@@ -93,5 +96,6 @@ export async function deletePermission(permId) {
     }
     
     await Permissions.findByIdAndDelete(permId);
+    logDb('DELETE', 'Permission', `${permission.name}`);
     return permission;
 }

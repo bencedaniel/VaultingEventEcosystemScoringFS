@@ -1,7 +1,7 @@
 <div class="container my-4 border border-black border-1 border-opacity-10 rounded p-3 shadow bg-primary bg-opacity-10" style="max-width: 80vh;">
-  <h1 class="text-center mb-3">Add New Category</h1>
+  <h1 class="text-center mb-3">Edit Category</h1>
 
-  <form action="/category/new" method="POST">
+  <form action="/category/edit/<%= formData ? formData._id : '' %>" method="POST">
     <div class="row justify-content-center g-3 m-auto">
 
       <!-- Category Display Name -->
@@ -25,8 +25,6 @@
           <label for="Type">Category Type</label>
         </div>
       </div>
-
-
 
       <!-- Sex -->
       <div class="col-md-12">
@@ -88,7 +86,7 @@
       <div class="col-md-12 bg-secondary bg-opacity-10 rounded p-3" style="max-width: 97%;" id="mainBlock">
         <label class="form-label mb-1">Score Types</label>
 
-        <% 
+        <%
           const scoreTypeDefs = [
             { display: 'Horse score', type: 'Horse', fields: ['A1', 'A2','A3'], text: 'Percentage' },
             { display: 'Free test', type: 'Free', fields: ['R', 'D', 'M', 'E', 'NumberOfMaxExercises'], text: '(R,D,M,E: A Multipler value  )' },
@@ -107,14 +105,13 @@
               </div>
             <% }); %>
 
-
           </div>
         <% }); %>
       </div>
 
       <!-- Submit Button -->
       <div class="col-md-12 mt-3">
-        <button type="submit" class="btn btn-primary w-100">Add Category</button>
+        <button type="submit" class="btn btn-primary w-100">Edit Category</button>
       </div>
 
     </div>
@@ -127,6 +124,7 @@
     const reqTechnicalTestCheckbox = document.getElementById('ReqTechnicalTest');
     const freeTestBlock = document.getElementById('FreeBlock');
     const artisticBlockElement = document.getElementById('ArtisticBlock');
+    const techArtisticBlockElement = document.getElementById('TechArtisticBlock');
     const horseBlock = document.getElementById('HorseBlock');
         const typeSelect = document.getElementById('Type');
     const sexSelect = document.getElementById('Sex');
@@ -140,7 +138,7 @@
 
         block.style.display = 'none';
         block.querySelectorAll('input').forEach(input => input.disabled = true);
-      
+
     }
     }
 
@@ -154,20 +152,22 @@
       }
     }
 
-
     typeSelect.addEventListener('change', toggleTypeSex);
-
 
     reqFreeTestCheckbox.addEventListener('change', function() {
       toggleBlock(reqFreeTestCheckbox, freeTestBlock,true);
       toggleBlock(reqFreeTestCheckbox, artisticBlockElement,true);
 
     });
+    reqTechnicalTestCheckbox.addEventListener('change', function() {
+      toggleBlock(reqTechnicalTestCheckbox, techArtisticBlockElement,true);
 
-
+    });
 
     toggleBlock(reqFreeTestCheckbox, freeTestBlock);
     toggleBlock(reqFreeTestCheckbox, artisticBlockElement);
+    toggleBlock(reqTechnicalTestCheckbox, techArtisticBlockElement);
+
     horseBlock.querySelectorAll('input').forEach(input => input.disabled = false);
 
   });

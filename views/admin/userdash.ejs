@@ -1,14 +1,11 @@
+<div class="container my-4 border border-black border-1 border-opacity-25 rounded p-2" id="TableBody" >
 
-  <div class="container my-4 border border-black border-1 border-opacity-25 rounded p-2" id="TableBody" >
-    
   <ul class="list-group">
 
     <li class="list-group-item border-0">
         <h3 class="text-center">User Management</h3>
     </li>
-    
-    
-    
+
   </ul>
 
 <div class="d-flex justify-content-start align-items-center w-100 shadow-sm p-1 mb-4 bg-secondary bg-opacity-25 rounded border border-1 border-black border-opacity-10 flex-grow-1">
@@ -21,7 +18,6 @@
               Select column
             </button>
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="dropdownMenu">
-
 
             </div>
 
@@ -52,12 +48,10 @@
                 <td><%= user.active ? 'Active' : 'Inactive'%></td>
                 <td><%= user.role.roleName %></td>
 
-
                 <td class="text-center" style="width: 15%;">
                     <a href="/admin/editUser/<%= user._id %>" class="btn btn-warning btn-sm shadow-none m-1"><i class="bi bi-pen"></i></a>
                     <% if (user.active) { %>
-                     
-                    
+
                     <button type="button" class="btn btn-danger btn-sm m-1" data-bs-toggle="modal"
                         data-bs-target="#deleteModal" data-userid="<%= user._id %>"><i class="bi bi-ban"></i></button>
                         <% } %>
@@ -70,10 +64,9 @@
                     No results found.
                 </td>
             </tr>
-            
+
         </tbody>
     </table>
-
 
 <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel"
     aria-hidden="true" style="backdrop-filter: blur(5px);">
@@ -92,8 +85,7 @@
             </div>
         </div>
     </div>
-</div>  
-
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

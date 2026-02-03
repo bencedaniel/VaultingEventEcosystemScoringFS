@@ -4,6 +4,7 @@ import Event from '../models/Event.js';
 import User from '../models/User.js';
 import ScoreSheet from '../models/ScoreSheet.js';
 import { getAllCategoriesByStar } from './categoryData.js';
+import { logDb } from '../logger.js';
 
 /**
  * Get all daily timetables for a specific event
@@ -25,6 +26,7 @@ export const getDailyTimeTableById = async (id) => {
 export const createDailyTimeTable = async (data) => {
     const newDailyTimeTable = new DailyTimeTable(data);
     await newDailyTimeTable.save();
+    logDb('CREATE', 'DailyTimeTable', `${newDailyTimeTable.Date}`);
     return newDailyTimeTable;
 };
 
@@ -42,6 +44,7 @@ export const updateDailyTimeTable = async (id, data) => {
     }
 
     const dailytimetable = await DailyTimeTable.findByIdAndUpdate(id, data, { runValidators: true });
+    logDb('UPDATE', 'DailyTimeTable', `${dailytimetable.Date}`);
     return dailytimetable;
 };
 
@@ -52,6 +55,7 @@ export const updateDailyTimeTable = async (id, data) => {
 export const deleteDailyTimeTable = async (id) => {
     await TimetablePart.deleteMany({ dailytimetable: id });
     const dailytimetable = await DailyTimeTable.findByIdAndDelete(id);
+    logDb('DELETE', 'DailyTimeTable', `${dailytimetable.Date}`);
     return dailytimetable;
 };
 
@@ -92,6 +96,7 @@ export const getTimetablePartById = async (id) => {
 export const createTimetablePart = async (data) => {
     const newTimetablePart = new TimetablePart(data);
     await newTimetablePart.save();
+    logDb('CREATE', 'TimetablePart', `${newTimetablePart._id}`);
     return newTimetablePart;
 };
 
@@ -110,6 +115,7 @@ export const updateTimetablePart = async (id, data) => {
         data,
         { runValidators: true, new: true }
     );
+    logDb('UPDATE', 'TimetablePart', `${id}`);
     return timetablepart;
 };
 
@@ -117,8 +123,8 @@ export const updateTimetablePart = async (id, data) => {
  * Delete timetable part by ID
  */
 export const deleteTimetablePart = async (id) => {
-    const timetablepart = await TimetablePart.findByIdAndDelete(id);
-    return timetablepart;
+    await TimetablePart.findByIdAndDelete(id);
+    logDb('DELETE', 'TimetablePart', `${id}`);
 };
 
 /**
@@ -132,6 +138,7 @@ export const saveTimetablePartStartTime = async (id) => {
 
     timetablepart.StartTimeReal = new Date();
     await timetablepart.save();
+    logDb('UPDATE', 'TimetablePart', `${id}`);
     return timetablepart;
 };
 

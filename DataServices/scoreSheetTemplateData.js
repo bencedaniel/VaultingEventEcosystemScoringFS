@@ -2,7 +2,7 @@ import ScoreSheetTemp from '../models/ScoreSheetTemp.js';
 import Category from '../models/Category.js';
 import fs from 'fs/promises';
 import path from 'path';
-import { logger } from '../logger.js';
+import { logger, logDb, logValidation, logWarn, logInfo } from '../logger.js';
 
 const uploadsDir = path.join(process.cwd(), 'static', 'uploads');
 
@@ -33,13 +33,13 @@ function isInsideUploads(absPath) {
  */
 export async function deleteImageFile(staticUrl) {
   const abs = toAbsoluteFromStaticUrl(staticUrl);
-  if (!abs) { logger.warn(`Skip delete (not static uploads): ${staticUrl}`); return; }
-  if (!isInsideUploads(abs)) { logger.warn(`Skip delete (outside uploads): ${abs}`); return; }
+  if (!abs) { logWarn('DELETE_IMAGE', `Skip delete (not static uploads): ${staticUrl}`); return; }
+  if (!isInsideUploads(abs)) { logWarn('DELETE_IMAGE', `Skip delete (outside uploads): ${abs}`); return; }
   try {
     await fs.unlink(abs);
-    logger.db(`Deleted file: ${abs}`);
+    logInfo(`Deleted file: ${abs}`);
   } catch (e) {
-    logger.warn(`Delete failed or file missing: ${abs} -> ${e.message}`);
+    logWarn('DELETE_IMAGE_FAILED', `Delete failed or file missing: ${abs}`, e.message);
   }
 }
 
@@ -60,6 +60,7 @@ export function parseJSONArrayField(value, fieldName) {
       }
     }));
   } catch (e) {
+    logValidation('JSON_PARSE_ERROR', `Field: ${fieldName}`, { error: e.message });
     throw new Error(`${fieldName} parse error: ${e.message}`);
   }
 }
@@ -98,7 +99,7 @@ export async function getCategoriesByIds(ids) {
 export async function createScoreSheetTemplate(templateData) {
   const sheet = new ScoreSheetTemp(templateData);
   await sheet.save();
-  logger.db(`ScoreSheetTemp ${sheet._id} created.`);
+  logDb('CREATE', 'ScoreSheetTemplate', `${sheet._id}`);
   return sheet;
 }
 
@@ -110,7 +111,7 @@ export async function updateScoreSheetTemplate(id, templateData) {
     runValidators: true,
     new: true
   }).exec();
-  logger.db(`ScoreSheetTemp ${sheet._id} updated.`);
+  logDb('UPDATE', 'ScoreSheetTemplate', `${id}`);
   return sheet;
 }
 
@@ -122,7 +123,7 @@ export async function deleteScoreSheetTemplate(id) {
   if (sheet && sheet.bgImage) {
     await deleteImageFile(sheet.bgImage);
   }
-  logger.db(`ScoreSheetTemp ${id} deleted.`);
+  logDb('DELETE', 'ScoreSheetTemplate', `${id}`);
   return sheet;
 }
 

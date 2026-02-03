@@ -4,6 +4,7 @@ import Category from '../models/Category.js';
 import calcTemplate from '../models/calcTemplate.js';
 import DailyTimeTable from '../models/DailyTimeTable.js';
 import TimetablePart from '../models/Timetablepart.js';
+import { logDb } from '../logger.js';
 
 /**
  * Get all result groups for a specific event with full population
@@ -120,7 +121,9 @@ export const updateResultGroup = async (id, data) => {
     if (data.round1Second === "") data.round1Second = null;
     if (data.round2First === "") data.round2First = null;
 
-    return await resultGroup.findByIdAndUpdate(id, data, { new: true });
+    const updated = await resultGroup.findByIdAndUpdate(id, data, { new: true });
+    logDb('UPDATE', 'ResultGroup', `${id}`);
+    return updated;
 };
 
 /**
@@ -143,6 +146,7 @@ export const createResultGroup = async (eventId, data) => {
 
     const newGroup = new resultGroup(data);
     await newGroup.save();
+    logDb('CREATE', 'ResultGroup', `${newGroup._id}`);
     return newGroup;
 };
 
@@ -150,7 +154,8 @@ export const createResultGroup = async (eventId, data) => {
  * Delete result group by ID
  */
 export const deleteResultGroup = async (id) => {
-    return await resultGroup.findByIdAndDelete(id);
+    await resultGroup.findByIdAndDelete(id);
+    logDb('DELETE', 'ResultGroup', `${id}`);
 };
 
 /**
@@ -176,5 +181,6 @@ export const generateGroupsForActiveGenerators = async (eventId, username) => {
         });
         
         await newResultGroup.save();
+        logDb('CREATE', 'ResultGroup', `${newResultGroup._id}`);
     }
 };

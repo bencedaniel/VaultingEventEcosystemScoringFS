@@ -19,7 +19,7 @@
             <h5><%= card.title %></h5>
             <p><%= card.text %></p>
             <% for( let index = 0; index < card.label.length; index++ ) { %>
-            
+
               <a href="<%= card.href[index] %>" class="btn btn-outline-<%= card.style %> w-100 mb-3"><%= card.label[index] %></a>
             <% } %>
           </div>

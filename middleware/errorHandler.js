@@ -1,4 +1,6 @@
-import { logger } from '../logger.js';
+import { logError, logValidation } from '../logger.js';
+import { MESSAGES } from '../config/index.js';
+import { HTTP_STATUS } from '../config/index.js';
 
 /**
  * Custom Application Error Class
@@ -80,8 +82,8 @@ export function errorHandler(err, req, res, next) {
   };
 
   // Log error with user context
-  const userInfo = req.user ? ` User: ${req.user.username}` : '';
-  logger.error(`[${error.type}] ${error.message}${userInfo}`);
+  const userInfo = req.user ? `${req.user.username}` : 'unknown';
+  logError(error.type, error.message, `User: ${userInfo}`);
 
   // ==========================================
   // MONGOOSE VALIDATION ERRORS
@@ -89,6 +91,7 @@ export function errorHandler(err, req, res, next) {
   
   // Schema validation errors (required fields, enum values, etc.)
   if (err.name === 'ValidationError') {
+    const fields = Object.keys(err.errors);
     const messages = Object.entries(err.errors)
       .map(([field, error]) => {
         // Extract custom validation message if exists
@@ -113,6 +116,12 @@ export function errorHandler(err, req, res, next) {
         }
       })
       .join('; ');
+
+    // Log validation error
+    logValidation('MONGOOSE_VALIDATION', `Fields: ${fields.join(', ')}`, { 
+      user: userInfo,
+      errors: err.errors 
+    });
 
     error = {
       statusCode: 400,
@@ -149,16 +158,16 @@ export function errorHandler(err, req, res, next) {
   
   if (err.name === 'JsonWebTokenError') {
     error = {
-      statusCode: 401,
-      message: 'Invalid token',
+      statusCode: HTTP_STATUS.UNAUTHORIZED,
+      message: MESSAGES.AUTH.INVALID_TOKEN,
       type: 'AUTH_ERROR'
     };
   }
 
   if (err.name === 'TokenExpiredError') {
     error = {
-      statusCode: 401,
-      message: 'Token expired, please login again',
+      statusCode: HTTP_STATUS.UNAUTHORIZED,
+      message: MESSAGES.AUTH.SESSION_EXPIRED,
       type: 'TOKEN_EXPIRED'
     };
   }
@@ -166,8 +175,8 @@ export function errorHandler(err, req, res, next) {
 
   if (err.name === 'MongoNetworkError') {
     error = {
-      statusCode: 503,
-      message: 'Database connection error',
+      statusCode: HTTP_STATUS.SERVICE_UNAVAILABLE,
+      message: MESSAGES.ERROR.DATABASE_ERROR || 'Database connection error',
       type: 'DATABASE_ERROR'
     };
   }

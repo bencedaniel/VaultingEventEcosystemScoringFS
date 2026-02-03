@@ -1,5 +1,6 @@
-import { logger } from '../logger.js';
+import { logger, logOperation, logAuth, logError, logValidation, logWarn } from '../logger.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
+import { HTTP_STATUS, MESSAGES } from '../config/index.js';
 import {
     getAllPermissions,
     getPermissionById,
@@ -50,8 +51,8 @@ const getNewPermissionForm = asyncHandler(async (req, res) => {
  */
 const createNewPermissionHandler = asyncHandler(async (req, res) => {
     const newPermission = await createPermission(req.body);
-    logger.db(`Permission ${newPermission.name} created by user ${req.user.username}.`);
-    req.session.successMessage = 'Permission created successfully.';
+    logOperation('PERMISSION_CREATE', `Permission created: ${newPermission.name}`, req.user.username, HTTP_STATUS.CREATED);
+    req.session.successMessage = MESSAGES.SUCCESS.PERMISSION_CREATED;
     res.redirect('/admin/dashboard/permissions');
 });
 
@@ -62,7 +63,7 @@ const createNewPermissionHandler = asyncHandler(async (req, res) => {
 const getEditPermissionForm = asyncHandler(async (req, res) => {
     const permission = await getPermissionById(req.params.id);
     if (!permission) {
-        req.session.failMessage = 'Permission not found.';
+        req.session.failMessage = MESSAGES.ERROR.PERMISSION_NOT_FOUND;
         return res.redirect('/admin/dashboard/permissions');
     }
     res.render('admin/editPerm', {
@@ -83,11 +84,11 @@ const getEditPermissionForm = asyncHandler(async (req, res) => {
 const updatePermissionHandler = asyncHandler(async (req, res) => {
     const updatedPermission = await updatePermission(req.params.id, req.body);
     if (!updatedPermission) {
-        req.session.failMessage = 'Permission not found.';
+        req.session.failMessage = MESSAGES.ERROR.PERMISSION_NOT_FOUND;
         return res.redirect('/admin/dashboard/permissions');
     }
-    logger.db(`Permission ${updatedPermission.name} updated by user ${req.user.username}.`);
-    req.session.successMessage = 'Permission updated successfully.';
+    logOperation('PERMISSION_UPDATE', `Permission updated: ${updatedPermission.name}`, req.user.username, HTTP_STATUS.OK);
+    req.session.successMessage = MESSAGES.SUCCESS.PERMISSION_UPDATED;
     res.redirect('/admin/dashboard/permissions');
 });
 /**
@@ -97,9 +98,9 @@ const updatePermissionHandler = asyncHandler(async (req, res) => {
 const deletePermissionHandler = asyncHandler(async (req, res) => {
     const permId = req.params.permId;
     const permission = await deletePermission(permId);
-    logger.db(`Permission ${permission.name} deleted by user ${req.user.username}.`);
-    req.session.successMessage = 'Permission successfully deleted.';
-    res.status(200).send('Permission deleted.');
+    logOperation('PERMISSION_DELETE', `Permission deleted: ${permission.name}`, req.user.username, HTTP_STATUS.OK);
+    req.session.successMessage = MESSAGES.SUCCESS.PERMISSION_DELETED;
+    res.status(HTTP_STATUS.OK).send(MESSAGES.SUCCESS.PERMISSION_DELETE_RESPONSE);
 });
 
 export default {

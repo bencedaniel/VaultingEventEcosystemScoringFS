@@ -1,4 +1,5 @@
 import DashCards from '../models/DashCards.js';
+import { logDb } from '../logger.js';
 
 /**
  * Get all dashboard cards by type, sorted by priority
@@ -24,6 +25,7 @@ export const getDashCardById = async (id) => {
 export const createDashCard = async (data) => {
     const newCard = new DashCards(data);
     await newCard.save();
+    logDb('CREATE', 'DashCard', `${newCard._id}`);
     return newCard;
 };
 
@@ -35,6 +37,7 @@ export const updateDashCard = async (id, data) => {
     if (!card) {
         throw new Error('Dashboard card not found');
     }
+    logDb('UPDATE', 'DashCard', `${id}`);
     return card;
 };
 
@@ -46,5 +49,6 @@ export const deleteDashCard = async (id) => {
     if (!card) {
         throw new Error('Dashboard card not found');
     }
+    logDb('DELETE', 'DashCard', `${id}`);
     return card;
 };

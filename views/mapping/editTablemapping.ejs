@@ -3,7 +3,7 @@
 
   <form action="/mapping/edit/<%= formData._id %>" method="POST">
     <div class="row justify-content-center g-3 m-auto">
-      
+
       <!-- Table (A-H) -->
       <div class="col-md-12">
         <div class="form-floating">
@@ -22,7 +22,7 @@
         <div class="form-floating">
           <select class="form-select shadow-none" id="TestType" name="TestType" required>
             <option value="">Select Test Type</option>
-            <% ['compulsory','free test','technical'].forEach(tt => { %>
+            <% ['compulsory','free test','technical test'].forEach(tt => { %>
               <option value="<%= tt %>" <%= formData && formData.TestType === tt ? 'selected' : '' %>><%= tt.charAt(0).toUpperCase() + tt.slice(1) %></option>
             <% }); %>
           </select>

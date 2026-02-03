@@ -1,11 +1,10 @@
-
-  <div class="container my-4 border border-black border-1 border-opacity-25 rounded p-2" >
+<div class="container my-4 border border-black border-1 border-opacity-25 rounded p-2" >
   <ul class="list-group">
 
     <li class="list-group-item border-0">
         <h3 class="text-center">Score Sheet manager</h3>
     </li>
-    
+
   </ul>
 <div class="d-flex justify-content-start align-items-center w-100 shadow-sm p-1 mb-4 bg-secondary bg-opacity-25 rounded border border-1 border-black border-opacity-10 flex-grow-1">
     <div class="w-50 d-flex m-1 ">
@@ -18,7 +17,6 @@
             </button>
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="dropdownMenu">
 
-
             </div>
 
         </div>
@@ -26,7 +24,6 @@
         <a href="/scoring/office/score/new" class="btn btn-outline-primary w-50">Create New ScoreSheet</a>
 
   </div>
-
 
 <table class="table table-striped table-hover table-bordered w-100 m-0" id="TableBody">
         <thead class="table-primary">
@@ -56,10 +53,10 @@
         </td>
         <td><%= score.entry.category.CategoryDispName %></td>
         <td class="text-center">
-            
+
           <%score.scoresheets.sort((a, b) => a.table.localeCompare(b.table)).forEach(element => { %>
             <a href="/scoring/office/scoresheet/edit/<%= element.scoreId %>" class="btn btn-success btn-sm shadow-none m-1">Edit <%= element.table %><i class="bi bi-pen"></i></a>
- 
+
             <% });%>
 
         </td>
@@ -69,12 +66,11 @@
          <button type="button" class="btn btn-info btn-sm m-1" data-bs-toggle="modal"
                         data-bs-target="#recalcModal" data-scoreid="<%= score._id %>"><i class="bi bi-arrow-repeat"></i></button>
 
-        </td> 
+        </td>
       </tr>
             <% }); %>
         </tbody>
     </table>
-
 
 <div class="modal fade" id="recalcModal" tabindex="-1" score="dialog" aria-labelledby="recalcModalLabel"
     aria-hidden="true" style="backdrop-filter: blur(5px);">
@@ -93,9 +89,7 @@
             </div>
         </div>
     </div>
-</div>  
-
-
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

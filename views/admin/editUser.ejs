@@ -1,8 +1,6 @@
 <div class="container my-4 border border-black border-1 border-opacity-10 rounded p-3  shadow bg-primary bg-opacity-10 " style="max-width: 80vh;">
 
-
 <h1 class="text-center mb-3">Edit user</h1>
-
 
 <form action="/admin/editUser/<%= formData ? formData._id : '' %>" method="POST">
     <div class="row justify-content-center g-3 m-auto">
@@ -24,8 +22,6 @@
                 <label for="fullname" class="form-label">Fullname</label>
             </div>
         </div>
-       
-
 
          <div class="col-md-12">
             <div class="form-floating">
@@ -52,8 +48,6 @@
             </div>
                         </div>
 
-
-        
             <div class="col-md-12 ">
             <div class="form-floating">
                 <select type="text" class="form-select shadow-none" id="role" name="role" placeholder="role"
@@ -61,11 +55,8 @@
                     <% roleList.forEach(Role => { %>
   <option value="<%= Role._id %>" <%= formData && formData.role.toString() === Role._id.toString() ? "selected" : "" %>><%= Role.roleName %></option>
 
-
-
 <% }) %>
 
-                    
                 </select>
                 <label for="role" class="form-label">Role</label>
             </div>
@@ -74,7 +65,5 @@
         </div>
 
         </div>
-
-
 
 </form>

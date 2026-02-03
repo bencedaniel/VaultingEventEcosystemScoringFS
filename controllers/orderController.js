@@ -1,5 +1,6 @@
-import { logger } from '../logger.js';
+import { logger, logOperation, logAuth, logError, logValidation, logWarn } from '../logger.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
+import { HTTP_STATUS, MESSAGES } from '../config/index.js';
 import {
     getTimetablePartById,
     getEntriesForCategories,
@@ -19,7 +20,7 @@ const editGet = asyncHandler(async (req, res) => {
   const eventID = res.locals.selectedEvent?._id;
 
   if (!timetablePart.StartingOrder.length === 0 || timetablePart.drawingDone === false) {
-    req.session.failMessage = "No starting order set for this timetable part.";
+    req.session.failMessage = MESSAGES.ERROR.NO_STARTING_ORDER;
     return res.redirect('/order/createSelect/' + req.params.id);
   }
 
@@ -47,9 +48,9 @@ const overwrite = asyncHandler(async (req, res) => {
     newOrder: req.body.newOrder
   });
 
-  logger.db(`Order overwritten: TimetablePart ${timetablePart._id}, Entry ${req.body.id} set to Order ${req.body.newOrder}`);
-  req.session.successMessage = 'Starting order updated successfully.';
-  return res.status(200).json({ message: 'Starting order updated successfully.' });
+  logOperation('ORDER_UPDATE', `Order updated: TimetablePart ${timetablePart._id}, Entry ${req.body.id}`, req.user.username, HTTP_STATUS.OK);
+  req.session.successMessage = MESSAGES.SUCCESS.STARTING_ORDER_UPDATED;
+  return res.status(HTTP_STATUS.OK).json({ message: MESSAGES.SUCCESS.STARTING_ORDER_UPDATED });
 });
 
 const createOrder = asyncHandler(async (req, res) => {
@@ -93,7 +94,7 @@ const createOrder = asyncHandler(async (req, res) => {
 const confirmConflicts = asyncHandler(async (req, res) => {
   await updateTimetablePartStatus(req.params.id, { conflictsChecked: true });
 
-  req.session.successMessage = 'Conflicts confirmed. You can now create the starting order.';
+  req.session.successMessage = MESSAGES.SUCCESS.CONFLICTS_CONFIRMED;
   return res.redirect('/order/createOrder/' + req.params.id);
 });
 
@@ -108,9 +109,8 @@ const getNewOrder = asyncHandler(async (req, res) => {
 
   await updateEntryOrderNumber(req.params.id, req.body.id, randomnumber);
 
-  logger.db(`Order re-generated: TimetablePart ${req.params.id}, Entry ${req.body.id} set to Order ${randomnumber}`);
-
-  return res.status(200).json({ newOrder: randomnumber });
+  logOperation('ORDER_UPDATE', `Order updated: TimetablePart ${req.params.id}, Entry ${req.body.id}`, req.user.username, HTTP_STATUS.OK);
+  return res.status(HTTP_STATUS.OK).json({ newOrder: randomnumber });
 });
 
 const createSelectGet = asyncHandler(async (req, res) => {
@@ -129,7 +129,7 @@ const createSelectGet = asyncHandler(async (req, res) => {
 
 const createSelectPost = asyncHandler(async (req, res) => {
   if (!req.body.creationMethod || (req.body.creationMethod !== 'Drawing' && req.body.creationMethod !== 'Copy')) {
-    req.session.failMessage = "Invalid creation method selected.";
+    req.session.failMessage = MESSAGES.ERROR.INVALID_CREATION_METHOD;
     return res.redirect('/order/createSelect/' + req.params.id);
   }
 
@@ -138,7 +138,7 @@ const createSelectPost = asyncHandler(async (req, res) => {
     return res.redirect('/order/createOrder/' + req.params.id);
 
   } else if (req.body.creationMethod === 'Copy') {
-    req.session.failMessage = "Copy method not implemented yet.";
+    req.session.failMessage = MESSAGES.ERROR.COPY_METHOD_NOT_IMPLEMENTED;
     return res.redirect('/order/createSelect/' + req.params.id);
   }
 });

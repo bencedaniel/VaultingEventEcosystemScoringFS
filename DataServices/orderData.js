@@ -1,5 +1,6 @@
 import TimetablePart from '../models/Timetablepart.js';
 import Entries from '../models/Entries.js';
+import { logDb } from '../logger.js';
 
 /**
  * Retrieves a timetable part by ID with populated daily timetable
@@ -45,6 +46,7 @@ export async function validateAndFilterStartingOrder(timetablePart, validEntryId
         validSet.has(so.Entry.toString())
     );
     await timetablePart.save();
+    logDb('UPDATE', 'TimetablePart', `${timetablePart._id}`);
     return timetablePart;
 }
 
@@ -91,6 +93,7 @@ export async function updateStartingOrder(id, orderData) {
         });
     }
 
+    logDb('UPDATE', 'TimetablePart', `${id}`);
     await timetablePart.save();
     return timetablePart;
 }
@@ -139,6 +142,7 @@ export async function updateEntryOrderNumber(id, entryId, newOrder) {
         }
     }
 
+    logDb('UPDATE', 'TimetablePart', `${id}`);
     await timetablePart.save();
     return timetablePart;
 }
@@ -192,6 +196,7 @@ export async function checkAndGenerateConflictingOrders(timetablePart, entries) 
         }
     }
 
+    logDb('UPDATE', 'TimetablePart', `${timetablePart._id}`);
     await timetablePart.save();
     return { timetablePart, conflictedEntries };
 }
@@ -226,6 +231,7 @@ export async function generateCompleteStartingOrder(timetablePart, entries) {
         }
     }
 
+    logDb('UPDATE', 'TimetablePart', `${timetablePart._id}`);
     timetablePart.drawingDone = true;
     await timetablePart.save();
     return timetablePart;
@@ -243,6 +249,7 @@ export async function updateTimetablePartStatus(id, data) {
         throw new Error("Timetable part not found.");
     }
 
+    logDb('UPDATE', 'TimetablePart', `${id}`);
     Object.assign(timetablePart, data);
     await timetablePart.save();
     return timetablePart;
