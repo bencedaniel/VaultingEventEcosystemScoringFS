@@ -40,10 +40,10 @@
         <td><%= resultCalc.round1SecondP %>%</td>
         <td><%= resultCalc.round2FirstP %>%</td>
         <td class="text-center" style="width: 15%;">
-          <a href="/result/calcTemp/edit/<%= resultCalc._id %>" class="btn btn-warning btn-sm shadow-none m-1"><i class="bi bi-pen"></i></a>
+          <a href="/result/calcTemp/edit/<%= resultCalc._id %>" class="btn btn-warning btn-sm shadow-none m-1" aria-label="Edit calculation template"><i class="bi bi-pen"></i></a>
 
           <button type="button" class="btn btn-danger btn-sm m-1" data-bs-toggle="modal"
-                  data-bs-target="#deleteModal" data-horseid="<%= resultCalc._id %>"><i class="bi bi-trash"></i></button>
+                  data-bs-target="#deleteModal" data-horseid="<%= resultCalc._id %>" aria-label="Delete calculation template"><i class="bi bi-trash"></i></button>
         </td>
       </tr>
             <% }); %>

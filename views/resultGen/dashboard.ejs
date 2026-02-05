@@ -45,9 +45,9 @@
             <option value="false" <%= generator.active === false ? 'selected' : '' %>>Inactive</option>
         </select></td>
         <td class="text-center" style="width: 15%;">
-          <a href="/result/generator/edit/<%= generator._id %>" class="btn btn-warning btn-sm shadow-none m-1"><i class="bi bi-pen"></i></a>
+          <a href="/result/generator/edit/<%= generator._id %>" class="btn btn-warning btn-sm shadow-none m-1" aria-label="Edit result generator"><i class="bi bi-pen"></i></a>
           <button type="button" class="btn btn-danger btn-sm m-1" data-bs-toggle="modal"
-                  data-bs-target="#deleteModal" data-horseid="<%= generator._id %>"><i class="bi bi-trash"></i></button>
+                  data-bs-target="#deleteModal" data-horseid="<%= generator._id %>" aria-label="Delete result generator"><i class="bi bi-trash"></i></button>
         </td>
       </tr>
             <% }); %>
